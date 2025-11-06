@@ -1,0 +1,426 @@
+---
+title: "Getting started"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+options(
+  repos = c(
+    "ai4ci" = 'https://ai4ci.r-universe.dev/',
+    "terminological" = 'https://terminological.r-universe.dev/',
+    CRAN = 'https://cloud.r-project.org'
+  )
+)
+
+library(tidyverse)
+library(tidyabc)
+```
+
+# Setup simulation
+
+```{r}
+
+sim_params = list(
+  # A short generation time
+  mean_gt = 4,
+  sd_gt = 2,
+  R0 = 2,
+  I0 = 10,
+  # Add a longish and very variable delay to symptoms
+  p_symptomatic = 0.3,
+  mean_incub = 7,
+  sd_incub = 5,
+  # and a slightly shorter delay to observation:
+  # Only symptomatic cases are observed
+  p_detected_given_symptoms = 0.7,
+  mean_obs = 5,
+  sd_obs = 3,
+  # Observation cutoff:
+  T = 40
+)
+```
+
+# Run simulation
+
+```{r}
+sim_ip = ggoutbreak::make_gamma_ip(
+  median_of_mean = sim_params$mean_gt,
+  median_of_sd = sim_params$sd_gt
+)
+
+sim_params$r0 = ggoutbreak::inv_wallinga_lipsitch(sim_params$R0, sim_ip)
+
+truth = ggoutbreak::sim_branching_process(
+  fn_Rt = ~ sim_params$R0,
+  fn_ip = ~sim_ip,
+  fn_imports = \(t) ifelse(t == 1, sim_params$I0, 0),
+  max_time = 40
+)
+
+delayed = truth %>%
+  ggoutbreak::sim_delay(
+    p_fn = ~ sim_params$p_symptomatic,
+    delay_fn = ~ ggoutbreak::rgamma2(
+      .x,
+      sim_params$mean_incub,
+      sim_params$sd_incub
+    ),
+    input = "time",
+    output = "symptom"
+  ) %>%
+  ggoutbreak::sim_delay(
+    p_fn = \(t, symptom) {
+      ifelse(symptom, sim_params$p_detected_given_symptoms, 0)
+    },
+    delay_fn = ~ ggoutbreak::rgamma2(
+      .x,
+      sim_params$mean_obs,
+      sim_params$sd_obs
+    ),
+    input = "symptom_time",
+    output = "observation"
+  )
+
+observed = delayed %>% dplyr::filter(observation_time < sim_params$T)
+traced_contacts = observed %>%
+  dplyr::semi_join(observed, by = c("infector" = "id"))
+
+# Visualise simulation ----
+
+if (FALSE) {
+  ggoutbreak::plot_cases(
+    observed %>%
+      rename(infection_time = time, time = symptom_time) %>%
+      mutate(time = floor(time))
+  ) +
+    geom_step(
+      data = truth %>% dplyr::filter(time < sim_params$T),
+      aes(x = as.Date(time)),
+      stat = "bin",
+      binwidth = 1,
+      inherit.aes = FALSE
+    ) +
+    ggoutbreak::scale_y_log1p()
+
+  serial_pairs = observed %>%
+    inner_join(
+      traced_contacts,
+      by = c("id" = "infector"),
+      suffix = c(".1", ".2")
+    ) %>%
+    mutate(
+      serial_interval.2 = floor(symptom_time.2) - floor(symptom_time.1)
+    ) %>%
+    glimpse()
+
+  ggplot(serial_pairs) +
+    geom_histogram(aes(x = serial_interval.2), binwidth = 1)
+
+  # This is shorter than the generation time by a lot.
+  mean(serial_pairs$serial_interval.2)
+  # The earlier generations have generation interval as expected
+  truth %>%
+    filter(generation < 9) %>%
+    pull(generation_interval) %>%
+    mean(na.rm = TRUE)
+  # but this is lower in the whole set due to truncation of longer SI in
+  mean(truth$generation_interval, na.rm = TRUE)
+}
+
+# Match cases and contacts
+sim_cases = observed %>%
+  transmute(
+    person_id = id,
+    tracer_id = ifelse(infector %in% traced_contacts$infector, infector, -1),
+    OnsetDate = as.Date(floor(symptom_time)),
+    Date_of_Interview = as.Date(floor(observation_time))
+  )
+
+# Sim contacts is only positive contacts because the BPM does not have non-infected
+# all contacts have a tracer_id
+sim_contacts = traced_contacts %>%
+  transmute(
+    person_id = id,
+    tracer_id = infector,
+    OnsetDate = as.Date(floor(symptom_time)),
+    Date_of_Interview = as.Date(floor(observation_time))
+  )
+
+cases = sim_cases
+contacts = sim_contacts
+
+future::plan(future::multisession, workers = parallel::detectCores()-2)
+
+```
+
+# Priors
+
+```{r}
+
+
+
+# Priors specified as quantile functions
+prior_qfn = list(
+  r = .as.dist_fns(runif, 0, 0.5),
+  mean_onset = .as.dist_fns(runif, 0, 15),
+  sd_onset = .as.dist_fns(runif, 0, 10),
+  mean_obs = .as.dist_fns(runif, 0, 10),
+  sd_obs = .as.dist_fns(runif, 0, 5),
+  mean_gt = .as.dist_fns(runif, 0, 10),
+  sd_gt = .as.dist_fns(runif, 0, 5)
+) 
+```
+
+# Data
+
+```{r}
+# Expand data to deal with censoring.
+
+t0 = min_date(c(cases$OnsetDate,cases$Date_of_Interview))
+T = as.numeric(max_date(c(cases$OnsetDate,cases$Date_of_Interview)) - t0)+1
+
+
+# The earliest interview for each symptomatic case or contact
+earliest = cases %>%
+  filter(!is.na(OnsetDate)) %>%
+  group_by(person_id) %>%
+  filter(Date_of_Interview == min_date(Date_of_Interview)) %>%
+  filter(row_number() == 1)
+
+# ggplot(earliest)+geom_histogram(aes(x=diff), binwidth = 1)+xlab("Delay from onset to interview")
+
+
+# We are uniformly sampling onsets and observation times in the case data
+# to account for censored observations. Uniform is OK here are we are looking
+# at small censored intervals, and it requires least in terms of assumptions.
+
+cases2 = earliest %>%
+  ungroup() %>%
+  filter(!is.na(OnsetDate)) %>%
+  mutate(
+    t_onset = as.numeric(OnsetDate - t0),
+    t_obs = as.numeric(Date_of_Interview - t0)
+  ) %>% mutate(
+    row_id = row_number(),
+    sampled_id = list(1:10),
+    sampled_onset = purrr::map(t_onset, ~ runif(10, .x, .x+1)),
+    sampled_obs = purrr::map(t_obs, ~ runif(10, .x, .x+1)),
+  ) %>% 
+  unnest(c(sampled_id, sampled_onset, sampled_obs)) %>%
+  mutate(sampled_diff = sampled_obs - sampled_onset)
+
+contacts2 = contacts %>%
+  ungroup() %>%
+  filter(!is.na(OnsetDate)) %>%
+  mutate(
+    t_onset = as.numeric(OnsetDate - t0),
+    t_obs = as.numeric(Date_of_Interview - t0)
+  ) %>% mutate(
+    row_id = row_number(),
+    sampled_id = list(1:10),
+    sampled_onset = purrr::map(t_onset, ~ runif(10, .x, .x+1)),
+    sampled_obs = purrr::map(t_obs, ~ runif(10, .x, .x+1)),
+  ) %>% 
+  unnest(c(sampled_id, sampled_onset, sampled_obs)) %>%
+  mutate(sampled_diff = sampled_obs - sampled_onset) 
+
+# This shows the sampling process is giving us something sensible:
+# ggplot(cases2, aes(x=sampled_onset)) + geom_histogram(binwidth = 0.1)
+# ggplot(cases2, aes(x=sampled_obs)) + geom_histogram(binwidth = 0.1)
+# ggplot(cases2, aes(x=sampled_diff)) + geom_histogram(binwidth = 0.1)
+
+# cases2 is the data we are going to try and match model to: mostly the sampled_onset data
+
+serial_interval = cases2 %>%
+  inner_join(contacts2, by = c("person_id" = "tracer_id", "sampled_id"),suffix = c(".1",".2")) %>%
+  mutate(
+    sampled_serial_interval = as.numeric(sampled_onset.2 - sampled_onset.1)
+  )
+
+ref_onset = sort(cases2$sampled_onset)
+ref_obs = sort(cases2$sampled_obs)
+ref_diff = sort(cases2$sampled_diff)
+ref_secondary = sort(serial_interval$sampled_onset.2)
+ref_serial_interval = sort(serial_interval$sampled_serial_interval)
+
+# ggplot(serial_interval, aes(x = sampled_serial_interval)) +
+#   geom_histogram(binwidth = 0.1) +
+#   geom_vline(xintercept = 0, colour = "blue") +
+#      xlab("serial interval (days)")
+
+```
+
+```{r}
+# model:
+# constant exponential growth (hidden t_inf)
+# delayed onset gamma distributed (t_onset = t_inf + onset_delay)
+# delayed observation of onset gamma distributed (t_obs = onset + obs_delay)
+# secondary case delayed by generation time (hidden t_inf2 = t_inf + gt_delay)
+# secondary case onset and observation as above (t_onset_2 / t_obs_2)
+# onset times and intervals only observed if t_obs / t_obs_2 within time window (0-T)
+
+samples = 50000
+sims = tibble(.rows = samples)
+for (nm in names(prior_qfn))
+  sims[[nm]] = prior_qfn[[nm]]$r(samples)
+
+# mean_gt = n/ b
+# sd_gt = sqrt(n)/b
+# R0 = (1+r/b)^n
+# n = mean_gt^2 / sd_gt^2
+# b = (mean_gt / sd_gt^2)
+# r > -(mean_gt / sd_gt^2)
+# R0 = (1+r*sd_gt^2/mean_gt) ^ (mean_gt^2 / sd_gt^2)
+# r = (R0 ^ (sd_gt^2 / mean_gt^2) - 1) * (mean_gt / sd_gt^2)
+
+
+# r > -(mean_gt / sd_gt^2) 
+sims = sims %>% 
+  filter(r > -(mean_gt / sd_gt^2)) %>%
+  mutate(
+    R0 = (1+r*sd_gt^2/mean_gt) ^ (mean_gt^2 / sd_gt^2)
+  # r = (R0 ^ (sd_gt^2 / mean_gt^2) - 1) * (mean_gt / sd_gt^2)
+)
+
+sims %>% glimpse()
+
+n = nrow(cases2)
+
+sim1_fn = function(r, mean_onset, sd_onset, mean_obs, sd_obs, mean_gt, sd_gt, R0, ...) {
+  
+  # Primary case
+  # exponentially distributed in time. Need to make sure we have enough samples 
+  # before cutoff to account for early cases.
+  if (r>0) {
+    t_inf_1 = T - rexp(n, r)
+  } else {
+    t_early = - qgamma(0.99,mean_onset,sd_onset) # t starts at 0
+    if (r==0) {
+      t_inf_1 = runif(n,t_early,T)
+    } else {
+      t_inf_1 = t_early+rexp(n,r)
+    } 
+  }
+  
+  onset_delay = ggoutbreak::rgamma2(n, mean_onset, sd_onset, convex = FALSE)
+  obs_delay = ggoutbreak::rgamma2(n, mean_obs, sd_obs, convex = FALSE)
+  
+  t_onset_1 = t_inf_1 + onset_delay
+  t_obs_1 = t_onset_1 + obs_delay
+  
+  # Primary case observations:
+  # obs_1 = t_obs < T & t_obs > 0
+  # Onset after t0 and observed before T
+  obs_1 = t_obs_1 < T & t_onset_1 > 0
+  
+  t_inf_1 = t_inf_1[obs_1]
+  t_onset_1 = t_onset_1[obs_1]
+  t_obs_1 = t_obs_1[obs_1]
+  
+  n1 = length(t_inf_1)
+  
+  # Secondary case. Numbers of secondary cases are poission(R0). Could add 
+  # dispersion here and fit it also
+  # Only observed primary will be observed secondary so we can restrict to 
+  # observed subset
+  # browser()
+  case_2ary = rpois(n1,R0)
+  index_1ary = rep(seq_along(case_2ary), case_2ary)
+  n2 = length(index_1ary)
+  
+  gt_delay = ggoutbreak::rgamma2(n2, mean_gt, sd_gt, convex = FALSE)
+  onset_delay_2 = ggoutbreak::rgamma2(n2, mean_onset, sd_onset, convex = FALSE)
+  obs_delay_2 = ggoutbreak::rgamma2(n2, mean_obs, sd_obs, convex = FALSE)
+  
+  t_inf_2 = t_inf_1[index_1ary] + gt_delay
+  t_onset_2 = t_inf_2 + onset_delay_2
+  t_obs_2 = t_onset_2 + obs_delay_2
+  serial_interval = t_onset_2 - t_onset_1[index_1ary]
+  
+  
+  
+  # Secondary case observations
+  # obs_2 = t_obs < T & t_obs > 0 & t_obs_2 < T & t_obs_2 > 0
+  obs_2 = t_obs_2 < T & t_onset_2 > 0
+  
+  serial_interval = serial_interval[obs_2]
+  t_onset_2 = t_onset_2[obs_2]
+  
+  return(list(
+    sim_onset = t_onset_1,
+    # sim_obs = t_obs_1,
+    sim_diff = t_obs_1 - t_onset_1,
+    # sim_secondary = t_onset_2,
+    sim_si = serial_interval
+  ))
+}
+
+sims = sims %>% mutate(
+  sim = furrr::future_pmap(., sim1_fn, .progress = TRUE, .options = furrr::furrr_options(seed = NULL))
+  # sim = purrr::pmap(., sim1_fn, .progress = TRUE)
+)
+```
+
+# Scoring
+
+```{r}
+
+
+sims2 = sims %>% mutate(
+    onset_emd = purrr::map_dbl(sim, ~ .emd(.x$sim_onset, ref_onset), .progress = TRUE),
+    # onset_emd = furrr::future_map_dbl(sim, ~ .emd(.x$sim_onset, ref_onset), .progress = TRUE),
+    diff_emd = purrr::map_dbl(sim, ~ .emd(.x$sim_diff, ref_diff), .progress = TRUE),
+    # diff_emd = furrr::future_map_dbl(sim, ~ .emd(.x$sim_diff, ref_diff), .progress = TRUE),
+    serial_emd = purrr::map_dbl(sim, ~ .emd(.x$sim_si, ref_serial_interval), .progress = TRUE)
+    # serial_emd = furrr::future_map_dbl(sim, ~ .emd(.x$sim_si, ref_serial_interval), .progress = TRUE)
+  ) %>%
+  mutate(
+    metric = sqrt(diff_emd^2+onset_emd^2+serial_emd^2)
+  )
+```
+
+# Filtering
+
+```{r}
+filtered = sims2 %>% 
+  filter(rank(metric) < 250) 
+
+# filtered %>%
+#   .sprintf_quant() %>%
+#   glimpse()
+#   
+
+
+# ggplot(sims %>% filter(rank(onset_emd)/n() < 0.1), aes(x=r,y=mean_obs, colour = onset_emd))+geom_point()
+# ggplot(sims2 %>% filter(rank(metric)/n() < 0.1), aes(x=r))+geom_density()
+# ggplot(filtered, aes(x=r))+geom_density()# +geom_vline(xintercept = sim_params$r0, colour="blue")
+# 
+# ggplot(filtered, aes(x=mean_gt))+geom_density()#+geom_vline(xintercept = sim_params$mean_gt, colour="blue")
+# ggplot(filtered, aes(x=sd_gt))+geom_density() #+geom_vline(xintercept = sim_params$sd_gt, colour="blue")
+# 
+# ggplot(filtered, aes(x=mean_onset))+geom_density() # +geom_vline(xintercept = sim_params$mean_incub, colour="blue")
+# ggplot(filtered, aes(x=sd_onset))+geom_density()# +geom_vline(xintercept = sim_params$sd_incub, colour="blue")
+# 
+# ggplot(filtered, aes(x=mean_obs))+geom_density()# +geom_vline(xintercept = sim_params$mean_obs, colour="blue")
+# ggplot(filtered, aes(x=sd_obs))+geom_density()# +geom_vline(xintercept = sim_params$sd_obs, colour="blue")
+
+
+
+```
+
+# Results
+
+```{r}
+filtered %>% mutate(
+  doubling = log(2)/r,
+  infectious_period_95 = ggoutbreak::qgamma2(0.95, mean_gt, sd_gt, convex = FALSE)
+) %>% select(-ends_with("emd"), -metric) %>%
+  .sprintf_quant() %>%
+  glimpse()
+```

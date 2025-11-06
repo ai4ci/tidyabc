@@ -1,11 +1,42 @@
 Package: tidyabc
-Title: What the Package Does (One Line, Title Case)
+Title: Approximate Bayesian Computing with Tidy Data
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
+    person(given = "Robert",
+           family = "Challen",
+           role = c("aut", "cre"),
+           email = "rob.challen@bristol.ac.uk",
+           comment = c(ORCID = "0000-0002-5504-7768"))
 Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+License: MIT + file LICENSE
 Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
+Roxygen: list(markdown = TRUE, packages = "pkgtools")
 RoxygenNote: 7.3.3.9007
+Config/Needs/build: terminological/pkgtools
+Suggests: 
+    ggoutbreak (>= 0.5.1),
+    progressr,
+    testthat,
+    lifecycle
+Config/testthat/edition: 3
+Config/Needs/website: rmarkdown
+Remotes: 
+    ai4ci/ggoutbreak
+Imports: 
+    dplyr,
+    furrr,
+    ggplot2,
+    knitr,
+    pillar,
+    purrr,
+    ragg,
+    rlang,
+    scales,
+    splines,
+    stats,
+    stringr,
+    systemfonts,
+    utils,
+    withr,
+    carrier,
+    Hmisc

@@ -1,0 +1,151 @@
+---
+title: "Getting started"
+output: html_document
+---
+
+```{r setup}
+
+devtools::load_all()
+# future::plan(future::multisession, workers = parallel::detectCores()-2)
+
+```
+
+```{r}
+
+# example simulation
+# Well be trying to recover norm and gamma parameters
+# We'll use this function for both example generation and fitting
+test_simulation_fn = function(norm_mean, norm_sd, gamma_mean, gamma_sd) {
+  
+  A = rnorm(1000, norm_mean, norm_sd)
+  B = tidyabc::rgamma2(1000, gamma_mean, gamma_sd)
+  C = tidyabc::rgamma2(1000, gamma_mean, gamma_sd)
+
+  return(
+    list(
+      data1 = A + B - C,
+      data2 = B * C
+    )
+  )
+  
+}
+```
+
+```{r}
+
+test_scorer_fn = function(obsdata, simdata) {
+  return(list(
+    data1 = tidyabc::calculate_wasserstein(obsdata$data1, simdata$data1),
+    data2 = tidyabc::calculate_wasserstein(obsdata$data2, simdata$data2)
+  ))
+}
+
+```
+
+```{r}
+
+tmp = test_simulation(
+  test_simulation_fn,
+  test_scorer_fn,
+  norm_mean = 4, norm_sd=2, gamma_mean=6, gamma_sd=2,
+  seed = 123
+)
+```
+
+
+```{r}
+truth = tmp$truth
+test_obsdata = tmp$obsdata
+
+ggplot2::ggplot(dplyr::tibble(data1 = test_obsdata$data1),
+                ggplot2::aes(x=data1))+
+  ggplot2::geom_histogram(,binwidth = 1)+
+  ggplot2::xlab("A + B - C")
+
+ggplot2::ggplot(dplyr::tibble(data2 = test_obsdata$data2),
+                ggplot2::aes(x=data2))+
+  ggplot2::geom_histogram(,binwidth = 1)+
+  ggplot2::xlab("B x C")
+
+```
+
+```{r}
+test_priors = list(
+  norm_mean = as.dist_fns(runif, 0, 10),
+  norm_sd = as.dist_fns(runif, 0, 10),
+  gamma_mean = as.dist_fns(runif, 0, 10),
+  gamma_sd = as.dist_fns(runif, 0, 10) #,
+  # ~ gamma_mean > gamma_sd # enforces convexity in gamma
+)
+```
+
+
+
+
+```{r}
+
+rejection_fit = abc_rejection(
+  obsdata = test_obsdata,
+  priors_list = test_priors,
+  sim_fn = test_simulation_fn,
+  scorer_fn = test_scorer_fn,
+  n_sims = 10000,
+  acceptance_rate = 0.05,
+  parallel= FALSE
+)
+
+summary(rejection_fit)
+
+# posterior_summarise(rejection_fit$posterior)
+# 
+plot(rejection_fit, truth=truth)
+```
+
+
+```{r}
+
+smc_fit = abc_smc(
+  obsdata = test_obsdata,
+  priors_list = test_priors,
+  sim_fn = test_simulation_fn,
+  scorer_fn = test_scorer_fn,
+  n_sims = 1000,
+  acceptance_rate = 0.5,
+  parallel= FALSE
+)
+
+summary(smc_fit)
+
+plot(smc_fit, truth=truth)
+
+
+plot_convergence(smc_fit)
+plot_evolution(smc_fit,truth)
+
+plot_correlations(smc_fit$posteriors)
+```
+
+
+```{r}
+
+adaptive_fit = abc_adaptive(
+  obsdata = test_obsdata,
+  priors_list = test_priors,
+  sim_fn = test_simulation_fn,
+  scorer_fn = test_scorer_fn,
+  n_sims = 1000,
+  acceptance_rate = 0.5,
+  parallel= FALSE,
+  max_waves = 15
+)
+
+summary(adaptive_fit)
+
+plot(adaptive_fit, truth=truth)
+
+
+plot_convergence(adaptive_fit)
+plot_evolution(adaptive_fit,truth)
+
+plot_correlations(adaptive_fit$posteriors)
+```

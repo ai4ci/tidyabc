@@ -1,0 +1,26 @@
+url: ~
+template:
+  bootstrap: 5
+reference:
+- title: ABC workflow
+- contents:
+  - has_concept("workflow")
+- title: Empirical, mixture and truncated distributions
+- contents:
+  - has_concept("empirical")
+- title: Reparameterised and non-standard distributions
+- contents:
+  - has_concept("distributions")
+- title: S3 distribution function class
+- contents:
+  - has_concept("dist_fns_s3")
+- title: S3 link function class
+- contents:
+  - has_concept("link_fns_s3")
+- title: S3 abc fit class
+- contents:
+  - has_concept("abc_fit_s3")
+- title: Others
+- contents:
+  - lacks_concepts(c("workflow","empirical","dist_fns_s3","link_fns_s3","distributions"))
+
