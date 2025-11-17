@@ -33,13 +33,13 @@ be a named list, but could be anything, e.g. dataframe. It is the reference
 data that the simulation model is aiming to replicate.}
 
 \item{priors_list}{a named list of priors specified as a \code{abc_prior} S3 object
-(see \code{\link{priors()}}), this can include derived values as unnamed 2-sided
+(see \code{priors()}), this can include derived values as unnamed 2-sided
 formulae, where the LHS of the formula will be assigned to the value of the
 RHS, plus optionally a set of constraints as one sided formulae where the
 RHS of the formulae will resolve to a boolean value.}
 
 \item{sim_fn}{a user defined function that takes a set of parameters named
-the same as the list \code{priors}. It must return a simulated data set in the
+the same as \code{priors_list}. It must return a simulated data set in the
 same format as \code{obsdata}, or that can be compared to \code{simdata} by
 \code{scorer_fn}. This function must not refer to global parameters, and will be
 automatically crated with \code{carrier}.}
@@ -101,6 +101,11 @@ to anomolous value combinations are hard to debug. If this flag is set,
 whenever a \code{sim_fn} or \code{scorer_fn} throws an error an interactive debugging
 session is started with the failing parameter combinations. This is not
 compatible with running in parallel.}
+
+\item{kernel}{one of \code{"epanechnikov"}, \code{"uniform"}, \code{"triangular"}, \code{"biweight"},
+or \code{"gaussian"}. The kernel defines how the distance metric translates into
+the importance weight that decides whether a given simulation and associated
+parameters should be rejected or held for the next round.}
 
 \item{bw}{for Adaptive ABC data distributions are smoothed before modelling
 the CDF. Over smoothing can reduce convergence, under-smoothing may result

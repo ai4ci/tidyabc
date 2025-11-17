@@ -67,22 +67,22 @@ test = function(rfn,qfn, link,..., n = 100000, tol=1000/(n+10000)) {
 
 withr::with_seed(123, {
 
-  test(rnorm,qnorm,"identity",n = 10000)
-  test(rnorm,qnorm,"identity",mean=4,n = 10000)
-  test(rnorm,qnorm,"identity",sd=3, n = 100000, tol=0.05)
+  test(stats::rnorm,stats::qnorm,"identity",n = 10000)
+  test(stats::rnorm,stats::qnorm,"identity",mean=4,n = 10000)
+  test(stats::rnorm,stats::qnorm,"identity",sd=3, n = 100000, tol=0.05)
 
-  test(rnorm,qnorm,"identity",n = 5000)
-  test(rnorm,qnorm,"identity",n = 1000)
-  test(rnorm,qnorm,"identity",n = 100)
-  test(rnorm,qnorm,"identity",n = 30)
+  test(stats::rnorm,stats::qnorm,"identity",n = 5000)
+  test(stats::rnorm,stats::qnorm,"identity",n = 1000)
+  test(stats::rnorm,stats::qnorm,"identity",n = 100)
+  test(stats::rnorm,stats::qnorm,"identity",n = 30)
 
-  test(rgamma,qgamma,"log", 4,n = 10000)
-  test(rgamma,qgamma,"log", 4,n = 5000)
-  test(rgamma,qgamma,"log", 4,n = 1000)
-  test(rgamma,qgamma,"log", 4, 3,n = 100)
-  test(rgamma,qgamma,"log", 4,n = 30)
+  test(stats::rgamma,stats::qgamma,"log", 4,n = 10000)
+  test(stats::rgamma,stats::qgamma,"log", 4,n = 5000)
+  test(stats::rgamma,stats::qgamma,"log", 4,n = 1000)
+  test(stats::rgamma,stats::qgamma,"log", 4, 3,n = 100)
+  test(stats::rgamma,stats::qgamma,"log", 4,n = 30)
 
-  test(runif,qunif,as.link_fns(c(0,10)),0,10)
+  test(stats::runif,stats::qunif,as.link_fns(c(0,10)),0,10)
 
 })
 

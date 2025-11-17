@@ -95,6 +95,7 @@ summary.abc_fit = function(object, ..., truth = NULL) {
 }
 
 .format_summ = function(summ_df, truth = NULL) {
+  mean = sd = NULL
   tmp = summ_df %>%
     dplyr::filter(wave == max(wave)) %>%
     dplyr::transmute(

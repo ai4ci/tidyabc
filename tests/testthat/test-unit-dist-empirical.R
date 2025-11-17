@@ -158,7 +158,7 @@ test_that(".interpolate unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(563, 1, 563+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(565, 1, 565+1, 1))
   )
 })
 
@@ -202,7 +202,7 @@ test_that(".monotonicpolyspline unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(591, 1, 591+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(593, 1, 593+1, 1))
   )
 })
 
@@ -241,7 +241,7 @@ test_that("empirical_data unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(723, 1, 723+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(725, 1, 725+1, 1))
   )
 })
 
@@ -263,30 +263,33 @@ test_that("wquantile unit test", {
     ), c(0, 0, 0), tolerance = tol)
   }
   
-  withr::with_seed(123, {
-    test(rnorm, qnorm, "identity", n = 10000)
-    test(rnorm, qnorm, "identity", mean = 4, n = 10000)
-    test(rnorm, qnorm, "identity", sd = 3, n = 100000, tol = 0.05)
+  withr::with_seed(
+    123,
+    {
+      test(stats::rnorm, stats::qnorm, "identity", n = 10000)
+      test(stats::rnorm, stats::qnorm, "identity", mean = 4, n = 10000)
+      test(stats::rnorm, stats::qnorm, "identity", sd = 3, n = 100000, tol = 0.05)
   
-    test(rnorm, qnorm, "identity", n = 5000)
-    test(rnorm, qnorm, "identity", n = 1000)
-    test(rnorm, qnorm, "identity", n = 100)
-    test(rnorm, qnorm, "identity", n = 30)
+      test(stats::rnorm, stats::qnorm, "identity", n = 5000)
+      test(stats::rnorm, stats::qnorm, "identity", n = 1000)
+      test(stats::rnorm, stats::qnorm, "identity", n = 100)
+      test(stats::rnorm, stats::qnorm, "identity", n = 30)
   
-    test(rgamma, qgamma, "log", 4, n = 10000)
-    test(rgamma, qgamma, "log", 4, n = 5000)
-    test(rgamma, qgamma, "log", 4, n = 1000)
-    test(rgamma, qgamma, "log", 4, 3, n = 100)
-    test(rgamma, qgamma, "log", 4, n = 30)
+      test(stats::rgamma, stats::qgamma, "log", 4, n = 10000)
+      test(stats::rgamma, stats::qgamma, "log", 4, n = 5000)
+      test(stats::rgamma, stats::qgamma, "log", 4, n = 1000)
+      test(stats::rgamma, stats::qgamma, "log", 4, 3, n = 100)
+      test(stats::rgamma, stats::qgamma, "log", 4, n = 30)
   
-    test(runif, qunif, as.link_fns(c(0, 10)), 0, 10)
-  })
+      test(stats::runif, stats::qunif, as.link_fns(c(0, 10)), 0, 10)
+    }
+  )
 
   # generates a failure if the overall test is failing with a link to the 
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(1261, 1, 1261+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(1265, 1, 1265+1, 1))
   )
 })
 
@@ -339,7 +342,7 @@ test_that(".fit_lm_1d unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(1389, 1, 1389+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(1393, 1, 1393+1, 1))
   )
 })
 

@@ -22,6 +22,9 @@ as.link_fns(x, ...)
 \item{x}{a range of values that for the support}
 
 \item{...}{ignored}
+
+\item{na.rm}{remove NAs when estimating mean and sd for data driven link
+functions}
 }
 \value{
 a \code{link_fns} S3 object

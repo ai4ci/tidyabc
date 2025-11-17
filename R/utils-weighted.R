@@ -40,9 +40,9 @@
 # }
 #
 # # Example usage:
-# # x <- sort(runif(20, 0, 10))
-# # y <- pnorm(x, mean = 5, sd = 2) + rnorm(20, 0, 0.05)  # noisy CDF-like
-# # w <- runif(20, 0.5, 2)  # random weights
+# # x <- sort(stats::runif(20, 0, 10))
+# # y <- stats::pnorm(x, mean = 5, sd = 2) + rnorm(20, 0, 0.05)  # noisy CDF-like
+# # w <- stats::runif(20, 0.5, 2)  # random weights
 # # y_smooth <- weighted_monotonic_loess(x, y, weights = w, span = 0.4)
 # # plot(x, y, col = "red", pch = 16)
 # # lines(sort(x), y_smooth[order(x)], col = "blue", lwd = 2)

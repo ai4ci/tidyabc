@@ -4,6 +4,7 @@
 ## usethis namespace: start
 ## usethis namespace: end
 #' @importFrom splines interpSpline
+#' @importFrom rlang `:=`
 NULL
 
 
@@ -19,7 +20,7 @@ NULL
 #'   RHS of the formulae will resolve to a boolean value.
 #' @param proposal_list a named list of statistical or empirical distributions
 #'   resulting from previous waves specified as a `abc_prior` S3 object (see
-#'   \code{\link{priors()}}).
+#'   `priors()`).
 #' @param sim_fn a user defined function that takes a set of parameters named
 #'   the same as `priors_list`. It must return a simulated data set in the
 #'   same format as `obsdata`, or that can be compared to `simdata` by

@@ -36,7 +36,7 @@ test_that("new_abc_prior unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/s3-abc_prior-class.R"), c(121, 1, 121+1, 1))
+    srcref = srcref(srcfile("../../R/s3-abc_prior-class.R"), c(122, 1, 122+1, 1))
   )
 })
 
@@ -72,7 +72,7 @@ test_that(".sample_priors unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/s3-abc_prior-class.R"), c(195, 1, 195+1, 1))
+    srcref = srcref(srcfile("../../R/s3-abc_prior-class.R"), c(196, 1, 196+1, 1))
   )
 })
 
@@ -114,7 +114,7 @@ test_that(".sample_constrained unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/s3-abc_prior-class.R"), c(252, 1, 252+1, 1))
+    srcref = srcref(srcfile("../../R/s3-abc_prior-class.R"), c(253, 1, 253+1, 1))
   )
 })
 

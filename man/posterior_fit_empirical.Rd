@@ -13,7 +13,7 @@ this may include columns for scores, weight and/or simulation outputs (
 ) as well as columns matching the \code{priors} input specification.}
 
 \item{priors_list}{a named list of priors specified as a \code{abc_prior} S3 object
-(see \code{\link{priors()}}), this can include derived values as unnamed 2-sided
+(see \code{priors()}), this can include derived values as unnamed 2-sided
 formulae, where the LHS of the formula will be assigned to the value of the
 RHS, plus optionally a set of constraints as one sided formulae where the
 RHS of the formulae will resolve to a boolean value.}

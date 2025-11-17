@@ -35,6 +35,8 @@ priors, and the LHS as a name to derive.}
 \item{.cor}{(optional) a correlation matrix for the priors}
 
 \item{x}{an \code{abc_prior} S3 object}
+
+\item{...}{passed on to methods}
 }
 \value{
 an S3 object of class \code{abc_prior} which contains

@@ -29,6 +29,12 @@ tidy.abc_fit(x, ...)
 
 \item{converged}{boolean - did the result meet convergence criteria}
 
+\item{priors_list}{a named list of priors specified as a \code{abc_prior} S3 object
+(see \code{priors()}), this can include derived values as unnamed 2-sided
+formulae, where the LHS of the formula will be assigned to the value of the
+RHS, plus optionally a set of constraints as one sided formulae where the
+RHS of the formulae will resolve to a boolean value.}
+
 \item{wave_df}{a list of dataframes of wave convergence metrics}
 
 \item{summ_df}{the summary of the parameter fits after each wave.}
@@ -38,6 +44,8 @@ tidy.abc_fit(x, ...)
 \item{x}{a \code{abc_fit} object as output by the \code{abc_XXX} functions}
 
 \item{...}{passed on to methods}
+
+\item{object}{a \code{abc_fit} object as output by the \code{abc_XXX} functions}
 
 \item{truth}{a named numeric vector of known parameter values}
 }

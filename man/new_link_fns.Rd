@@ -19,8 +19,6 @@ new_link_fns(
 \item{inv}{the reverse inverting function}
 
 \item{support}{the support or support of the link}
-
-\item{range}{the range of the link (typically \code{-Inf} to \code{Inf})}
 }
 \value{
 a new \code{link_fns} S3 object

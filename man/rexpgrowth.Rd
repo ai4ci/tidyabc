@@ -22,7 +22,7 @@ a vector of \code{n} samples from an exponential growth process
 Randomly sample incident times in an exponentially growing process
 }
 \examples{
-hist(rexpgrowth(1000,0.1,40), breaks=40)
-hist(rexpgrowth(1000,-0.1,40), breaks=40)
+graphics::hist(rexpgrowth(1000,0.1,40), breaks=40)
+graphics::hist(rexpgrowth(1000,-0.1,40), breaks=40)
 }
 \concept{distributions}

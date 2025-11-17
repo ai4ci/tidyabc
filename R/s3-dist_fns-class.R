@@ -542,7 +542,7 @@ as.dist_fns.character = function(x, ...) {
   distr = x
   fn_names = paste0(c("p", "q", "r", "d"), distr)
 
-  pkg_list = lapply(fn_names, find, mode = "function") %>%
+  pkg_list = lapply(fn_names, utils::find, mode = "function") %>%
     lapply(setdiff, ".GlobalEnv")
   if (all(sapply(pkg_list, length) > 0)) {
     rawcalls = lapply(seq_along(fn_names), function(i) {

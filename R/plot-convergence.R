@@ -317,8 +317,8 @@ plot_correlations = function(posteriors_df, truth = NULL) {
       plt_df = df %>%
         dplyr::transmute(x = !!nmx, y = !!nmy, wt = wt / max(wt) * max_alpha)
 
-      rx = quantile(plt_df$x, c(0.01, 0.99)) * c(0.95, 1 / 0.95)
-      ry = quantile(plt_df$y, c(0.01, 0.99)) * c(0.95, 1 / 0.95)
+      rx = stats::quantile(plt_df$x, c(0.01, 0.99)) * c(0.95, 1 / 0.95)
+      ry = stats::quantile(plt_df$y, c(0.01, 0.99)) * c(0.95, 1 / 0.95)
 
       plt = ggplot2::ggplot(plt_df) +
         # ggplot2::facet_grid(

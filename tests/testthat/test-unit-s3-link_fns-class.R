@@ -26,7 +26,7 @@ test_that("as.link_fns.character unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/s3-link_fns-class.R"), c(123, 1, 123+1, 1))
+    srcref = srcref(srcfile("../../R/s3-link_fns-class.R"), c(122, 1, 122+1, 1))
   )
 })
 
@@ -55,7 +55,7 @@ test_that("as.link_fns.numeric unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/s3-link_fns-class.R"), c(223, 1, 223+1, 1))
+    srcref = srcref(srcfile("../../R/s3-link_fns-class.R"), c(224, 1, 224+1, 1))
   )
 })
 

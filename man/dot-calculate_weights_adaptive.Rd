@@ -30,8 +30,10 @@ It is the scale parameter of the kernel function. $K_h(|u|)$}
 MVN space to proposal space, and are the "prior" for each adaptive wave.
 This is already used to generate the proposals and their mapping in \code{sim_df}}
 
-\item{kernel}{one of "epanechnikov", "uniform", "triangular", "biweight",
-"gaussian"}
+\item{kernel}{one of \code{"epanechnikov"}, \code{"uniform"}, \code{"triangular"}, \code{"biweight"},
+or \code{"gaussian"}. The kernel defines how the distance metric translates into
+the importance weight that decides whether a given simulation and associated
+parameters should be rejected or held for the next round.}
 }
 \value{
 the \code{sim_df} with an \code{abc_weight} column

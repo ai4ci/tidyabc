@@ -23,8 +23,8 @@ NULL
 #' example_sim_fn(3,2,1) %>% lapply(head,10)
 example_sim_fn = function(mean, sd1, sd2) {
   return(list(
-    A = rnorm(1000, mean, sd1),
-    B = rgamma2(1000, mean, sd2)
+    A = stats::rnorm(1000, mean, sd1),
+    B = tidyabc::rgamma2(1000, mean, sd2)
   ))
 }
 

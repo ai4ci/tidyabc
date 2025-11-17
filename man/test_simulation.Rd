@@ -17,7 +17,7 @@ test_simulation(
 }
 \arguments{
 \item{sim_fn}{a user defined function that takes a set of parameters named
-the same as the list \code{priors}. It must return a simulated data set in the
+the same as \code{priors_list}. It must return a simulated data set in the
 same format as \code{obsdata}, or that can be compared to \code{simdata} by
 \code{scorer_fn}. This function must not refer to global parameters, and will be
 automatically crated with \code{carrier}.}

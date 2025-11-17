@@ -521,7 +521,7 @@
     }
   } else {
     # maybe a numeric or other constant?
-    if (class(expr) == "NULL") {
+    if (inherits(expr, "NULL")) {
       out = list(expr)
     } else {
       out = expr
@@ -564,7 +564,7 @@
 
   # what is the namespace of the function represented by name?
   # tmp = getNamespaceName(rlang::fn_env(eval(name)))
-  # tmp = find(as.character(name))[[1]]
+  # tmp = utils::find(as.character(name))[[1]]
   if (is.null(pkg)) {
     pkg = gsub("package:", "", utils::find(as.character(name))[[1]])
   }
