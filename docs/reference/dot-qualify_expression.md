@@ -1,0 +1,91 @@
+# Qualify the namespaces of everything in an expression
+
+recursively search for a name that evaluates to a function that is not
+part of a qualified reference and replaces it with a qualified version.
+The function will be resolved in the current environment do
+dplyr::filter will be picked over stats::filter if the tidyverse is
+loaded at the point of evaluation.
+
+## Usage
+
+``` r
+.qualify_expression(expr, defined = list(), unqual = list())
+```
+
+## Arguments
+
+- expr:
+
+  an expression or component of expressions.
+
+- defined:
+
+  a list of qualified references known at this point
+
+- unqual:
+
+  a list of unqualified references
+
+## Value
+
+a list of the qualified expression, plus updated defined and unqualified
+lists
+
+## Unit tests
+
+
+    testthat::expect_equal(
+      .qualify_expression(expression(12))$cl,
+      expression(12)
+    )
+
+    testthat::expect_equal(
+      .qualify_expression(expression(rnorm))$cl,
+      expression(stats::rnorm)
+    )
+
+    tmp = .qualify_expression(expression({new_var = 12}))
+    testthat::expect_equal(tmp$defined, list(as.name("new_var")))
+
+    tmp2 = .qualify_expression(expression({list(new_var = 12, old_var = 14)}))
+    testthat::expect_equal(tmp2$defined, list())
+
+    fn = function(x) {
+      y <- runif(x)
+      stats::rnorm(x,y)
+      x[1] <- 12
+      x[2] <- !!z # inlining happens during expression parsing...?
+    }
+
+    tmp3 = .qualify_expression(body(fn), defined=list(as.name("x")))
+    testthat::expect_equal(tmp3$unqual, list(as.name("z")))
+    testthat::expect_equal(tmp3$defined, list(as.name("x"),as.name("y")))
+    testthat::expect_equal(format(tmp3$cl), c(
+      "{",
+      "    y <- stats::runif(x)",
+      "    stats::rnorm(x, y)",
+      "    x[1] <- 12",
+      "    x[2] <- !!z",
+      "}"
+    ))
+
+    library(ggplot2)
+    tmp4 = .qualify_expression(expression(diamonds$cut))
+    testthat::expect_equal(tmp4$cl, expression(ggplot2::diamonds$cut))
+
+    tmp5 = .qualify_expression(expression(diamonds$imaginary(rnorm(1000))))
+    testthat::expect_equal(
+      tmp5$cl,
+      expression(ggplot2::diamonds$imaginary(stats::rnorm(1000)))
+    )
+
+    tmp6 = .qualify_expression(expression(function(n,mu) rnorm(n,mu)))
+    testthat::expect_equal(tmp6$defined, list())
+    testthat::expect_equal(
+      format(tmp6$cl),
+      "expression(function(n, mu) stats::rnorm(n, mu))"
+    )
+
+    tmp7 = .qualify_expression(expression(Species = NULL))
+    testthat::expect_equal(length(tmp7$cl), 1L)
+    testthat::expect_equal(tmp7$cl, expression(Species = NULL))

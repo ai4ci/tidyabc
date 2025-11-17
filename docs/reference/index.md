@@ -1,0 +1,267 @@
+# Package index
+
+## ABC workflow
+
+- [`abc_adaptive()`](https://ai4ci.github.io/tidyabc/reference/abc_adaptive.md)
+  : Perform ABC sequential adaptive fitting
+- [`abc_rejection()`](https://ai4ci.github.io/tidyabc/reference/abc_rejection.md)
+  : Perfom simple ABC rejection algorithm
+- [`abc_smc()`](https://ai4ci.github.io/tidyabc/reference/abc_smc.md) :
+  Perform ABC sequential Monte Carlo fitting
+- [`calculate_rmse()`](https://ai4ci.github.io/tidyabc/reference/calculate_rmse.md)
+  : Generate a function to calculate a root mean squared error
+- [`calculate_wasserstein()`](https://ai4ci.github.io/tidyabc/reference/calculate_wasserstein.md)
+  : Calculate a wasserstein distance
+- [`default_termination_fn()`](https://ai4ci.github.io/tidyabc/reference/default_termination_fn.md)
+  : Set up default convergence criteria for SMC and adaptive ABC
+- [`plot_convergence()`](https://ai4ci.github.io/tidyabc/reference/plot_convergence.md)
+  : Plot convergence metrics by wave for SMC and adaptive ABC
+- [`plot_correlations()`](https://ai4ci.github.io/tidyabc/reference/plot_correlations.md)
+  : A parameter posterior correlation plot
+- [`plot_evolution()`](https://ai4ci.github.io/tidyabc/reference/plot_evolution.md)
+  : Plot the evolution of the density function by wave for SMC and
+  adaptive ABC
+- [`plot_simulations()`](https://ai4ci.github.io/tidyabc/reference/plot_simulations.md)
+  : Spaghetti plot of resampled posterior fits
+- [`posterior_fit_empirical()`](https://ai4ci.github.io/tidyabc/reference/posterior_fit_empirical.md)
+  : Fit empirical distribution to posterior samples for generating more
+  waves
+- [`posterior_resample()`](https://ai4ci.github.io/tidyabc/reference/posterior_resample.md)
+  : Generate a set of samples from selected posteriors
+- [`posterior_summarise()`](https://ai4ci.github.io/tidyabc/reference/posterior_summarise.md)
+  : Calculate a basket of summaries from a weighted list of posterior
+  samples
+- [`test_simulation()`](https://ai4ci.github.io/tidyabc/reference/test_simulation.md)
+  : Run the simulation for one set of parameters
+
+## Empirical, mixture and truncated distributions
+
+- [`empirical()`](https://ai4ci.github.io/tidyabc/reference/empirical.md)
+  : Fit a piecewise logit transformed linear model to cumulative data
+- [`empirical_cdf()`](https://ai4ci.github.io/tidyabc/reference/empirical_cdf.md)
+  : Fit a piecewise logit transformed linear model to a CDF
+- [`empirical_data()`](https://ai4ci.github.io/tidyabc/reference/empirical_data.md)
+  : Fit a piecewise logit transformed linear model to weighted data
+- [`kurtosis()`](https://ai4ci.github.io/tidyabc/reference/kurtosis.md)
+  : Calculate the excess kurtosis of a set of data
+- [`mixture()`](https://ai4ci.github.io/tidyabc/reference/mixture.md) :
+  Construct a mixture distribution
+- [`skew()`](https://ai4ci.github.io/tidyabc/reference/skew.md) :
+  Calculate the skew of a set of data
+- [`transform()`](https://ai4ci.github.io/tidyabc/reference/transform.md)
+  : Generate a distribution from a truncation of another
+- [`truncate()`](https://ai4ci.github.io/tidyabc/reference/truncate.md)
+  : Generate a distribution from a truncation of another
+- [`wquantile()`](https://ai4ci.github.io/tidyabc/reference/wquantile.md)
+  : Quantile from weighted data with link function support
+
+## Reparameterised and non-standard distributions
+
+- [`dbeta2()`](https://ai4ci.github.io/tidyabc/reference/dbeta2.md) :
+  The Beta Distribution
+- [`dcgamma()`](https://ai4ci.github.io/tidyabc/reference/dcgamma.md) :
+  Density: gamma distribution constrained to have mean \> sd
+- [`dgamma2()`](https://ai4ci.github.io/tidyabc/reference/dgamma2.md) :
+  The Gamma Distribution
+- [`dlnorm2()`](https://ai4ci.github.io/tidyabc/reference/dlnorm2.md) :
+  The Log Normal Distribution
+- [`dlogitnorm()`](https://ai4ci.github.io/tidyabc/reference/dlogitnorm.md)
+  : Logit-normal distribution
+- [`dlogitnorm2()`](https://ai4ci.github.io/tidyabc/reference/dlogitnorm2.md)
+  : Logit-normal distribution
+- [`dnbinom2()`](https://ai4ci.github.io/tidyabc/reference/dnbinom2.md)
+  : The Negative Binomial Distribution
+- [`dnull()`](https://ai4ci.github.io/tidyabc/reference/dnull.md) : Null
+  distributions always returns NA
+- [`dwedge()`](https://ai4ci.github.io/tidyabc/reference/dwedge.md) :
+  Wedge distribution
+- [`pbeta2()`](https://ai4ci.github.io/tidyabc/reference/pbeta2.md) :
+  The Beta Distribution
+- [`pcgamma()`](https://ai4ci.github.io/tidyabc/reference/pcgamma.md) :
+  Cumulative probability: gamma distribution constrained to have mean \>
+  sd
+- [`pgamma2()`](https://ai4ci.github.io/tidyabc/reference/pgamma2.md) :
+  The Gamma Distribution
+- [`plnorm2()`](https://ai4ci.github.io/tidyabc/reference/plnorm2.md) :
+  The Log Normal Distribution
+- [`plogitnorm()`](https://ai4ci.github.io/tidyabc/reference/plogitnorm.md)
+  : Logit-normal distribution
+- [`plogitnorm2()`](https://ai4ci.github.io/tidyabc/reference/plogitnorm2.md)
+  : Logit-normal distribution
+- [`pnbinom2()`](https://ai4ci.github.io/tidyabc/reference/pnbinom2.md)
+  : The Negative Binomial Distribution
+- [`pnull()`](https://ai4ci.github.io/tidyabc/reference/pnull.md) : Null
+  distributions always returns NA
+- [`pwedge()`](https://ai4ci.github.io/tidyabc/reference/pwedge.md) :
+  Wedge distribution
+- [`qbeta2()`](https://ai4ci.github.io/tidyabc/reference/qbeta2.md) :
+  The Beta Distribution
+- [`qcgamma()`](https://ai4ci.github.io/tidyabc/reference/qcgamma.md) :
+  Quantile: gamma distribution constrained to have mean \> sd
+- [`qgamma2()`](https://ai4ci.github.io/tidyabc/reference/qgamma2.md) :
+  The Gamma Distribution
+- [`qlnorm2()`](https://ai4ci.github.io/tidyabc/reference/qlnorm2.md) :
+  The Log Normal Distribution
+- [`qlogitnorm()`](https://ai4ci.github.io/tidyabc/reference/qlogitnorm.md)
+  : Logit-normal distribution
+- [`qlogitnorm2()`](https://ai4ci.github.io/tidyabc/reference/qlogitnorm2.md)
+  : Logit-normal distribution
+- [`qnbinom2()`](https://ai4ci.github.io/tidyabc/reference/qnbinom2.md)
+  : The Negative Binomial Distribution
+- [`qnull()`](https://ai4ci.github.io/tidyabc/reference/qnull.md) : Null
+  distributions always returns NA
+- [`qwedge()`](https://ai4ci.github.io/tidyabc/reference/qwedge.md) :
+  Wedge distribution
+- [`rbern()`](https://ai4ci.github.io/tidyabc/reference/rbern.md) : A
+  random Bernoulli sample as a logical value
+- [`rbeta2()`](https://ai4ci.github.io/tidyabc/reference/rbeta2.md) :
+  The Beta Distribution
+- [`rcategorical()`](https://ai4ci.github.io/tidyabc/reference/rcategorical.md)
+  : Sampling from the multinomial equivalent of the Bernoulli
+  distribution
+- [`rcgamma()`](https://ai4ci.github.io/tidyabc/reference/rcgamma.md) :
+  Sampling: gamma distribution constrained to have mean \> sd
+- [`rgamma2()`](https://ai4ci.github.io/tidyabc/reference/rgamma2.md) :
+  The Gamma Distribution
+- [`rlnorm2()`](https://ai4ci.github.io/tidyabc/reference/rlnorm2.md) :
+  The Log Normal Distribution
+- [`rlogitnorm()`](https://ai4ci.github.io/tidyabc/reference/rlogitnorm.md)
+  : Logit-normal distribution
+- [`rlogitnorm2()`](https://ai4ci.github.io/tidyabc/reference/rlogitnorm2.md)
+  : Logit-normal distribution
+- [`rnbinom2()`](https://ai4ci.github.io/tidyabc/reference/rnbinom2.md)
+  : The Negative Binomial Distribution
+- [`rnull()`](https://ai4ci.github.io/tidyabc/reference/rnull.md) : Null
+  distributions always returns NA
+- [`rwedge()`](https://ai4ci.github.io/tidyabc/reference/rwedge.md) :
+  Wedge distribution
+- [`wedge`](https://ai4ci.github.io/tidyabc/reference/wedge.md) : Wedge
+  distribution
+
+## S3 abc fit class
+
+## S3 abc prior class
+
+- [`priors()`](https://ai4ci.github.io/tidyabc/reference/priors.md) :
+  Construct a set of priors
+
+## S3 distribution function class
+
+- [`as.dist_fns()`](https://ai4ci.github.io/tidyabc/reference/as.dist_fns.md)
+  :
+
+  Create a `dist_fns` S3 object
+
+- [`c(`*`<dist_fns>`*`)`](https://ai4ci.github.io/tidyabc/reference/c.dist_fns.md)
+  :
+
+  Concatenate a `dist_fns` S3 object or `dist_fns_list`s
+
+- [`dist_fns()`](https://ai4ci.github.io/tidyabc/reference/dist_fns.md)
+  :
+
+  Create an empty `dist_fns_list`
+
+- [`format(`*`<dist_fns>`*`)`](https://ai4ci.github.io/tidyabc/reference/format.dist_fns.md)
+  :
+
+  Format a `dist_fns` S3 object
+
+- [`is.dist_fns()`](https://ai4ci.github.io/tidyabc/reference/is.dist_fns.md)
+  :
+
+  Check if this is a `dist_fns` S3 object
+
+- [`is.dist_fns_list()`](https://ai4ci.github.io/tidyabc/reference/is.dist_fns_list.md)
+  :
+
+  Check if this is a `dist_fns_list` S3 object
+
+- [`map2_dist_fns()`](https://ai4ci.github.io/tidyabc/reference/map2_dist_fns.md)
+  :
+
+  Map over two inputs returning a `dist_fns_list`
+
+- [`map_dist_fns()`](https://ai4ci.github.io/tidyabc/reference/map_dist_fns.md)
+  :
+
+  Apply a function to each element of a vector returning a
+  `dist_fns_list`
+
+- [`plot(`*`<dist_fns>`*`)`](https://ai4ci.github.io/tidyabc/reference/plot.dist_fns.md)
+  :
+
+  Plot a `dist_fns` S3 object
+
+- [`plot(`*`<dist_fns_list>`*`)`](https://ai4ci.github.io/tidyabc/reference/plot.dist_fns_list.md)
+  :
+
+  Plot a `dist_fns_list` S3 object
+
+- [`pmap_dist_fns()`](https://ai4ci.github.io/tidyabc/reference/pmap_dist_fns.md)
+  :
+
+  Map over multiple inputs returning a `dist_fns_list`
+
+## S3 link function class
+
+- [`as.link_fns()`](https://ai4ci.github.io/tidyabc/reference/as.link_fns.md)
+  :
+
+  Create a `link_fns` S3 object
+
+- [`c(`*`<link_fns>`*`)`](https://ai4ci.github.io/tidyabc/reference/c.link_fns.md)
+  :
+
+  Concatenate a `link_fns` S3 object or `link_fns_list`s
+
+- [`format(`*`<link_fns>`*`)`](https://ai4ci.github.io/tidyabc/reference/format.link_fns.md)
+  :
+
+  Format a `link_fns` S3 object
+
+- [`is.link_fns()`](https://ai4ci.github.io/tidyabc/reference/is.link_fns.md)
+  :
+
+  Check if this is a `link_fns` S3 object
+
+- [`is.link_fns_list()`](https://ai4ci.github.io/tidyabc/reference/is.link_fns_list.md)
+  :
+
+  Check if this is a `link_fns_list` S3 object
+
+- [`link_fns()`](https://ai4ci.github.io/tidyabc/reference/link_fns.md)
+  :
+
+  Create an empty `link_fns_list`
+
+- [`map2_link_fns()`](https://ai4ci.github.io/tidyabc/reference/map2_link_fns.md)
+  :
+
+  Map over two inputs returning a `link_fns_list`
+
+- [`map_link_fns()`](https://ai4ci.github.io/tidyabc/reference/map_link_fns.md)
+  :
+
+  Apply a function to each element of a vector returning a
+  `link_fns_list`
+
+- [`pmap_link_fns()`](https://ai4ci.github.io/tidyabc/reference/pmap_link_fns.md)
+  :
+
+  Map over multiple inputs returning a `link_fns_list`
+
+## Others
+
+- [`rexpgrowth()`](https://ai4ci.github.io/tidyabc/reference/rexpgrowth.md)
+  : Randomly sample incident times in an exponentially growing process
+- [`rexpgrowthI0()`](https://ai4ci.github.io/tidyabc/reference/rexpgrowthI0.md)
+  : Randomly sample incident times in an exponentially growing process
+  with initial case load
+- [`wasserstein_calculator()`](https://ai4ci.github.io/tidyabc/reference/wasserstein_calculator.md)
+  **\[experimental\]** : Generate a function to calculate a wasserstein
+  distance
+- [`wmean()`](https://ai4ci.github.io/tidyabc/reference/wmean.md) :
+  Weighted mean
+- [`wsd()`](https://ai4ci.github.io/tidyabc/reference/wsd.md) : Weighted
+  standard deviation
