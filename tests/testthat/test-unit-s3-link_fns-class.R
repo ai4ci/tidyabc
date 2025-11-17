@@ -26,9 +26,38 @@ test_that("as.link_fns.character unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/s3-link_fns-class.R"), c(78, 1, 78+1, 1))
+    srcref = srcref(srcfile("../../R/s3-link_fns-class.R"), c(123, 1, 123+1, 1))
   )
 })
 
 # unit test end: as.link_fns.character ----
+# unit test start: as.link_fns.numeric ----
+
+test_that("as.link_fns.numeric unit test", {
+
+  # Automatically generated test case from roxygen @unit tag
+  # Do not edit here - follow the link to the source file.
+  # or navigate to topic with <F2>
+  F2 = as.link_fns.numeric
+  
+
+  testthat::expect_no_error(withCallingHandlers(
+    {
+      tmp <- as.link_fns(c(0, 10))
+    },
+    warning = function(e) {
+      message("Warning issued: ", e$message)
+      invokeRestart("muffleWarning")
+    }
+  ))
+
+  # generates a failure if the overall test is failing with a link to the 
+  # source of the unit test:
+  testthat::expect(rlang::caller_env(n = 2)$ok,
+    failure_message = "Source link for failing @unit test.",
+    srcref = srcref(srcfile("../../R/s3-link_fns-class.R"), c(223, 1, 223+1, 1))
+  )
+})
+
+# unit test end: as.link_fns.numeric ----
 # end of unit tests ----

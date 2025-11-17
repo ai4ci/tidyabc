@@ -45,5 +45,9 @@ calculate_rmse = function(sim, obs) {
     return(NA)
   }
 
+  invalid = is.na(sim) | is.na(obs)
+  sim = sim[!invalid]
+  obs = obs[!invalid]
+
   return(sqrt(mean((sim - obs)^2)))
 }

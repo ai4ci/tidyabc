@@ -11,6 +11,10 @@
 #' @param obs A vector of observed data points
 #' @param debias Should the simulations be shifted to match the mean of the
 #'   observed data
+#' @param bootstraps Randomly resample from the simulated data points to match
+#'   the observed size this many times and combine the output by averaging. The
+#'   alternative, when this is 1 (the default) matches the sizes by selecting
+#'   and/or repeating the simulated data points in order (deterministically)
 #'
 #' @returns a length normalised wasserstein distance. This is the average distance an
 #'   individual simulated data point must be shifted to match the observed data normalised
@@ -52,7 +56,11 @@
 #' testthat::expect_equal(calculate_wasserstein(cmp2,ref), 1.04950621760385)
 #' testthat::expect_equal(calculate_wasserstein(cmp3,ref), 0.212977231452674)
 #'
-calculate_wasserstein = function(sim, obs, debias = FALSE) {
+#' calculate_wasserstein(cmp1,ref,bootstraps=10)
+calculate_wasserstein = function(sim, obs, debias = FALSE, bootstraps = 1) {
+  sim = sim[!is.na(sim)]
+  obs = obs[!is.na(obs)]
+
   obs = sort(obs)
   av = mean(obs)
   # What is the average distance of points in the reference data from the mean?
@@ -60,12 +68,26 @@ calculate_wasserstein = function(sim, obs, debias = FALSE) {
   norm = mean(abs(obs - av))
   size = length(obs)
 
-  sim = .match_size(sim, size)
-  sim = sort(sim)
-  if (debias) {
-    sim = sim - mean(sim) + av
+  # no non zero items
+  if (length(sim) == 0) {
+    return(Inf)
   }
-  return(mean(abs(sim - obs)) / norm)
+
+  out = sapply(seq_len(bootstraps), function(i) {
+    if (bootstraps == 1) {
+      sim2 = .match_size(sim, size)
+    } else {
+      sim2 = sample(sim, size, replace = TRUE)
+      sim2 = sort(sim2)
+    }
+
+    if (debias) {
+      sim2 = sim2 - mean(sim2) + av
+    }
+    return(mean(abs(sim2 - obs)) / norm)
+  })
+
+  return(mean(out))
 }
 
 
@@ -86,6 +108,10 @@ calculate_wasserstein = function(sim, obs, debias = FALSE) {
 #' @param obs A vector of observations
 #' @param debias Should the simulations be shifted to match the mean of the
 #'   observed data
+#' @param bootstraps Randomly resample from the simulated data points to match
+#'   the observed size this many times and combine the output by averaging. The
+#'   alternative, when this is 1 (the default) matches the sizes by selecting
+#'   and/or repeating the simulated data points in order (deterministically)
 #'
 #' @returns a function that takes parameter `sim` and returns a
 #'   length normalised wasserstein distance. This is the average distance an
@@ -94,6 +120,7 @@ calculate_wasserstein = function(sim, obs, debias = FALSE) {
 #'   also takes a `p` parameter which can be a `progressr` progress bar which must
 #'   be named.
 #' @export
+#' @concept workflow
 #'
 #' @unit
 #' tmp = wasserstein_calculator(0:10)
@@ -127,8 +154,8 @@ calculate_wasserstein = function(sim, obs, debias = FALSE) {
 #' testthat::expect_equal(tmp2(cmp2), 1.04950621760385)
 #' testthat::expect_equal(tmp2(cmp3), 0.212977231452674)
 #'
-wasserstein_calculator = function(obs, debias = FALSE) {
-  # TODO: bootstrapping
+wasserstein_calculator = function(obs, debias = FALSE, bootstraps = 1) {
+  obs = obs[!is.na(obs)]
 
   # Data that can be precalculated:
   obs = sort(obs)
@@ -142,12 +169,26 @@ wasserstein_calculator = function(obs, debias = FALSE) {
   return(
     carrier::crate(
       function(sim, ...) {
-        sim = .match_size(sim, !!size)
-        sim = sort(sim)
-        if (!!debias) {
-          sim = sim - mean(sim) + !!av
+        sim = sim[!is.na(sim)]
+        if (length(sim) == 0) {
+          return(Inf)
         }
-        return(mean(abs(sim - obs)) / !!norm)
+
+        out = sapply(seq_len(!!bootstraps), function(i) {
+          if (!!bootstraps == 1) {
+            sim2 = .match_size(sim, !!size)
+          } else {
+            sim2 = sample(sim, !!size, replace = TRUE)
+            sim2 = sort(sim2)
+          }
+
+          if (!!debias) {
+            sim2 = sim2 - mean(sim2) + !!av
+          }
+          return(mean(abs(sim2 - obs)) / !!norm)
+        })
+
+        return(mean(out))
       },
       obs = obs,
       .match_size = .match_size
@@ -156,15 +197,15 @@ wasserstein_calculator = function(obs, debias = FALSE) {
 }
 
 
-# This recycles the input to match the size of comparison data by repeating it.
+# Deterministically match size of sorted vector.
 .match_size = carrier::crate(function(x, size) {
-  if (length(x) < size) {
-    x = c(
-      rep(x, size %/% length(x)),
-      sample(x, size %% length(x), replace = FALSE)
-    )
-  } else if (length(x) > size) {
-    x = sample(x, size, replace = FALSE)
+  if (length(x) == 0) {
+    stop("Cannot recycle object of length zero.")
   }
-  return(x)
+
+  idx = seq(0.50001, length(x) + 0.49999, length.out = size)
+  idx = round(idx)
+  x = sort(x)
+
+  return(x[idx])
 })

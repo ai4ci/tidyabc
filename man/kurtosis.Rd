@@ -20,10 +20,10 @@ the excess kurtosis
 Calculate the excess kurtosis of a set of data
 }
 \examples{
-kurtosis(rnorm(1000))
-kurtosis(rpois(1000, 2)) # leptokurtic > 0 (usually)
-kurtosis(runif(1000)) # platykurtic: < 0
+kurtosis(stats::rnorm(1000))
+kurtosis(stats::rpois(1000, 2)) # leptokurtic > 0 (usually)
+kurtosis(stats::runif(1000)) # platykurtic: < 0
 
-kurtosis(rlnorm(1000))
+kurtosis(stats::rlnorm(1000))
 }
 \concept{empirical}

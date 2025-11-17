@@ -4,12 +4,28 @@
 \alias{mixture}
 \title{Construct a mixture distribution}
 \usage{
-mixture(dists, weights = 1, steps = 200, tail_p = 1e-05)
+mixture(dists, weights = 1, steps = 200, tail_p = 1e-04, ...)
 }
 \arguments{
 \item{dists}{a \code{dist_fn_list} of distribution functions}
 
 \item{weights}{a vector of weights}
+
+\item{steps}{the number of points that the mixture distribution is
+evaluated at to construct the empirical mixture}
+
+\item{tail_p}{the support fo the tail of the distribution}
+
+\item{...}{
+  Named arguments passed on to \code{\link[=empirical_cdf]{empirical_cdf}}\describe{
+    \item{\code{smooth}}{fits the empirical distribution with a pair of splines for CDF
+and quantile function, creating a mostly smooth density. This smoothness
+comes at the price of potential over-fitting and will produce small
+differences between \code{p} and \code{q} functions such that \code{x=p(q(x))} is no
+longer exactly true. Setting this to false will replace this with a
+piecewise linear fit that is not smooth in the density, but is exact in
+forward and reverse transformation.}
+}}
 }
 \value{
 a \code{dist_fn} of the mixture distribution

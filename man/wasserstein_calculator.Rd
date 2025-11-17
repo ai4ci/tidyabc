@@ -4,13 +4,18 @@
 \alias{wasserstein_calculator}
 \title{Generate a function to calculate a wasserstein distance}
 \usage{
-wasserstein_calculator(obs, debias = FALSE)
+wasserstein_calculator(obs, debias = FALSE, bootstraps = 1)
 }
 \arguments{
 \item{obs}{A vector of observations}
 
 \item{debias}{Should the simulations be shifted to match the mean of the
 observed data}
+
+\item{bootstraps}{Randomly resample from the simulated data points to match
+the observed size this many times and combine the output by averaging. The
+alternative, when this is 1 (the default) matches the sizes by selecting
+and/or repeating the simulated data points in order (deterministically)}
 }
 \value{
 a function that takes parameter \code{sim} and returns a
@@ -34,6 +39,7 @@ In the comparison unequal lengths of the data can be accommodated. The
 simulated data is recycled, and sampled, until the same length as the
 observed data before the comparison.
 }
+\concept{workflow}
 
 \section{Unit tests}{
 \if{html}{\out{<div class="sourceCode">}}\preformatted{

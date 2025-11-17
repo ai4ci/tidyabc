@@ -4,7 +4,7 @@
 \alias{.calculate_weights_smc}
 \title{Calculate weights for particles in a new wave}
 \usage{
-.calculate_weights_smc(sim_df, epsilon, prev_sim_df = NULL, kernel_t)
+.calculate_weights_smc(sim_df, epsilon, prev_sim_df = NULL, kernel)
 }
 \arguments{
 \item{sim_df}{the output of a wave of simulation including a
@@ -13,17 +13,14 @@
 \item{epsilon}{epsilon is a tolerance threshold that controls how closely
 simulated summaries must match the observed ones to be considered
 plausible. This is in the unit of \code{abc_summary_distance}. Initially the 0.5
-quantile of distances, in subsequent waves this might be decreased}
+quantile of distances, in subsequent waves this might be decreased.
+It is the scale parameter of the kernel function. $K_h(|u|)$}
 
 \item{prev_sim_df}{the output of a previous ABC wave including a
 \code{abc_weight} column}
 
-\item{kernel_t}{A kernel bandwidth parameter for proposals. This controls the
-amount of noise that particles are perturbed by (and hence the spread of
-the PDF of the proposal distribution), and 1 is approximately 34\% of the
-proposal distribution at the centre. Smaller values (default is 0.2) give a
-smaller step size in generating new proposals, and proposals will be closer
-to currently accepted particles.}
+\item{kernel}{one of "epanechnikov", "uniform", "triangular", "biweight",
+"gaussian"}
 }
 \value{
 the \code{sim_df} with an \code{abc_weight} column

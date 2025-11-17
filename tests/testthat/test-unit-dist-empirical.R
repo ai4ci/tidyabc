@@ -13,33 +13,84 @@ test_that("empirical unit test", {
   F2 = empirical
   
 
-  # from cdf:
-  xs <- c(2, 3, 6, 9)
-  ps <- c(0.1, 0.4, 0.6, 0.95)
-  e <- empirical(xs, ps, link = "log")
-  
-  testthat::expect_equal(e$p(xs), ps)
-  testthat::expect_equal(e$q(ps), xs)
-  
   # from samples:
   withr::with_seed(123, {
-    e2 <- empirical(rnorm(10000), knots = 20)
+    e2 <- empirical(rnorm(10000))
     testthat::expect_equal(e2$p(-5:5), pnorm(-5:5), tolerance = 0.01)
     testthat::expect_equal(
       e2$q(seq(0, 1, 0.1)),
       qnorm(seq(0, 1, 0.1)),
-      tolerance = 0.025
+      tolerance = 0.05
     )
   })
   
   p2 <- seq(0, 1, 0.1)
   testthat::expect_equal(e2$p(e2$q(p2)), p2, tolerance = 0.001)
   
+  # updating a prior, with a horribly skewed gamma distribution
+  # not a great fit but not great data
+  withr::with_seed(124, {
+    data <- rgamma(500, 1)
+    e4 <- empirical(data, link = as.dist_fns("unif", 0, 10))
+    if (interactive()) plot(e4) + ggplot2::geom_function(fun = ~ dgamma(.x, 1))
+    testthat::expect_equal(mean(e4$r(10000)), 1, tolerance = 0.1)
+  
+    e5 <- empirical(data, link = "log")
+    testthat::expect_equal(mean(e5$r(10000)), 1, tolerance = 0.1)
+    if (interactive()) plot(e5) + ggplot2::geom_function(fun = ~ dgamma(.x, 1))
+  })
+  
+  withr::with_seed(123, {
+    data <- c(rnorm(200, 4), rnorm(200, 7))
+    weights <- c(rep(0.1, 200), rep(0.3, 200))
+    e6 <- empirical(x = data, w = weights)
+    plot(e6)
+    testthat::expect_equal(
+      format(e6),
+      "empirical; Median (IQR) 6.56 [5.23 — 7.42]"
+    )
+  })
+  
+  # Construct a normal using a sequence and density as weight.
+  e7 <- empirical(
+    x = seq(-10, 10, length.out = 1000),
+    w = dnorm(seq(-10, 10, length.out = 1000)),
+    knots = 20
+  )
+  testthat::expect_equal(e7$p(-5:5), pnorm(-5:5), tolerance = 0.01)
+
+  # generates a failure if the overall test is failing with a link to the 
+  # source of the unit test:
+  testthat::expect(rlang::caller_env(n = 2)$ok,
+    failure_message = "Source link for failing @unit test.",
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(57, 1, 57+1, 1))
+  )
+})
+
+# unit test end: empirical ----
+# unit test start: empirical_cdf ----
+
+test_that("empirical_cdf unit test", {
+
+  # Automatically generated test case from roxygen @unit tag
+  # Do not edit here - follow the link to the source file.
+  # or navigate to topic with <F2>
+  F2 = empirical_cdf
+  
+
+  # from cdf:
+  xs <- c(2, 3, 6, 9)
+  ps <- c(0.1, 0.4, 0.6, 0.95)
+  e <- empirical_cdf(xs, ps, link = "log")
+  
+  testthat::expect_equal(e$p(xs), ps)
+  testthat::expect_equal(e$q(ps), xs)
+  
   # quantiles:
   p <- c(0.025, 0.05, 0.10, 0.25, 0.5, 0.75, 0.9, 0.95, 0.975)
   q <- stats::qgamma(p, shape = 2)
   shape2_gamma <- as.dist_fns(pgamma, shape = 2)
-  gemp <- empirical(q, p, link = shape2_gamma)
+  gemp <- empirical_cdf(q, p, link = shape2_gamma)
   withr::with_seed(
     123,
     {
@@ -49,8 +100,9 @@ test_that("empirical unit test", {
   )
   
   # With perfect input can recover the underlying distribution including tails:
-  tmp <- empirical(
+  tmp <- empirical_cdf(
     x = seq(0.01, 0.99, 0.01),
+    p = seq(0.01, 0.99, 0.01),
     link = as.dist_fns(punif, 0, 1),
     knots = 100
   )
@@ -59,14 +111,237 @@ test_that("empirical unit test", {
     c(0.01, 0.1, 0.25, 0.75, 0.9, 0.99),
     tolerance = 0.002
   )
+  
+  # bimodal with log link and end defined
+  tmp3 <- empirical_cdf(x = 1:7, c(0.1, 0.3, 0.4, 0.4, 0.5, 0.9, 1), link = "log")
+  testthat::expect_equal(
+    tmp3$p(-1:8),
+    c(0, 0, 0.1, 0.3, 0.4, 0.4, 0.5, 0.9, 1, 1),
+    tolerance = 0.01
+  )
+  
+  testthat::expect_equal(
+    tmp3$q(seq(0, 1, 0.2)),
+    c(0, 1.63476839034733, 3, 5.05332769159444, 5.51891960240613, 7)
+  )
 
   # generates a failure if the overall test is failing with a link to the 
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(49, 1, 49+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(290, 1, 290+1, 1))
   )
 })
 
-# unit test end: empirical ----
+# unit test end: empirical_cdf ----
+# unit test start: .interpolate ----
+
+test_that(".interpolate unit test", {
+
+  # Automatically generated test case from roxygen @unit tag
+  # Do not edit here - follow the link to the source file.
+  # or navigate to topic with <F2>
+  F2 = .interpolate
+  
+
+  testthat::expect_no_error(withCallingHandlers(
+    {
+      .interpolate(c(0, 1), c(0, 1), 5)
+    },
+    warning = function(e) {
+      message("Warning issued: ", e$message)
+      invokeRestart("muffleWarning")
+    }
+  ))
+
+  # generates a failure if the overall test is failing with a link to the 
+  # source of the unit test:
+  testthat::expect(rlang::caller_env(n = 2)$ok,
+    failure_message = "Source link for failing @unit test.",
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(563, 1, 563+1, 1))
+  )
+})
+
+# unit test end: .interpolate ----
+# unit test start: .monotonicpolyspline ----
+
+test_that(".monotonicpolyspline unit test", {
+
+  # Automatically generated test case from roxygen @unit tag
+  # Do not edit here - follow the link to the source file.
+  # or navigate to topic with <F2>
+  F2 = .monotonicpolyspline
+  
+
+  # strictly increasing
+  spl <- .monotonicpolyspline(1:10, log(1:10))
+  testthat::expect_equal(
+    predict(spl, 4.5)$y,
+    log(4.5),
+    tolerance = 0.01
+  )
+  
+  # strictly decreasing
+  spl2 <- .monotonicpolyspline(1:10, -log(1:10))
+  testthat::expect_equal(
+    predict(spl2, 4.5)$y,
+    -log(4.5),
+    tolerance = 0.01
+  )
+  
+  # not monotonic
+  testthat::expect_error(
+    {
+      .monotonicpolyspline(-4:4, (-4:4)^2)
+    },
+    "Data is not monotonic.",
+    fixed = TRUE
+  )
+
+  # generates a failure if the overall test is failing with a link to the 
+  # source of the unit test:
+  testthat::expect(rlang::caller_env(n = 2)$ok,
+    failure_message = "Source link for failing @unit test.",
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(591, 1, 591+1, 1))
+  )
+})
+
+# unit test end: .monotonicpolyspline ----
+# unit test start: empirical_data ----
+
+test_that("empirical_data unit test", {
+
+  # Automatically generated test case from roxygen @unit tag
+  # Do not edit here - follow the link to the source file.
+  # or navigate to topic with <F2>
+  F2 = empirical_data
+  
+
+  # from samples:
+  withr::with_seed(123, {
+    e2 <- empirical_data(rnorm(10000), bw = 0.1)
+    testthat::expect_equal(e2$p(-5:5), pnorm(-5:5), tolerance = 0.01)
+    testthat::expect_equal(e2$d(-5:5), dnorm(-5:5), tolerance = 0.05)
+    testthat::expect_equal(
+      e2$q(seq(0, 1, 0.1)),
+      qnorm(seq(0, 1, 0.1)),
+      tolerance = 0.025
+    )
+  })
+  
+  
+  # Construct a normal using a sequence and density as weight.
+  e7 <- empirical_data(
+    x = seq(-10, 10, length.out = 1000),
+    w = dnorm(seq(-10, 10, length.out = 1000))
+  )
+  testthat::expect_equal(e7$p(-5:5), pnorm(-5:5), tolerance = 0.01)
+
+  # generates a failure if the overall test is failing with a link to the 
+  # source of the unit test:
+  testthat::expect(rlang::caller_env(n = 2)$ok,
+    failure_message = "Source link for failing @unit test.",
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(723, 1, 723+1, 1))
+  )
+})
+
+# unit test end: empirical_data ----
+# unit test start: wquantile ----
+
+test_that("wquantile unit test", {
+
+  # Automatically generated test case from roxygen @unit tag
+  # Do not edit here - follow the link to the source file.
+  # or navigate to topic with <F2>
+  F2 = wquantile
+  
+
+  test <- function(rfn, qfn, link, ..., n = 100000, tol = 1000 / (n + 10000)) {
+    testthat::expect_equal(abs(
+      unname(wquantile(c(0.025, 0.5, 0.975), rfn(100000, ...), link = link, names = FALSE) -
+        qfn(c(0.025, 0.5, 0.975), ...))
+    ), c(0, 0, 0), tolerance = tol)
+  }
+  
+  withr::with_seed(123, {
+    test(rnorm, qnorm, "identity", n = 10000)
+    test(rnorm, qnorm, "identity", mean = 4, n = 10000)
+    test(rnorm, qnorm, "identity", sd = 3, n = 100000, tol = 0.05)
+  
+    test(rnorm, qnorm, "identity", n = 5000)
+    test(rnorm, qnorm, "identity", n = 1000)
+    test(rnorm, qnorm, "identity", n = 100)
+    test(rnorm, qnorm, "identity", n = 30)
+  
+    test(rgamma, qgamma, "log", 4, n = 10000)
+    test(rgamma, qgamma, "log", 4, n = 5000)
+    test(rgamma, qgamma, "log", 4, n = 1000)
+    test(rgamma, qgamma, "log", 4, 3, n = 100)
+    test(rgamma, qgamma, "log", 4, n = 30)
+  
+    test(runif, qunif, as.link_fns(c(0, 10)), 0, 10)
+  })
+
+  # generates a failure if the overall test is failing with a link to the 
+  # source of the unit test:
+  testthat::expect(rlang::caller_env(n = 2)$ok,
+    failure_message = "Source link for failing @unit test.",
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(1261, 1, 1261+1, 1))
+  )
+})
+
+# unit test end: wquantile ----
+# unit test start: .fit_lm_1d ----
+
+test_that(".fit_lm_1d unit test", {
+
+  # Automatically generated test case from roxygen @unit tag
+  # Do not edit here - follow the link to the source file.
+  # or navigate to topic with <F2>
+  F2 = .fit_lm_1d
+  
+
+  testthat::expect_equal(
+    .fit_lm_1d(c(1, 2, 3, 4), c(5, 6, 7, 8)),
+    c(c = -4, m = 1)
+  )
+  
+  testthat::expect_equal(
+    .fit_lm_1d(c(0, 1), c(0, 1)),
+    c(c = 0, m = 1)
+  )
+  
+  withr::with_seed(123, {
+    x <- 1:100
+    y <- 2 * x + 3 + stats::runif(100, -0.1, 0.1)
+    testthat::expect_equal(
+      .fit_lm_1d(y, x),
+      c(c = 3, m = 2),
+      tolerance = 0.01
+    )
+  })
+  
+  # with prediction:
+  testthat::expect_error(
+    {
+      .fit_lm_1d(c(6, 5, 7, 10), c(1, 2, 3, 4), c(0, 1))
+    },
+    structure("`...` must be empty.", names = ""),
+    fixed = TRUE
+  )
+  
+  testthat::expect_equal(
+    .fit_lm_1d(c(0, 1), c(0, 1), new_x = -2:2),
+    c(-2, -1, 0, 1, 2)
+  )
+
+  # generates a failure if the overall test is failing with a link to the 
+  # source of the unit test:
+  testthat::expect(rlang::caller_env(n = 2)$ok,
+    failure_message = "Source link for failing @unit test.",
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(1389, 1, 1389+1, 1))
+  )
+})
+
+# unit test end: .fit_lm_1d ----
 # end of unit tests ----

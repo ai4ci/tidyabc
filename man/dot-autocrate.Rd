@@ -2,14 +2,39 @@
 % Please edit documentation in R/utils-crate.R
 \name{.autocrate}
 \alias{.autocrate}
-\title{Crate a function that may not have all the namespaces qualified.}
+\title{Crate a function definition that may not have all the namespaces qualified.}
 \usage{
-.autocrate(expr, ...)
+.autocrate(
+  .fn,
+  ...,
+  .parent_env = baseenv(),
+  .error_arg = ".fn",
+  .error_call = environment()
+)
 }
 \arguments{
-\item{expr}{an expression defining a function}
+\item{.fn}{A fresh formula or function. "Fresh" here means that
+they should be declared in the call to \code{crate()}. See examples if
+you need to crate a function that is already defined. Formulas
+are converted to purrr-like lambda functions using
+\code{\link[rlang:as_function]{rlang::as_function()}}.}
 
-\item{...}{named list of global variables}
+\item{...}{Named arguments to declare in the environment of \code{.fn}.}
+
+\item{.parent_env}{The default of \code{baseenv()} ensures that the evaluation
+environment of the crate is isolated from the search path. Specifying
+another environment such as the global environment allows this condition to
+be relaxed (but at the expense of no longer being able to rely on a local
+run giving the same results as one in a different process).}
+
+\item{.error_arg}{An argument name as a string. This argument
+will be mentioned in error messages as the input that is at the
+origin of a problem.}
+
+\item{.error_call}{The execution environment of a currently
+running function, e.g. \code{caller_env()}. The function will be
+mentioned in error messages as the source of the error. See the
+\code{call} argument of \code{\link[rlang:abort]{abort()}} for more information.}
 }
 \value{
 a crated function
@@ -53,7 +78,7 @@ testthat::expect_error(
       if (tmpvar == 10) tmpfn(y)
     })
   },
-  "References to undefined globals in function: tmpvar,tmpfn",
+  "References to undefined globals in function `.fn`: tmpvar,tmpfn",
   fixed = TRUE
 )
 

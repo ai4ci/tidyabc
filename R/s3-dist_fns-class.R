@@ -53,14 +53,17 @@ new_dist_fns = function(
   dfn = NULL,
   ...,
   params = NULL,
-  knots = NULL
+  knots = NULL,
+  smooth = TRUE
 ) {
   if (is.null(params)) {
     params = .expand_params(pfn, q = 1, ...)
-    params = params[
-      !names(params) %in% c("lower.tail", "log.p", "p", "q", "n", "x")
-    ]
+  } else {
+    params = rlang::inject(.expand_params(pfn, q = 1, !!!params))
   }
+  params = params[
+    !names(params) %in% c("lower.tail", "log.p", "p", "q", "n", "x")
+  ]
 
   if (any(sapply(params, length) > 1)) {
     params = .make_square(params)
@@ -72,7 +75,8 @@ new_dist_fns = function(
         rfn = rfn,
         dfn = dfn,
         ...,
-        knots = knots
+        knots = knots,
+        smooth = smooth
       )
     }))
   }
@@ -95,7 +99,7 @@ new_dist_fns = function(
         },
         p = carrier::crate(
           function(q, lower.tail = TRUE, log.p = FALSE) {
-            #TODO: delegate if lower.tail etc in formals of pfn
+            # TODO: delegate if lower.tail etc in formals of pfn
             tmp = pfn(q = q, !!!params)
             if (!lower.tail) {
               tmp = 1 - tmp
@@ -140,6 +144,7 @@ new_dist_fns = function(
       dist = name,
       params = if (length(params) == 0) list() else params,
       discrete = suppressWarnings(is.integer(rfn(1, ...))), # detect discrete distributions
+      smooth = smooth,
       knots = knots,
       class = c("dist_fns")
     )
@@ -180,15 +185,18 @@ new_dist_calls = function(
   dcall,
   ...,
   params = NULL,
-  knots = NULL
+  knots = NULL,
+  smooth = TRUE
 ) {
+  pfn = eval(pcall)
   if (is.null(params)) {
-    pfn = eval(pcall)
     params = .expand_params(pfn, q = 1, ...)
-    params = params[
-      !names(params) %in% c("lower.tail", "log.p", "p", "q", "n", "x")
-    ]
+  } else {
+    params = rlang::inject(.expand_params(pfn, q = 1, !!!params))
   }
+  params = params[
+    !names(params) %in% c("lower.tail", "log.p", "p", "q", "n", "x")
+  ]
 
   if (any(sapply(params, length) > 1)) {
     params = .make_square(params)
@@ -251,6 +259,7 @@ new_dist_calls = function(
       params = if (length(params) == 0) list() else params,
       discrete = suppressWarnings(is.integer(rfn(1))), # detect discrete distributions
       knots = knots,
+      smooth = smooth,
       class = c("dist_fns")
     )
   )
@@ -362,6 +371,8 @@ plot.dist_fns = function(x, ...) {
 #' @param tail the minimum tail probability to plot
 #' @param plot_quantiles by default the quantiles of the distribution are
 #'   plotted over the density sometimes this makes it hard to read
+#' @param smooth by default some additional smoothing is used to cover up small
+#'   discontinuities in the PDF.
 #' @returns a ggplot
 #' @concept dist_fns_s3
 plot.dist_fns_list = function(
@@ -370,8 +381,13 @@ plot.dist_fns_list = function(
   mapping = .gg_check_for_aes(...),
   steps = 200,
   tail = 0.001,
-  plot_quantiles = TRUE
+  plot_quantiles = TRUE,
+  smooth = TRUE
 ) {
+  # TODO: CDF plot.
+  # TODO: Plot for empirical density function
+  # e.g. plot e$p$pfn$qx_from_qy as a function for CDF fit
+
   ys = seq(tail, 1 - tail, length.out = steps + 1)
   df = dplyr::tibble(
     name = x$name,
@@ -379,7 +395,11 @@ plot.dist_fns_list = function(
     data = lapply(x, function(xx) {
       xs = unique(xx$q(ys))
       dys = xx$d(xs)
-      sdys = if (!xx@discrete) signal::sgolayfilt(dys, n = 25) else dys
+      sdys = if (!xx@discrete && xx@smooth && smooth) {
+        signal::sgolayfilt(dys, n = steps %/% 16 * 2 + 1)
+      } else {
+        dys
+      }
       return(
         dplyr::tibble(
           xmin = xs,
@@ -388,17 +408,25 @@ plot.dist_fns_list = function(
           xmax = c(xs[-1], max(xs) + 1)
         )
       )
-    }),
-    quants = lapply(x, function(xx) {
-      return(
-        dplyr::tibble(
-          q = c(0.025, 0.5, 0.975),
-          xs = xx$q(c(0.025, 0.5, 0.975)),
-          ys = xx$d(xs)
-        )
-      )
     })
   )
+
+  df = df %>%
+    dplyr::mutate(
+      quants = purrr::map2(x, data, function(xx, data_i) {
+        xs = xx$q(c(0.025, 0.5, 0.975))
+        return(
+          dplyr::tibble(
+            q = c(0.025, 0.5, 0.975),
+            xs = xs,
+            ys = tryCatch(
+              stats::approx(x = data_i$xmin, y = data_i$sy, xout = xs)$y,
+              error = function(e) xx$d(xs)
+            )
+          )
+        )
+      })
+    )
 
   df = df %>%
     dplyr::group_by(name) %>%
@@ -447,7 +475,7 @@ plot.dist_fns_list = function(
       tidyr::unnest(data) %>%
       dplyr::group_by(name) %>%
       dplyr::filter(
-        sy < quantile(sy, 0.99) * 1 / 0.95,
+        sy < stats::quantile(sy, 0.99, na.rm = TRUE) * 1 / 0.95,
         sy > 0
       )
 
@@ -484,29 +512,25 @@ plot.dist_fns_list = function(
         y = 0,
         ...,
         .default = list(colour = "black")
-      ) +
-      .gg_layer(
-        ggplot2::GeomPoint,
-        data = qf,
-        mapping = .gg_merge_aes(
-          x = xs,
-          y = ys,
-          colour = name,
-          group = id,
-          mapping
-        ),
-        ...,
-        .default = list(colour = "black")
       )
+    # +
+    # .gg_layer(
+    #   ggplot2::GeomPoint,
+    #   data = qf,
+    #   mapping = .gg_merge_aes(
+    #     x = xs,
+    #     y = ys,
+    #     colour = name,
+    #     group = id,
+    #     mapping
+    #   ),
+    #   ...,
+    #   .default = list(colour = "black")
+    # )
   }
-
-  plot = plot
 
   plot
 }
-
-# TODO plot.dist_fns_list
-# TODO quantiles on plot
 
 #' @export
 #' @describeIn as.dist_fns Construct a distribution by name
@@ -549,8 +573,7 @@ as.dist_fns.character = function(x, ...) {
       stop(
         "The functions: ",
         paste0(fn_names, collapse = ", "),
-        " must be defined in ",
-        environmentName(pkg)
+        " must be defined."
       )
     }
 
@@ -563,7 +586,7 @@ as.dist_fns.character = function(x, ...) {
 
     return(
       new_dist_fns(
-        name,
+        distr,
         pfn = rawfns[[1]],
         qfn = rawfns[[2]],
         rfn = rawfns[[3]],
@@ -871,6 +894,7 @@ type_sum.dist_fns = function(x, ...) {
 #' @export
 #' @concept dist_fns_s3
 #' @keywords internal
+#' @name at.dist_fns
 `@.dist_fns` = function(x, y) {
   if (is.character(y)) {
     ylab = y
@@ -884,11 +908,11 @@ type_sum.dist_fns = function(x, ...) {
 #' @inherit s3_dist_fns_common
 #' @param pattern a regular expression
 #' @returns the names of the attributes
-#' @export
+#' @exportS3Method utils::.AtNames dist_fns
 #' @concept dist_fns_s3
 #' @keywords internal
 .AtNames.dist_fns = function(x, pattern) {
-  return(.DollarNames(attributes(x), pattern))
+  return(utils::.DollarNames(attributes(x), pattern))
 }
 
 
@@ -1118,14 +1142,14 @@ sort.dist_fns_list = function(x, decreasing = FALSE, ...) {
 #' Support for auto suggests on `dist_fns_list`s
 #' @inherit s3_dist_fns_list
 #' @returns the names of the children
-#' @export
+#' @exportS3Method utils::.DollarNames dist_fns_list
 #' @concept dist_fns_s3
 #' @keywords internal
 .DollarNames.dist_fns_list = function(x, pattern) {
   if (length(x) == 0) {
     return(character())
   }
-  return(.DollarNames(x[[1]], pattern))
+  return(utils::.DollarNames(x[[1]], pattern))
 }
 
 #' Extract named item(s) from a `dist_fns_list`
@@ -1135,6 +1159,7 @@ sort.dist_fns_list = function(x, decreasing = FALSE, ...) {
 #' @export
 #' @concept dist_fns_s3
 #' @keywords internal
+#' @name at.dist_fns_list
 `@.dist_fns_list` = function(x, y) {
   if (is.character(y)) {
     ylab = y
@@ -1154,14 +1179,14 @@ sort.dist_fns_list = function(x, decreasing = FALSE, ...) {
 #' Support for auto suggests on `dist_fns_list`s
 #' @inherit s3_dist_fns_list
 #' @returns the names of the attributes
-#' @export
+#' @exportS3Method utils::.AtNames dist_fns_list
 #' @concept dist_fns_s3
 #' @keywords internal
 .AtNames.dist_fns_list = function(x, pattern) {
   if (length(x) == 0) {
     return(character())
   }
-  return(.DollarNames(attributes(x[[1]]), pattern))
+  return(utils::.DollarNames(attributes(x[[1]]), pattern))
 }
 
 #' Subset a `dist_fns_list`

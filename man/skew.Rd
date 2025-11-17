@@ -18,10 +18,10 @@ the skew
 Calculate the skew of a set of data
 }
 \examples{
-skew(rnorm(1000))
-skew(rbeta(1000, 1, 8)) # positively (left) skewed
-skew(rbeta(1000, 8, 1)) # negatively (right) skewed
+skew(stats::rnorm(1000))
+skew(stats::rbeta(1000, 1, 8)) # positively (left) skewed
+skew(stats::rbeta(1000, 8, 1)) # negatively (right) skewed
 
-skew(rlnorm(1000))
+skew(stats::rlnorm(1000))
 }
 \concept{empirical}

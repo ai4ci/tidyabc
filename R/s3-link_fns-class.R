@@ -38,27 +38,71 @@ NULL
 #'
 #' @param trans the forward transforming function
 #' @param inv the reverse inverting function
-#' @param domain the domain or support of the link
-#' @param range the range of the link (typically `-Inf` to `Inf`)
+#' @param support the support or support of the link
 #' @returns a new `link_fns` S3 object
 #' @concept link_fns_s3
 #' @keywords internal
 new_link_fns = function(
   trans = ~.x,
   inv = ~.x,
-  domain = c(-Inf, Inf),
-  range = c(-Inf, Inf)
+  support = c(-Inf, Inf),
+  ddxtrans = NULL,
+  ddxinv = NULL,
+  name = NULL
 ) {
-  stopifnot(length(domain) == 2, length(range) == 2)
+  if (rlang::is_formula(trans)) {
+    if (is.null(ddxtrans)) {
+      cl = try(stats::D(rlang::f_rhs(trans), ".x"), silent = TRUE)
+      if (is.call(cl)) ddxtrans = as.function(c(alist(.x = ), cl))
+    }
+  }
+
+  if (rlang::is_formula(inv)) {
+    if (is.null(ddxinv)) {
+      cl = try(stats::D(rlang::f_rhs(inv), ".x"), silent = TRUE)
+      if (is.call(cl)) ddxinv = as.function(c(alist(.x = ), cl))
+    }
+  }
+
+  trans = rlang::as_function(trans)
+  inv = rlang::as_function(inv)
+
+  if (is.null(name)) {
+    name = paste0(format(body(trans)), collapse = ";")
+  }
+
+  if (is.null(ddxtrans)) {
+    ddxtrans = .numderivfn(trans)
+  }
+  if (is.null(ddxinv)) {
+    ddxinv = .numderivfn(inv)
+  }
+
+  trans = rlang::as_function(trans)
+  inv = rlang::as_function(inv)
+
+  range = trans(support)
+  stopifnot(length(support) == 2, length(range) == 2)
+
   return(structure(
     list(
-      trans = rlang::as_function(trans),
-      inv = rlang::as_function(inv),
-      domain = domain,
+      name = name,
+      trans = trans,
+      inv = inv,
+      ddxtrans = ddxtrans,
+      ddxinv = ddxinv,
+      support = support,
       range = range
     ),
     class = c("link_fns")
   ))
+}
+
+.numderivfn = function(fn) {
+  return(function(x) {
+    eps = sqrt(.Machine$double.eps)
+    return((fn(x + eps) - fn(x - eps)) / (2 * eps))
+  })
 }
 
 #' Format a `link_fns` S3 object
@@ -67,7 +111,7 @@ new_link_fns = function(
 #' @returns a character value
 #' @concept link_fns_s3
 format.link_fns = function(x, ...) {
-  return(sprintf("link: domain [%1.3g, %1.3g]", x$domain[1], x$domain[2]))
+  return(sprintf("%s link [%1.3g, %1.3g]", x$name, x$support[1], x$support[2]))
 }
 
 #' @export
@@ -100,25 +144,40 @@ as.link_fns.character = function(x, ...) {
     )
   )
   if (x %in% c("ident", "identity")) {
-    return(new_link_fns(~.x, ~.x, c(-Inf, Inf)))
+    return(new_link_fns(~.x, ~.x, c(-Inf, Inf), name = "I"))
   }
   if (x == "log") {
-    return(new_link_fns(log, exp, c(0, Inf)))
+    return(new_link_fns(~ log(.x), ~ exp(.x), c(0, Inf), name = "log"))
   }
   if (x == "logit") {
-    return(new_link_fns(stats::qlogis, ~ 1 / (1 + exp(-.x)), c(0, 1)))
+    return(new_link_fns(
+      stats::qlogis,
+      ~ 1 / (1 + exp(-.x)),
+      c(0, 1),
+      name = "logit"
+    ))
   }
   if (x == "probit") {
-    return(new_link_fns(stats::qnorm, stats::pnorm, c(0, 1)))
+    return(new_link_fns(
+      stats::qnorm,
+      ~ stats::pnorm(.x),
+      c(0, 1),
+      name = "probit"
+    ))
   }
   if (x == "cloglog") {
-    return(new_link_fns(~ log(-log(1 - .x)), ~ 1 - exp(-exp(.x)), c(0, 1)))
+    return(new_link_fns(
+      ~ log(-log(1 - .x)),
+      ~ 1 - exp(-exp(.x)),
+      c(0, 1),
+      name = "cloglog"
+    ))
   }
   if (x == "neginv") {
-    return(new_link_fns(~ -1 / .x, ~ -1 / .x, c(0, Inf)))
+    return(new_link_fns(~ -1 / .x, ~ -1 / .x, c(0, Inf), name = "neginv"))
   }
   if (x %in% c("1/mu^2", "inv2")) {
-    return(new_link_fns(~ 1 / .x^2, ~ sqrt(1 / .x), c(0, Inf)))
+    return(new_link_fns(~ 1 / .x^2, ~ sqrt(1 / .x), c(0, Inf), name = "inv2"))
   }
   stop("not a supported link type: ", x)
 }
@@ -133,7 +192,8 @@ as.link_fns.dist_fns = function(x, ...) {
     new_link_fns(
       carrier::crate(~ stats::qlogis(x$p(.x)), x = x),
       carrier::crate(~ x$q(1 / (1 + exp(-.x))), x = x),
-      c(x$q(0), x$q(1))
+      c(x$q(0), x$q(1)),
+      name = x$name
     )
   )
 }
@@ -148,11 +208,63 @@ as.link_fns.family = function(x, ...) {
     new_link_fns(
       x$linkfun,
       x$linkinv,
-      c(x$linkinv(-Inf), x$linkinv(Inf))
+      c(x$linkinv(-Inf), x$linkinv(Inf)),
+      name = x$family
     )
   )
 }
 
+#' @export
+#' @describeIn as.link_fns Link function from support vector
+#' @concept link_fns_s3
+#' @param x a range of values that for the support
+#' @param na.rm remove NAs when estimating mean and sd for data driven link
+#'   functions
+#' @param ... ignored
+#' @unit
+#' tmp = as.link_fns(c(0,10))
+as.link_fns.numeric = function(x, ..., na.rm = TRUE) {
+  if (na.rm) {
+    x = x[!is.na(x)]
+  }
+  if (length(x) < 2) {
+    stop(
+      "support must be given as a non missing numeric vector of at least length 2."
+    )
+  }
+  if (identical(x, c(0, 1)) || (all(x >= 0) && all(x <= 1))) {
+    return(as.link_fns("logit"))
+  }
+  if (identical(x, c(0, Inf))) {
+    return(as.link_fns("log"))
+  }
+  if (identical(x, c(-Inf, Inf))) {
+    return(as.link_fns("identity"))
+  }
+  if (all(is.finite(x))) {
+    if (length(x) == 2) {
+      # A uniform on the real numbers.
+      minx = min(x)
+      deltax = max(x) - minx
+      return(new_link_fns(
+        support = c(minx, minx + deltax),
+        trans = rlang::inject(~ stats::qlogis((.x - !!minx) / !!deltax)),
+        inv = rlang::inject(~ (1 / (1 + exp(-.x))) * !!deltax + !!minx),
+        name = "uniform"
+      ))
+    } else {
+      mu = mean(x)
+      sigma = stats::sd(x)
+      return(new_link_fns(
+        support = c(-Inf, Inf),
+        trans = rlang::inject(~ (.x - !!mu) / !!sigma),
+        inv = rlang::inject(~ (.x * !!sigma) + !!mu),
+        name = "z"
+      ))
+    }
+  }
+  stop("Undefined support: ", range(x))
+}
 
 #' @param x a `link_fns` S3 class
 #' @returns a numeric or other order-able item
@@ -393,6 +505,7 @@ type_sum.link_fns = function(x, ...) {
 #' @export
 #' @concept link_fns_s3
 #' @keywords internal
+#' @name at.link_fns
 `@.link_fns` = function(x, y) {
   if (is.character(y)) {
     ylab = y
@@ -406,11 +519,11 @@ type_sum.link_fns = function(x, ...) {
 #' @inherit s3_link_fns_common
 #' @param pattern a regular expression
 #' @returns the names of the attributes
-#' @export
+#' @exportS3Method utils::.AtNames link_fns
 #' @concept link_fns_s3
 #' @keywords internal
 .AtNames.link_fns = function(x, pattern) {
-  return(.DollarNames(attributes(x), pattern))
+  return(utils::.DollarNames(attributes(x), pattern))
 }
 
 
@@ -640,14 +753,14 @@ sort.link_fns_list = function(x, decreasing = FALSE, ...) {
 #' Support for auto suggests on `link_fns_list`s
 #' @inherit s3_link_fns_list
 #' @returns the names of the children
-#' @export
+#' @exportS3Method utils::.DollarNames link_fns_list
 #' @concept link_fns_s3
 #' @keywords internal
 .DollarNames.link_fns_list = function(x, pattern) {
   if (length(x) == 0) {
     return(character())
   }
-  return(.DollarNames(x[[1]], pattern))
+  return(utils::.DollarNames(x[[1]], pattern))
 }
 
 #' Extract named item(s) from a `link_fns_list`
@@ -657,6 +770,7 @@ sort.link_fns_list = function(x, decreasing = FALSE, ...) {
 #' @export
 #' @concept link_fns_s3
 #' @keywords internal
+#' @name at.link_fns_list
 `@.link_fns_list` = function(x, y) {
   if (is.character(y)) {
     ylab = y
@@ -676,14 +790,14 @@ sort.link_fns_list = function(x, decreasing = FALSE, ...) {
 #' Support for auto suggests on `link_fns_list`s
 #' @inherit s3_link_fns_list
 #' @returns the names of the attributes
-#' @export
+#' @exportS3Method utils::.AtNames link_fns_list
 #' @concept link_fns_s3
 #' @keywords internal
 .AtNames.link_fns_list = function(x, pattern) {
   if (length(x) == 0) {
     return(character())
   }
-  return(.DollarNames(attributes(x[[1]]), pattern))
+  return(utils::.DollarNames(attributes(x[[1]]), pattern))
 }
 
 #' Subset a `link_fns_list`

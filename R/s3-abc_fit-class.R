@@ -7,28 +7,33 @@
 #' @param iterations number of completed iterations
 #' @param converged boolean - did the result meet convergence criteria
 #' @param wave_df a list of dataframes of wave convergence metrics
+#' @param priors_list a named list of priors specified as a `abc_prior` S3 object
+#'   (see `priors()`), this can include derived values as unnamed 2-sided
+#'   formulae, where the LHS of the formula will be assigned to the value of the
+#'   RHS, plus optionally a set of constraints as one sided formulae where the
+#'   RHS of the formulae will resolve to a boolean value.
 #' @param summ_df the summary of the parameter fits after each wave.
 #' @param sim_df the final wave posteriors
 #' @param x a `abc_fit` object as output by the `abc_XXX` functions
+#' @param object a `abc_fit` object as output by the `abc_XXX` functions
 #' @param truth a named numeric vector of known parameter values
 #' @param ... passed on to methods
-#'
-#' @returns an S3 ojbect of class `abc_fit` this contains the following:
-#' - type: the type of ABC algorithm
-#' - iterations: number of completed iterations
-#' - converged: boolean - did the result meet convergence criteria
-#' - waves: a list of dataframes of wave convergence metrics
-#' - summary: a dataframe with the summary of the parameter fits after each wave.
-#' - posteriors: the final wave posteriors
 #'
 #' @name abc_fit
 #' @concept abc_fit_s3
 NULL
 
-#' Create a `abc_fit` object
+#' @describeIn abc_fit Create a `abc_fit` object
 #'
-#' @inherit abc_fit
-#' @keywords internal
+#' @returns an S3 object of class `abc_fit` this contains the following:
+#' - type: the type of ABC algorithm
+#' - iterations: number of completed iterations
+#' - converged: boolean - did the result meet convergence criteria
+#' - waves: a list of dataframes of wave convergence metrics
+#' - summary: a dataframe with the summary of the parameter fits after each wave.
+#' - priors: the priors for the fit as a `abc_prior` S3 object
+#' - posteriors: the final wave posteriors
+#'
 #' @concept abc_fit_s3
 new_abc_fit = function(
   type,
@@ -75,37 +80,44 @@ format.abc_fit = function(x, ...) {
 
 #' @describeIn abc_fit S3 summary method
 #' @export
-summary.abc_fit = function(x, ...) {
+summary.abc_fit = function(object, ..., truth = NULL) {
+  if (!is.null(truth)) {
+    truth = truth[names(object$priors)]
+  }
   cat(paste0(
     c(
-      format(x),
+      format(object),
       "Parameter estimates:",
-      .format_summ(x$summary)
+      .format_summ(object$summary, truth)
     ),
     collapse = "\n"
   ))
 }
 
-.format_summ = function(summ_df) {
+.format_summ = function(summ_df, truth = NULL) {
+  tmp = summ_df %>%
+    dplyr::filter(wave == max(wave)) %>%
+    dplyr::transmute(
+      param,
+      mean_sd = sprintf("%1.3f \u00B1 %1.3f", mean, sd),
+      median_95_CrI = sprintf(
+        "%1.3f [%1.3f \u2014 %1.3f]",
+        q.0.5,
+        q.0.025,
+        q.0.975
+      ),
+      ESS
+    )
+
+  if (!is.null(truth)) {
+    truth = tibble::enframe(unlist(truth), name = "param", value = "true")
+    tmp = tmp %>% dplyr::left_join(truth, by = "param")
+  }
+
   format(
-    summ_df %>%
-      dplyr::filter(wave == max(wave)) %>%
-      dplyr::transmute(
-        param,
-        mean_sd = sprintf("%1.3f \u00B1 %1.3f", mean, sd),
-        median_95_CrI = sprintf(
-          "%1.3f [%1.3f \u2014 %1.3f]",
-          q.0.5,
-          q.0.025,
-          q.0.975
-        ),
-        ESS
-      )
+    tmp
   )
 }
-
-# TODO: format convergence metrics in a usable form
-# consider changing comparison stats to first wave.
 
 #' @describeIn abc_fit S3 summary method
 #' @export
@@ -151,6 +163,8 @@ plot.abc_fit = function(x, ..., truth = NULL) {
     )
 
   if (!is.null(truth)) {
+    truth = truth[unique(x$summary$param)]
+
     tmp = tmp +
       ggplot2::geom_vline(
         data = tibble::enframe(unlist(truth)),

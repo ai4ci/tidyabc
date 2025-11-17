@@ -4,7 +4,7 @@
 \alias{.posterior_covariance}
 \title{Covariance matrix from the posteriors}
 \usage{
-.posterior_covariance(theta, weights, kernel_t)
+.posterior_covariance(theta, weights, kernel_t = 1)
 }
 \arguments{
 \item{theta}{a set of particles as a matrix}

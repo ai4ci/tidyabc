@@ -18,6 +18,7 @@ a single deduplicated set.
 \description{
 Merge aesthetic mappings and deduplicate the result
 }
+\concept{ggplot}
 \keyword{internal}
 
 \section{Unit tests}{

@@ -12,7 +12,8 @@ new_dist_calls(
   dcall,
   ...,
   params = NULL,
-  knots = NULL
+  knots = NULL,
+  smooth = TRUE
 )
 }
 \arguments{

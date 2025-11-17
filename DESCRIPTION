@@ -17,7 +17,12 @@ Suggests:
     ggoutbreak (>= 0.5.1),
     progressr,
     testthat,
-    lifecycle
+    lifecycle,
+    withr,
+    parallel,
+    mirai (>= 2.5.1),
+    future,
+    rmarkdown
 Config/testthat/edition: 3
 Config/Needs/website: rmarkdown
 Remotes: 
@@ -29,7 +34,6 @@ Imports:
     knitr,
     pillar,
     purrr,
-    ragg,
     rlang,
     scales,
     splines,
@@ -37,6 +41,15 @@ Imports:
     stringr,
     systemfonts,
     utils,
-    withr,
     carrier,
-    Hmisc
+    magrittr,
+    Matrix,
+    cli,
+    locfit,
+    mvtnorm,
+    patchwork,
+    signal,
+    tibble,
+    tidyr,
+    ragg
+VignetteBuilder: knitr

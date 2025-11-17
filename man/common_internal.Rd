@@ -14,7 +14,8 @@ A correlation matrix may also be present as an attribute \code{cor}.}
 \item{epsilon}{epsilon is a tolerance threshold that controls how closely
 simulated summaries must match the observed ones to be considered
 plausible. This is in the unit of \code{abc_summary_distance}. Initially the 0.5
-quantile of distances, in subsequent waves this might be decreased}
+quantile of distances, in subsequent waves this might be decreased.
+It is the scale parameter of the kernel function. $K_h(|u|)$}
 
 \item{prev_sim_df}{the output of a previous ABC wave including a
 \code{abc_weight} column}

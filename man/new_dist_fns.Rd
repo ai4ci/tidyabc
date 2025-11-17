@@ -12,7 +12,8 @@ new_dist_fns(
   dfn = NULL,
   ...,
   params = NULL,
-  knots = NULL
+  knots = NULL,
+  smooth = TRUE
 )
 }
 \arguments{

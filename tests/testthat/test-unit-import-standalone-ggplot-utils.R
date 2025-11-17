@@ -32,9 +32,302 @@ test_that(".gg_tiny_theme unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/import-standalone-ggplot-utils.R"), c(171, 1, 171+1, 1))
+    srcref = srcref(srcfile("../../R/import-standalone-ggplot-utils.R"), c(170, 1, 170+1, 1))
   )
 })
 
 # unit test end: .gg_tiny_theme ----
+# unit test start: .gg_set_size_defaults ----
+
+test_that(".gg_set_size_defaults unit test", {
+
+  # Automatically generated test case from roxygen @unit tag
+  # Do not edit here - follow the link to the source file.
+  # or navigate to topic with <F2>
+  F2 = .gg_set_size_defaults
+  
+
+  testthat::expect_no_error(withCallingHandlers(
+    {
+      .gg_set_size_defaults(lineSize = 0.25)
+    },
+    warning = function(e) {
+      message("Warning issued: ", e$message)
+      invokeRestart("muffleWarning")
+    }
+  ))
+
+  # generates a failure if the overall test is failing with a link to the 
+  # source of the unit test:
+  testthat::expect(rlang::caller_env(n = 2)$ok,
+    failure_message = "Source link for failing @unit test.",
+    srcref = srcref(srcfile("../../R/import-standalone-ggplot-utils.R"), c(228, 1, 228+1, 1))
+  )
+})
+
+# unit test end: .gg_set_size_defaults ----
+# unit test start: .gg_substitute_fonts ----
+
+test_that(".gg_substitute_fonts unit test", {
+
+  # Automatically generated test case from roxygen @unit tag
+  # Do not edit here - follow the link to the source file.
+  # or navigate to topic with <F2>
+  F2 = .gg_substitute_fonts
+  
+
+  testthat::expect_no_error(withCallingHandlers(
+    {
+      .gg_substitute_fonts(c("Roboto", "Arial", "Kings", "Unmatched"))
+    },
+    warning = function(e) {
+      message("Warning issued: ", e$message)
+      invokeRestart("muffleWarning")
+    }
+  ))
+
+  # generates a failure if the overall test is failing with a link to the 
+  # source of the unit test:
+  testthat::expect(rlang::caller_env(n = 2)$ok,
+    failure_message = "Source link for failing @unit test.",
+    srcref = srcref(srcfile("../../R/import-standalone-ggplot-utils.R"), c(308, 1, 308+1, 1))
+  )
+})
+
+# unit test end: .gg_substitute_fonts ----
+# unit test start: .gg_fonts_missing ----
+
+test_that(".gg_fonts_missing unit test", {
+
+  # Automatically generated test case from roxygen @unit tag
+  # Do not edit here - follow the link to the source file.
+  # or navigate to topic with <F2>
+  F2 = .gg_fonts_missing
+  
+
+  testthat::expect_no_error(withCallingHandlers(
+    {
+      .gg_fonts_missing("Arial")
+      .gg_fonts_missing(c("Roboto", "Kings", "ASDASDAS"))
+    },
+    warning = function(e) {
+      message("Warning issued: ", e$message)
+      invokeRestart("muffleWarning")
+    }
+  ))
+
+  # generates a failure if the overall test is failing with a link to the 
+  # source of the unit test:
+  testthat::expect(rlang::caller_env(n = 2)$ok,
+    failure_message = "Source link for failing @unit test.",
+    srcref = srcref(srcfile("../../R/import-standalone-ggplot-utils.R"), c(361, 1, 361+1, 1))
+  )
+})
+
+# unit test end: .gg_fonts_missing ----
+# unit test start: .gg_breaks_log1p ----
+
+test_that(".gg_breaks_log1p unit test", {
+
+  # Automatically generated test case from roxygen @unit tag
+  # Do not edit here - follow the link to the source file.
+  # or navigate to topic with <F2>
+  F2 = .gg_breaks_log1p
+  
+
+  testthat::expect_no_error(withCallingHandlers(
+    {
+      ggplot2::ggplot(ggplot2::diamonds, ggplot2::aes(x = price)) +
+        ggplot2::geom_density() +
+        ggplot2::scale_x_continuous(trans = "log1p", breaks = .gg_breaks_log1p())
+    },
+    warning = function(e) {
+      message("Warning issued: ", e$message)
+      invokeRestart("muffleWarning")
+    }
+  ))
+
+  # generates a failure if the overall test is failing with a link to the 
+  # source of the unit test:
+  testthat::expect(rlang::caller_env(n = 2)$ok,
+    failure_message = "Source link for failing @unit test.",
+    srcref = srcref(srcfile("../../R/import-standalone-ggplot-utils.R"), c(401, 1, 401+1, 1))
+  )
+})
+
+# unit test end: .gg_breaks_log1p ----
+# unit test start: .gg_transform_logit ----
+
+test_that(".gg_transform_logit unit test", {
+
+  # Automatically generated test case from roxygen @unit tag
+  # Do not edit here - follow the link to the source file.
+  # or navigate to topic with <F2>
+  F2 = .gg_transform_logit
+  
+
+  testthat::expect_no_error(withCallingHandlers(
+    {
+      dplyr::tibble(pvalue = c(0.001, 0.05, 0.1), fold_change = 1:3) %>%
+        ggplot2::ggplot(ggplot2::aes(fold_change, pvalue)) +
+        ggplot2::geom_point() +
+        ggplot2::scale_y_continuous(transform = .gg_transform_logit())
+    },
+    warning = function(e) {
+      message("Warning issued: ", e$message)
+      invokeRestart("muffleWarning")
+    }
+  ))
+
+  # generates a failure if the overall test is failing with a link to the 
+  # source of the unit test:
+  testthat::expect(rlang::caller_env(n = 2)$ok,
+    failure_message = "Source link for failing @unit test.",
+    srcref = srcref(srcfile("../../R/import-standalone-ggplot-utils.R"), c(426, 1, 426+1, 1))
+  )
+})
+
+# unit test end: .gg_transform_logit ----
+# unit test start: .gg_scale_y_logit ----
+
+test_that(".gg_scale_y_logit unit test", {
+
+  # Automatically generated test case from roxygen @unit tag
+  # Do not edit here - follow the link to the source file.
+  # or navigate to topic with <F2>
+  F2 = .gg_scale_y_logit
+  
+
+  testthat::expect_no_error(withCallingHandlers(
+    {
+      dplyr::tibble(pvalue = c(0.001, 0.05, 0.1), fold_change = 1:3) %>%
+        ggplot2::ggplot(ggplot2::aes(fold_change, pvalue)) +
+        ggplot2::geom_point() +
+        .gg_scale_y_logit(n = 8)
+    },
+    warning = function(e) {
+      message("Warning issued: ", e$message)
+      invokeRestart("muffleWarning")
+    }
+  ))
+
+  # generates a failure if the overall test is failing with a link to the 
+  # source of the unit test:
+  testthat::expect(rlang::caller_env(n = 2)$ok,
+    failure_message = "Source link for failing @unit test.",
+    srcref = srcref(srcfile("../../R/import-standalone-ggplot-utils.R"), c(533, 1, 533+1, 1))
+  )
+})
+
+# unit test end: .gg_scale_y_logit ----
+# unit test start: .gg_scale_y_percent ----
+
+test_that(".gg_scale_y_percent unit test", {
+
+  # Automatically generated test case from roxygen @unit tag
+  # Do not edit here - follow the link to the source file.
+  # or navigate to topic with <F2>
+  F2 = .gg_scale_y_percent
+  
+
+  testthat::expect_no_error(withCallingHandlers(
+    {
+      dplyr::tibble(pvalue = c(0.001, 0.05, 0.1), fold_change = 1:3) %>%
+        ggplot2::ggplot(ggplot2::aes(fold_change, pvalue)) +
+        ggplot2::geom_point() +
+        .gg_scale_y_percent()
+    },
+    warning = function(e) {
+      message("Warning issued: ", e$message)
+      invokeRestart("muffleWarning")
+    }
+  ))
+
+  # generates a failure if the overall test is failing with a link to the 
+  # source of the unit test:
+  testthat::expect(rlang::caller_env(n = 2)$ok,
+    failure_message = "Source link for failing @unit test.",
+    srcref = srcref(srcfile("../../R/import-standalone-ggplot-utils.R"), c(572, 1, 572+1, 1))
+  )
+})
+
+# unit test end: .gg_scale_y_percent ----
+# unit test start: .gg_layer ----
+
+test_that(".gg_layer unit test", {
+
+  # Automatically generated test case from roxygen @unit tag
+  # Do not edit here - follow the link to the source file.
+  # or navigate to topic with <F2>
+  F2 = .gg_layer
+  
+
+  # top level function contains `...` and `mapping` extensions points:
+  myPlot <- function(data, formula, ..., mapping = .gg_check_for_aes(...)) {
+    xCol <- rlang::as_quosure(rlang::f_lhs(formula), env = rlang::caller_env())
+    yCol <- rlang::as_quosure(rlang::f_rhs(formula), env = rlang::caller_env())
+    ggplot2::ggplot(data) +
+      .gg_layer(
+        ggplot2::GeomPoint,
+        data = data,
+        mapping = ggplot2::aes(x = !!xCol, y = !!yCol, !!!mapping),
+        ...,
+        .default = list(size = 10)
+      )
+  }
+  myPlot(iris, Sepal.Length ~ Sepal.Width, mapping = ggplot2::aes(colour = Species))
+  myPlot(
+    iris,
+    Sepal.Length ~ Petal.Length,
+    mapping = ggplot2::aes(colour = Species),
+    shape = "+",
+    size = 5
+  )
+  myPlot(
+    mtcars,
+    mpg ~ wt,
+    mapping = ggplot2::aes(colour = as.factor(cyl), size = hp)
+  )
+  # check we made it this far without calling expect_no_errors
+  testthat::expect_equal(1, 1)
+
+  # generates a failure if the overall test is failing with a link to the 
+  # source of the unit test:
+  testthat::expect(rlang::caller_env(n = 2)$ok,
+    failure_message = "Source link for failing @unit test.",
+    srcref = srcref(srcfile("../../R/import-standalone-ggplot-utils.R"), c(654, 1, 654+1, 1))
+  )
+})
+
+# unit test end: .gg_layer ----
+# unit test start: .gg_merge_aes ----
+
+test_that(".gg_merge_aes unit test", {
+
+  # Automatically generated test case from roxygen @unit tag
+  # Do not edit here - follow the link to the source file.
+  # or navigate to topic with <F2>
+  F2 = .gg_merge_aes
+  
+
+  testthat::expect_no_error(withCallingHandlers(
+    {
+      m1 <- ggplot2::aes(x = a, y = b, colour = class)
+      .gg_merge_aes(x = A, y = BB, m1)
+    },
+    warning = function(e) {
+      message("Warning issued: ", e$message)
+      invokeRestart("muffleWarning")
+    }
+  ))
+
+  # generates a failure if the overall test is failing with a link to the 
+  # source of the unit test:
+  testthat::expect(rlang::caller_env(n = 2)$ok,
+    failure_message = "Source link for failing @unit test.",
+    srcref = srcref(srcfile("../../R/import-standalone-ggplot-utils.R"), c(749, 1, 749+1, 1))
+  )
+})
+
+# unit test end: .gg_merge_aes ----
 # end of unit tests ----

@@ -42,7 +42,7 @@ test_that(".autocrate unit test", {
         if (tmpvar == 10) tmpfn(y)
       })
     },
-    "References to undefined globals in function: tmpvar,tmpfn",
+    "References to undefined globals in function `.fn`: tmpvar,tmpfn",
     fixed = TRUE
   )
   
@@ -100,4 +100,154 @@ test_that(".autocrate unit test", {
 })
 
 # unit test end: .autocrate ----
+# unit test start: .crate_fn ----
+
+test_that(".crate_fn unit test", {
+
+  # Automatically generated test case from roxygen @unit tag
+  # Do not edit here - follow the link to the source file.
+  # or navigate to topic with <F2>
+  F2 = .crate_fn
+  
+
+  testthat::expect_no_error(withCallingHandlers(
+    {
+      .crate_fn
+    },
+    warning = function(e) {
+      message("Warning issued: ", e$message)
+      invokeRestart("muffleWarning")
+    }
+  ))
+
+  # generates a failure if the overall test is failing with a link to the 
+  # source of the unit test:
+  testthat::expect(rlang::caller_env(n = 2)$ok,
+    failure_message = "Source link for failing @unit test.",
+    srcref = srcref(srcfile("../../R/utils-crate.R"), c(196, 1, 196+1, 1))
+  )
+})
+
+# unit test end: .crate_fn ----
+# unit test start: .super_crate ----
+
+test_that(".super_crate unit test", {
+
+  # Automatically generated test case from roxygen @unit tag
+  # Do not edit here - follow the link to the source file.
+  # or navigate to topic with <F2>
+  F2 = .super_crate
+  
+
+  msg <- "hello"
+  e <- .super_crate(
+    list(
+      plusx = function(z) {
+        return(z + x)
+      },
+      plusy = function(z) {
+        return(z + y + plusx(z))
+      }
+      # splicing does not work
+      # hi = function() {
+      #   print(!!msg)
+      # }
+    ),
+    x = 1:10,
+    y = 11:20
+  )
+  
+  testthat::expect_equal(
+    e$plusy(1),
+    c(14, 16, 18, 20, 22, 24, 26, 28, 30, 32)
+  )
+
+  # generates a failure if the overall test is failing with a link to the 
+  # source of the unit test:
+  testthat::expect(rlang::caller_env(n = 2)$ok,
+    failure_message = "Source link for failing @unit test.",
+    srcref = srcref(srcfile("../../R/utils-crate.R"), c(237, 1, 237+1, 1))
+  )
+})
+
+# unit test end: .super_crate ----
+# unit test start: .qualify_expression ----
+
+test_that(".qualify_expression unit test", {
+
+  # Automatically generated test case from roxygen @unit tag
+  # Do not edit here - follow the link to the source file.
+  # or navigate to topic with <F2>
+  F2 = .qualify_expression
+  
+
+  testthat::expect_equal(
+    .qualify_expression(expression(12))$cl,
+    expression(12)
+  )
+  
+  testthat::expect_equal(
+    .qualify_expression(expression(rnorm))$cl,
+    expression(stats::rnorm)
+  )
+  
+  tmp <- .qualify_expression(expression({
+    new_var <- 12
+  }))
+  testthat::expect_equal(tmp$defined, list(as.name("new_var")))
+  
+  tmp2 <- .qualify_expression(expression({
+    list(new_var = 12, old_var = 14)
+  }))
+  testthat::expect_equal(tmp2$defined, list())
+  
+  fn <- function(x) {
+    y <- runif(x)
+    stats::rnorm(x, y)
+    x[1] <- 12
+    x[2] <- !!z # inlining happens during expression parsing...?
+  }
+  
+  tmp3 <- .qualify_expression(body(fn), defined = list(as.name("x")))
+  testthat::expect_equal(tmp3$unqual, list(as.name("z")))
+  testthat::expect_equal(tmp3$defined, list(as.name("x"), as.name("y")))
+  testthat::expect_equal(format(tmp3$cl), c(
+    "{",
+    "    y <- stats::runif(x)",
+    "    stats::rnorm(x, y)",
+    "    x[1] <- 12",
+    "    x[2] <- !!z",
+    "}"
+  ))
+  
+  library(ggplot2)
+  tmp4 <- .qualify_expression(expression(diamonds$cut))
+  testthat::expect_equal(tmp4$cl, expression(ggplot2::diamonds$cut))
+  
+  tmp5 <- .qualify_expression(expression(diamonds$imaginary(rnorm(1000))))
+  testthat::expect_equal(
+    tmp5$cl,
+    expression(ggplot2::diamonds$imaginary(stats::rnorm(1000)))
+  )
+  
+  tmp6 <- .qualify_expression(expression(function(n, mu) rnorm(n, mu)))
+  testthat::expect_equal(tmp6$defined, list())
+  testthat::expect_equal(
+    format(tmp6$cl),
+    "expression(function(n, mu) stats::rnorm(n, mu))"
+  )
+  
+  tmp7 <- .qualify_expression(expression(Species = NULL))
+  testthat::expect_equal(length(tmp7$cl), 1L)
+  testthat::expect_equal(tmp7$cl, expression(Species = NULL))
+
+  # generates a failure if the overall test is failing with a link to the 
+  # source of the unit test:
+  testthat::expect(rlang::caller_env(n = 2)$ok,
+    failure_message = "Source link for failing @unit test.",
+    srcref = srcref(srcfile("../../R/utils-crate.R"), c(374, 1, 374+1, 1))
+  )
+})
+
+# unit test end: .qualify_expression ----
 # end of unit tests ----

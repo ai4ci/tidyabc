@@ -10,7 +10,8 @@
   mapping = .gg_check_for_aes(...),
   steps = 200,
   tail = 0.001,
-  plot_quantiles = TRUE
+  plot_quantiles = TRUE,
+  smooth = TRUE
 )
 }
 \arguments{
@@ -26,6 +27,9 @@
 
 \item{plot_quantiles}{by default the quantiles of the distribution are
 plotted over the density sometimes this makes it hard to read}
+
+\item{smooth}{by default some additional smoothing is used to cover up small
+discontinuities in the PDF.}
 }
 \value{
 a ggplot

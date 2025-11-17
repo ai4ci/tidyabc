@@ -4,7 +4,13 @@
 \alias{.calculate_weights_adaptive}
 \title{Calculate weights for particles in a new wave}
 \usage{
-.calculate_weights_adaptive(sim_df, priors_list, epsilon, proposal_list)
+.calculate_weights_adaptive(
+  sim_df,
+  priors_list,
+  epsilon,
+  proposal_list,
+  kernel
+)
 }
 \arguments{
 \item{sim_df}{the output of a wave of simulation including a
@@ -17,11 +23,15 @@ A correlation matrix may also be present as an attribute \code{cor}.}
 \item{epsilon}{epsilon is a tolerance threshold that controls how closely
 simulated summaries must match the observed ones to be considered
 plausible. This is in the unit of \code{abc_summary_distance}. Initially the 0.5
-quantile of distances, in subsequent waves this might be decreased}
+quantile of distances, in subsequent waves this might be decreased.
+It is the scale parameter of the kernel function. $K_h(|u|)$}
 
 \item{proposal_list}{a list of empirical probability distributions that map
 MVN space to proposal space, and are the "prior" for each adaptive wave.
 This is already used to generate the proposals and their mapping in \code{sim_df}}
+
+\item{kernel}{one of "epanechnikov", "uniform", "triangular", "biweight",
+"gaussian"}
 }
 \value{
 the \code{sim_df} with an \code{abc_weight} column

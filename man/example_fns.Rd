@@ -15,7 +15,7 @@
 \usage{
 example_sim_fn(mean, sd1, sd2)
 
-example_scorer_fn(obsdata, simdata)
+example_scorer_fn(simdata, obsdata)
 
 example_obs()
 
@@ -38,9 +38,9 @@ example_adaptive_fit()
 
 \item{sd2}{the example gamma sd (B)}
 
-\item{obsdata}{e.g. example_obsdata()}
-
 \item{simdata}{output of example_sim_fn()}
+
+\item{obsdata}{e.g. example_obsdata()}
 }
 \value{
 a list of A and B of samples from a normal and gamma

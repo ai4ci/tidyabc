@@ -4,7 +4,7 @@
 \alias{.monotonicpolyspline}
 \title{Create a \code{polySpline} object from a \code{stats::splinefun} call.}
 \usage{
-.monotonicpolyspline(x, y, ties = mean)
+.monotonicpolyspline(x, y)
 }
 \arguments{
 \item{x, y}{vectors giving the coordinates of the points to be
@@ -13,12 +13,6 @@
 
     \code{y} must be increasing or decreasing for \code{method = "hyman"}.
   }
-
-\item{ties}{handling of tied \code{x} values.  The string
-    \code{"ordered"} or a function (or the name of a function) taking a
-    single vector argument and returning a single number or a length-2
-    \code{\link{list}} of both, see \code{\link[stats]{approx}} and its
-    \sQuote{Details} section, and the example below.}
 }
 \value{
 An object of class \code{polySpline}.

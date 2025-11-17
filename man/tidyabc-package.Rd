@@ -6,6 +6,8 @@
 \alias{tidyabc-package}
 \title{tidyabc: Approximate Bayesian Computing with Tidy Data}
 \description{
+\if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
+
 What the package does (one paragraph).
 }
 \author{

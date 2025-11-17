@@ -4,7 +4,7 @@
 \alias{calculate_wasserstein}
 \title{Calculate a wasserstein distance}
 \usage{
-calculate_wasserstein(sim, obs, debias = FALSE)
+calculate_wasserstein(sim, obs, debias = FALSE, bootstraps = 1)
 }
 \arguments{
 \item{sim}{A vector of simulated data points}
@@ -13,6 +13,11 @@ calculate_wasserstein(sim, obs, debias = FALSE)
 
 \item{debias}{Should the simulations be shifted to match the mean of the
 observed data}
+
+\item{bootstraps}{Randomly resample from the simulated data points to match
+the observed size this many times and combine the output by averaging. The
+alternative, when this is 1 (the default) matches the sizes by selecting
+and/or repeating the simulated data points in order (deterministically)}
 }
 \value{
 a length normalised wasserstein distance. This is the average distance an
@@ -66,6 +71,7 @@ testthat::expect_equal(calculate_wasserstein(cmp1,ref), 0.0576417503974498)
 testthat::expect_equal(calculate_wasserstein(cmp2,ref), 1.04950621760385)
 testthat::expect_equal(calculate_wasserstein(cmp3,ref), 0.212977231452674)
 
+calculate_wasserstein(cmp1,ref,bootstraps=10)
 }\if{html}{\out{</div>}}
 }
 

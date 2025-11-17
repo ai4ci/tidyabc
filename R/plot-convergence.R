@@ -16,13 +16,13 @@ plot_convergence = function(fit) {
   tmp = fit$waves %>%
     dplyr::select(-dplyr::any_of(c("summary", "proposal_distribution"))) %>%
     tidyr::unnest(per_param) %>%
-    dplyr::filter(dplyr::if_all(.cols = everything(), Negate(is.na))) %>%
-    dplyr::filter(dplyr::if_all(.cols = everything(), ~ .x > 0))
+    dplyr::filter(dplyr::if_all(.cols = dplyr::everything(), Negate(is.na))) %>%
+    dplyr::filter(dplyr::if_all(.cols = dplyr::everything(), ~ .x > 0))
 
   tmp2 = fit$waves %>%
     dplyr::select(-dplyr::any_of(c("per_param", "proposal_distribution"))) %>%
     tidyr::unnest(summary) %>%
-    dplyr::filter(dplyr::if_all(.cols = everything(), Negate(is.na)))
+    dplyr::filter(dplyr::if_all(.cols = dplyr::everything(), Negate(is.na)))
 
   p1 = ggplot2::ggplot(tmp2, ggplot2::aes(x = wave)) +
     ggplot2::geom_line(ggplot2::aes(y = abs_distance)) +
@@ -115,9 +115,10 @@ plot_evolution = function(fit, truth = NULL, ...) {
     )
 
   if (!is.null(truth)) {
+    truth = truth[unique(fit$summary$param)]
     p1 = p1 +
       ggplot2::geom_vline(
-        data = tibble::enframe(truth),
+        data = tibble::enframe(unlist(truth)),
         mapping = ggplot2::aes(xintercept = value),
         linetype = "dashed",
         colour = "grey40"
@@ -183,7 +184,7 @@ plot_simulations = function(
     obs = obsdata[[nm]]
     sims = lapply(simdata, function(s) s[[nm]])
     if (is.data.frame(obs)) {
-      # TODO: figure out data frame?
+      # TODO: figure out how to plot a data frame?
     } else {
       m = method[[nm]]
       r = c(min(floor(obs)), max(ceiling(obs)))
@@ -283,9 +284,14 @@ plot_simulations = function(
 #' @concept workflow
 #' @examples
 #'
-#' plot_correlations(
+#' p = plot_correlations(
 #'   example_adaptive_fit(),
 #'   example_truth()
+#' )
+#'
+#' p & ggplot2::theme(
+#'   axis.title.y = ggplot2::element_text(angle=70,vjust=0.5),
+#'   axis.title.x = ggplot2::element_text(angle=20,hjust=0.5)
 #' )
 #'
 plot_correlations = function(posteriors_df, truth = NULL) {
@@ -299,14 +305,21 @@ plot_correlations = function(posteriors_df, truth = NULL) {
   cols = setdiff(colnames(df), c("wt"))
   d = length(cols)
   plts = list()
+  n = nrow(posteriors_df)
+
+  max_alpha = 0.8 # .p_from_n(n, 100, 10000) #200 / (200 + n)
+
   for (i in seq_along(cols)) {
     for (j in seq_along(cols)) {
       # i=1; j=2
       nmx = as.symbol(cols[[j]])
       nmy = as.symbol(cols[[i]])
-      plt_df = df %>% dplyr::transmute(x = !!nmx, y = !!nmy, wt = wt)
-      rx = range(plt_df$x) * c(0.95, 1 / 0.95)
-      ry = range(plt_df$y) * c(0.95, 1 / 0.95)
+      plt_df = df %>%
+        dplyr::transmute(x = !!nmx, y = !!nmy, wt = wt / max(wt) * max_alpha)
+
+      rx = quantile(plt_df$x, c(0.01, 0.99)) * c(0.95, 1 / 0.95)
+      ry = quantile(plt_df$y, c(0.01, 0.99)) * c(0.95, 1 / 0.95)
+
       plt = ggplot2::ggplot(plt_df) +
         # ggplot2::facet_grid(
         #   rlang::inject(cols[[j]]) ~ rlang::inject(cols[[i]])
@@ -316,6 +329,7 @@ plot_correlations = function(posteriors_df, truth = NULL) {
 
       if ((i == d || i == 1)) {
         # keep
+        plt = plt + .gg_set_X_angle(90)
       } else {
         plt = plt +
           ggplot2::theme(
@@ -335,19 +349,38 @@ plot_correlations = function(posteriors_df, truth = NULL) {
       }
 
       if (i > j) {
+        # 2D density plots (unweighted)
+
         plt = plt +
           ggplot2::geom_density2d(ggplot2::aes(x = x, y = y)) +
           ggplot2::coord_cartesian(xlim = rx, ylim = ry)
       } else if (i < j) {
+        # what kind of size for each point? and what transparency?
+        # if all the points were evenly spread we would want about 20% of the plot
+        # to be dark. size of each point is therefore:
+        pointwidth = diff(rx) / sqrt(n)
+        pointheight = diff(ry) / sqrt(n)
+
         plt = plt +
-          ggplot2::geom_point(
-            ggplot2::aes(x = x, y = y, alpha = wt),
-            size = 0.1
+          # ggplot2::geom_point(
+          #   ggplot2::aes(x = x, y = y, alpha = wt),
+          #   size = 0.5
+          # ) +
+          ggplot2::geom_tile(
+            ggplot2::aes(
+              x = x,
+              y = y,
+              width = pointwidth,
+              height = pointheight,
+              alpha = wt * 0.8
+            ),
+            linewidth = 0
           ) +
           ggplot2::guides(alpha = ggplot2::guide_none()) +
           ggplot2::coord_cartesian(xlim = rx, ylim = ry) +
           ggplot2::scale_y_continuous(position = "right") +
-          ggplot2::scale_x_continuous(position = "top")
+          ggplot2::scale_x_continuous(position = "top") +
+          ggplot2::scale_alpha_identity()
       } else {
         plt = plt +
           ggplot2::geom_density(ggplot2::aes(x = x)) +

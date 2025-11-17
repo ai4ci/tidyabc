@@ -1,13 +1,28 @@
 ---
 title: "Getting started"
-output: html_document
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: references.bib
+link-citations: TRUE
 ---
 
-```{r setup}
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
 
-devtools::load_all()
 # future::plan(future::multisession, workers = parallel::detectCores()-2)
 
+```
+
+```{r setup}
+library(tidyabc)
+library(dplyr)
+library(ggplot2)
 ```
 
 ```{r}
@@ -18,8 +33,8 @@ devtools::load_all()
 test_simulation_fn = function(norm_mean, norm_sd, gamma_mean, gamma_sd) {
   
   A = rnorm(1000, norm_mean, norm_sd)
-  B = tidyabc::rgamma2(1000, gamma_mean, gamma_sd)
-  C = tidyabc::rgamma2(1000, gamma_mean, gamma_sd)
+  B = rgamma2(1000, gamma_mean, gamma_sd)
+  C = rgamma2(1000, gamma_mean, gamma_sd)
 
   return(
     list(
@@ -33,10 +48,10 @@ test_simulation_fn = function(norm_mean, norm_sd, gamma_mean, gamma_sd) {
 
 ```{r}
 
-test_scorer_fn = function(obsdata, simdata) {
+test_scorer_fn = function(simdata, obsdata) {
   return(list(
-    data1 = tidyabc::calculate_wasserstein(obsdata$data1, simdata$data1),
-    data2 = tidyabc::calculate_wasserstein(obsdata$data2, simdata$data2)
+    data1 = calculate_wasserstein(obsdata$data1, simdata$data1),
+    data2 = calculate_wasserstein(obsdata$data2, simdata$data2)
   ))
 }
 
@@ -50,37 +65,38 @@ tmp = test_simulation(
   norm_mean = 4, norm_sd=2, gamma_mean=6, gamma_sd=2,
   seed = 123
 )
-```
 
-
-```{r}
 truth = tmp$truth
 test_obsdata = tmp$obsdata
 
-ggplot2::ggplot(dplyr::tibble(data1 = test_obsdata$data1),
-                ggplot2::aes(x=data1))+
-  ggplot2::geom_histogram(,binwidth = 1)+
-  ggplot2::xlab("A + B - C")
+```
 
-ggplot2::ggplot(dplyr::tibble(data2 = test_obsdata$data2),
-                ggplot2::aes(x=data2))+
-  ggplot2::geom_histogram(,binwidth = 1)+
-  ggplot2::xlab("B x C")
+
+```{r}
+
+ggplot(
+  tibble(data1 = test_obsdata$data1), aes(x=data1))+
+  geom_histogram(,binwidth = 1)+
+  xlab("A + B - C")
+
+ggplot(tibble(data2 = test_obsdata$data2), aes(x=data2))+
+  geom_histogram(,binwidth = 1)+
+  xlab("B x C")
 
 ```
 
 ```{r}
-test_priors = list(
-  norm_mean = as.dist_fns(runif, 0, 10),
-  norm_sd = as.dist_fns(runif, 0, 10),
-  gamma_mean = as.dist_fns(runif, 0, 10),
-  gamma_sd = as.dist_fns(runif, 0, 10) #,
-  # ~ gamma_mean > gamma_sd # enforces convexity in gamma
+test_priors = priors(
+  norm_mean ~ unif(0, 10),
+  norm_sd ~ unif(0, 10),
+  gamma_mean ~ unif(0, 10),
+  gamma_sd ~ unif(0, 10),
+  # enforces convex gamma:
+  ~ gamma_mean > gamma_sd 
 )
+
+test_priors
 ```
-
-
-
 
 ```{r}
 
@@ -90,62 +106,15 @@ rejection_fit = abc_rejection(
   sim_fn = test_simulation_fn,
   scorer_fn = test_scorer_fn,
   n_sims = 10000,
-  acceptance_rate = 0.05,
+  acceptance_rate = 0.01,
   parallel= FALSE
 )
 
 summary(rejection_fit)
+```
 
-# posterior_summarise(rejection_fit$posterior)
-# 
+
+```{r} 
 plot(rejection_fit, truth=truth)
 ```
 
-
-```{r}
-
-smc_fit = abc_smc(
-  obsdata = test_obsdata,
-  priors_list = test_priors,
-  sim_fn = test_simulation_fn,
-  scorer_fn = test_scorer_fn,
-  n_sims = 1000,
-  acceptance_rate = 0.5,
-  parallel= FALSE
-)
-
-summary(smc_fit)
-
-plot(smc_fit, truth=truth)
-
-
-plot_convergence(smc_fit)
-plot_evolution(smc_fit,truth)
-
-plot_correlations(smc_fit$posteriors)
-```
-
-
-```{r}
-
-adaptive_fit = abc_adaptive(
-  obsdata = test_obsdata,
-  priors_list = test_priors,
-  sim_fn = test_simulation_fn,
-  scorer_fn = test_scorer_fn,
-  n_sims = 1000,
-  acceptance_rate = 0.5,
-  parallel= FALSE,
-  max_waves = 15
-)
-
-summary(adaptive_fit)
-
-plot(adaptive_fit, truth=truth)
-
-
-plot_convergence(adaptive_fit)
-plot_evolution(adaptive_fit,truth)
-
-plot_correlations(adaptive_fit$posteriors)
-```

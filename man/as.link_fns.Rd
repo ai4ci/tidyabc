@@ -4,6 +4,7 @@
 \alias{as.link_fns.character}
 \alias{as.link_fns.dist_fns}
 \alias{as.link_fns.family}
+\alias{as.link_fns.numeric}
 \alias{as.link_fns}
 \title{Create a \code{link_fns} S3 object}
 \usage{
@@ -13,10 +14,12 @@
 
 \method{as.link_fns}{family}(x, ...)
 
+\method{as.link_fns}{numeric}(x, ..., na.rm = TRUE)
+
 as.link_fns(x, ...)
 }
 \arguments{
-\item{x}{a statistical family as a \code{stats::family} S3 object}
+\item{x}{a range of values that for the support}
 
 \item{...}{ignored}
 }
@@ -42,6 +45,8 @@ Individual \code{link_fns} members of \code{link_fns_list}s can be accessed with
 \item \code{as.link_fns(dist_fns)}: Link function from name
 
 \item \code{as.link_fns(family)}: Link function from name
+
+\item \code{as.link_fns(numeric)}: Link function from support vector
 
 }}
 \concept{link_fns_s3}

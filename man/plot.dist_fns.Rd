@@ -18,6 +18,8 @@
 \item{\code{tail}}{the minimum tail probability to plot}
 \item{\code{plot_quantiles}}{by default the quantiles of the distribution are
 plotted over the density sometimes this makes it hard to read}
+\item{\code{smooth}}{by default some additional smoothing is used to cover up small
+discontinuities in the PDF.}
 }}
 }
 \value{

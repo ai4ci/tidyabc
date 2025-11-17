@@ -1,4 +1,4 @@
-url: ~
+url: https://ai4ci.github.io/tidyabc/
 template:
   bootstrap: 5
 reference:
@@ -11,16 +11,19 @@ reference:
 - title: Reparameterised and non-standard distributions
 - contents:
   - has_concept("distributions")
+- title: S3 abc fit class
+- contents:
+  - has_concept("abc_fit_s3")
+- title: S3 abc prior class
+- contents:
+  - has_concept("abc_prior_s3")
 - title: S3 distribution function class
 - contents:
   - has_concept("dist_fns_s3")
 - title: S3 link function class
 - contents:
   - has_concept("link_fns_s3")
-- title: S3 abc fit class
-- contents:
-  - has_concept("abc_fit_s3")
 - title: Others
 - contents:
-  - lacks_concepts(c("workflow","empirical","dist_fns_s3","link_fns_s3","distributions"))
+  - lacks_concepts(c("workflow","empirical","dist_fns_s3","link_fns_s3","abc_fit_s3","abc_prior_s3","distributions"))
 

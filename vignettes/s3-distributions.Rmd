@@ -1,0 +1,36 @@
+---
+title: "Statistical distribution functions"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Statistical distribution functions}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: references.bib
+link-citations: TRUE
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# S3 distribution wrappers
+
+* example of as.dist_fns
+* plotting
+* naming
+
+
+# Empirical distributions
+
+* from data
+* from CDF
+
+# Mixtures and truncation
+
+
+# Alternative distribution parameterisation
+
+* rgamma2 etc.

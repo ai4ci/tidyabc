@@ -32,9 +32,39 @@ test_that("new_dist_calls unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/s3-dist_fns-class.R"), c(161, 1, 161+1, 1))
+    srcref = srcref(srcfile("../../R/s3-dist_fns-class.R"), c(166, 1, 166+1, 1))
   )
 })
 
 # unit test end: new_dist_calls ----
+# unit test start: as.dist_fns.character ----
+
+test_that("as.dist_fns.character unit test", {
+
+  # Automatically generated test case from roxygen @unit tag
+  # Do not edit here - follow the link to the source file.
+  # or navigate to topic with <F2>
+  F2 = as.dist_fns.character
+  
+
+  testthat::expect_no_error(withCallingHandlers(
+    {
+      pois <- as.dist_fns("pois", lambda = 8)
+      n <- as.dist_fns("norm", mean = 4)
+    },
+    warning = function(e) {
+      message("Warning issued: ", e$message)
+      invokeRestart("muffleWarning")
+    }
+  ))
+
+  # generates a failure if the overall test is failing with a link to the 
+  # source of the unit test:
+  testthat::expect(rlang::caller_env(n = 2)$ok,
+    failure_message = "Source link for failing @unit test.",
+    srcref = srcref(srcfile("../../R/s3-dist_fns-class.R"), c(538, 1, 538+1, 1))
+  )
+})
+
+# unit test end: as.dist_fns.character ----
 # end of unit tests ----

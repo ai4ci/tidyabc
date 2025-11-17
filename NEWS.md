@@ -30,7 +30,7 @@
   + distance functions for Wasserstein and RMSE. 
   + modern support for parallel simulation execution using `furrr`
   + posterior visualisation and resampling
-  + convergence statistics and TODO: visualisation
+  + convergence statistics and visualisation
 * statistic functions wrappers `dist_fns` S3 class
   + support for use as dataframe column
   + empirical and mixture distributions

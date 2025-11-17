@@ -30,7 +30,7 @@ test_that("mixture unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-mixture.R"), c(10, 1, 10+1, 1))
+    srcref = srcref(srcfile("../../R/dist-mixture.R"), c(14, 1, 14+1, 1))
   )
 })
 

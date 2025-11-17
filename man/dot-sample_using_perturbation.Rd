@@ -4,22 +4,19 @@
 \alias{.sample_using_perturbation}
 \title{Generate a new set of particles from a previous wave using perturbation}
 \usage{
-.sample_using_perturbation(n_sims, prev_sim_df, priors_list, kernel_t)
+.sample_using_perturbation(priors_list, n_sims, prev_sim_df)
 }
 \arguments{
-\item{prev_sim_df}{the output of a previous ABC wave including a
-\code{abc_weight} column}
-
 \item{priors_list}{the list of priors as a named list of \code{dist_fn}s, plus one
 sided formulae as constraints and 2 sided formulae as derived values.
 A correlation matrix may also be present as an attribute \code{cor}.}
 
-\item{kernel_t}{A kernel bandwidth parameter for proposals. This controls the
-amount of noise that particles are perturbed by (and hence the spread of
-the PDF of the proposal distribution), and 1 is approximately 34\% of the
-proposal distribution at the centre. Smaller values (default is 0.2) give a
-smaller step size in generating new proposals, and proposals will be closer
-to currently accepted particles.}
+\item{n_sims}{The number of simulations to run per wave (for SMC and Adaptive)
+or overall (for Rejection). For rejection sampling a large number is
+recommended, for the others sma}
+
+\item{prev_sim_df}{the output of a previous ABC wave including a
+\code{abc_weight} column}
 }
 \value{
 a \code{sim_df}

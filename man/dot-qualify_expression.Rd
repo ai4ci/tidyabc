@@ -72,6 +72,18 @@ testthat::expect_equal(
   tmp5$cl,
   expression(ggplot2::diamonds$imaginary(stats::rnorm(1000)))
 )
+
+tmp6 = .qualify_expression(expression(function(n,mu) rnorm(n,mu)))
+testthat::expect_equal(tmp6$defined, list())
+testthat::expect_equal(
+  format(tmp6$cl),
+  "expression(function(n, mu) stats::rnorm(n, mu))"
+)
+
+tmp7 = .qualify_expression(expression(Species = NULL))
+testthat::expect_equal(length(tmp7$cl), 1L)
+testthat::expect_equal(tmp7$cl, expression(Species = NULL))
+
 }\if{html}{\out{</div>}}
 }
 

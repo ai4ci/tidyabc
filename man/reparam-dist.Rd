@@ -19,10 +19,9 @@
 \item{lower.tail}{logical; if TRUE (default), probabilities are \code{P[X<=x]}
 otherwise \code{P[X>x]}.}
 
-\item{convex}{Show a warning if the distribution selected is not a convex
-function}
-
 \item{prob}{the mean probability (vectorised)}
+
+\item{prob.0.5}{the median probability (vectorised)}
 
 \item{kappa}{a coefficient of variation. where 0 is no variability and 1 is
 maximally variability (vectorised)}

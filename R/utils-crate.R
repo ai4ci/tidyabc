@@ -1,11 +1,11 @@
-#' Crate a function that may not have all the namespaces qualified.
+# Crating functions ----
+
+#' Crate a function definition that may not have all the namespaces qualified.
 #'
 #' Regular crating requires everything be namespaced and which is easy to
 #' forget, particularly for `stats::` and `dplyr::`.
 #'
-#' @param expr an expression defining a function
-#' @param ... named list of global variables
-#'
+#' @inheritParams carrier::crate
 #' @returns a crated function
 #' @keywords internal
 #'
@@ -40,7 +40,7 @@
 #'       if (tmpvar == 10) tmpfn(y)
 #'     })
 #'   },
-#'   "References to undefined globals in function: tmpvar,tmpfn",
+#'   "References to undefined globals in function `.fn`: tmpvar,tmpfn",
 #'   fixed = TRUE
 #' )
 #'
@@ -85,24 +85,82 @@
 #' )
 #'
 #'
-.autocrate = function(expr, ...) {
-  # splicing happens before the expression is passed to this function
-  # so we don;t need to know about it.
-  expr = rlang::enexpr(expr)
+.autocrate = function(
+  .fn,
+  ...,
+  .parent_env = baseenv(),
+  .error_arg = ".fn",
+  .error_call = environment()
+) {
+  expr = rlang::enexpr(.fn)
+  # splicing happens here so we don;t need to know about it.
 
   # evaluate the function expression:
   fn = eval(expr)
-  fn = rlang::as_function(fn)
-  .autocrate_fn(fn, ...)
+  fn = try(rlang::as_function(fn), silent = TRUE)
+  if (!rlang::is_function(fn)) {
+    rlang::abort(
+      sprintf("`%s` must evaluate to a function", .error_arg),
+      call = .error_call
+    )
+  }
+
+  .autocrate_fn(
+    fn,
+    ...,
+    .parent_env = .parent_env,
+    .error_arg = .error_arg,
+    .error_call = .error_call
+  )
 }
 
 
-.autocrate_fn = function(fn, ...) {
-  fmls = formals(fn)
-  body = body(fn)
+#' Crate an existing function that may not have all the namespaces qualified.
+#'
+#' Regular crating requires everything be namespaced and which is easy to
+#' forget, particularly for `stats::` and `dplyr::`.
+#'
+#' @inheritParams carrier::crate
+#' @returns a crated function
+#' @keywords internal
+.autocrate_fn = function(
+  .fn,
+  ...,
+  .parent_env = baseenv(),
+  .error_arg = ".fn",
+  .error_call = environment()
+) {
+  if (carrier::is_crate(.fn)) {
+    return(.fn)
+  }
+
+  env <- new.env(parent = .parent_env)
+  dots <- rlang::list2(...)
+  if (!all(nzchar(rlang::names2(dots)))) {
+    rlang::abort("All `...` arguments must be named")
+  }
+  dots2 = lapply(dots, function(x) {
+    if (is.function(x) && !carrier::is_crate(x)) {
+      .autocrate_fn(
+        x,
+        .parent_env = .parent_env,
+        .error_arg = .error_arg,
+        .error_call = .error_call
+      )
+    } else {
+      x
+    }
+  })
+
+  for (nm in names(dots)) {
+    assign(nm, dots2[[nm]], envir = env)
+  }
+
+  fmls = formals(.fn)
+  body = body(.fn)
 
   # named parameters are crated and hence can be used
-  supplied = unname(sapply(names(rlang::list2(...)), as.name))
+  supplied = unname(sapply(names(dots), as.name))
   # parameters passed to the function will be available
   fml_nms = unname(sapply(names(fmls), as.name))
 
@@ -110,32 +168,193 @@
   # browser()
   # print(tmp$cl)
   if (length(tmp$unqual) > 0) {
-    stop(
-      "References to undefined globals in function: ",
-      paste0(sapply(tmp$unqual, rlang::as_label), collapse = ",")
+    rlang::abort(
+      sprintf(
+        "References to undefined globals in function `%s`: %s",
+        .error_arg,
+        paste0(sapply(tmp$unqual, rlang::as_label), collapse = ",")
+      ),
+      call = .error_call
     )
   }
-  body(fn) = tmp$cl
-  def = deparse(fn)
-  expr2 = parse(text = def, keep.source = FALSE)
 
-  # recursively crate function globals...
-  dots = rlang::list2(...)
-  dots2 = lapply(dots, function(x) {
-    if (is.function(x) && !carrier::is_crate(x)) .autocrate_fn(x) else x
-  })
-  # browser()
-  do.call(
-    .shim_crate,
-    c(list(expr2), dots2)
+  out = as.function(c(fmls, tmp$cl), envir = env)
+  attr(out, "class") = "crate"
+
+  return(out)
+}
+
+#' Crate a pre-existing function with or without checks
+#'
+#' @param .fn a reference to a function
+#' @inheritParams carrier::crate
+#' @param .nsqualify check for undefined global references and qualify namespaces?
+#'
+#' @returns a crated function
+#' @keywords internal
+#'
+#' @unit
+#' .crate_fn
+.crate_fn = function(
+  .fn,
+  ...,
+  .parent_env = baseenv(),
+  .error_arg = ".fn",
+  .error_call = environment(),
+  .nsqualify = FALSE
+) {
+  if (.nsqualify) {
+    .autocrate_fn(
+      .fn,
+      ...,
+      ,
+      .parent_env = .parent_env,
+      .error_arg = .error_arg,
+      .error_call = .error_call
+    )
+  } else {
+    carrier::crate(
+      rlang::set_env(.fn),
+      ...,
+      .parent_env = .parent_env,
+      .error_arg = .error_arg,
+      .error_call = .error_call
+    )
+  }
+}
+
+#' Create an environment of shared crates.
+#'
+#' Crated functions that share the same data in a single dependency free
+#' environment.
+#'
+#' @param .fns a named list of functions
+#' @inheritParams carrier::crate
+#' @param .nsqualify check for undefined global references and qualify namespaces?
+#'
+#' @returns an environment containing crated functions
+#' @keywords internal
+#' @unit
+#' msg = "hello"
+#' e = .super_crate(
+#'   list(
+#'     plusx = function(z) {
+#'      return(z+x)
+#'     },
+#'     plusy = function(z) {
+#'      return(z+y+plusx(z))
+#'     }
+#'     # splicing does not work
+#'     # hi = function() {
+#'     #   print(!!msg)
+#'     # }
+#'   ),
+#'   x = 1:10,
+#'   y = 11:20
+#' )
+#'
+#' testthat::expect_equal(
+#'   e$plusy(1),
+#'   c(14, 16, 18, 20, 22, 24, 26, 28, 30, 32)
+#' )
+.super_crate = function(
+  .fns,
+  ...,
+  .parent_env = baseenv(),
+  .error_arg = ".fn",
+  .error_call = environment(),
+  .nsqualify = FALSE
+) {
+  env <- new.env(parent = .parent_env)
+
+  dots <- rlang::list2(...)
+
+  if (!all(nzchar(rlang::names2(dots)))) {
+    stop("All `...` arguments must be named")
+  }
+
+  for (nm in names(dots)) {
+    x = dots[[nm]]
+    if (is.function(x) && !carrier::is_crate(x)) {
+      x = .crate_fn(
+        x,
+        .parent_env = .parent_env,
+        .error_arg = .error_arg,
+        .error_call = .error_call,
+        .nsqualify = .nsqualify
+      )
+    }
+    assign(nm, x, envir = env)
+  }
+
+  # all functions are available and
+  # named parameters are crated and hence can be used
+  supplied = c(
+    unname(sapply(names(.fns), as.name)),
+    unname(sapply(names(dots), as.name))
   )
+
+  for (nm in names(.fns)) {
+    fn = eval(.fns[[nm]])
+    fmls = formals(fn)
+    body = body(fn)
+
+    if (.nsqualify) {
+      # parameters passed to the function will be available
+
+      fml_nms = unname(sapply(names(fmls), as.name))
+      tmp = .qualify_expression(body, defined = c(supplied, fml_nms))
+
+      if (length(tmp$unqual) > 0) {
+        stop(
+          "References to undefined globals in function: ",
+          paste0(sapply(tmp$unqual, rlang::as_label), collapse = ",")
+        )
+      }
+
+      body = tmp$cl
+    }
+
+    assign(nm, as.function(c(fmls, body), envir = env), envir = env)
+    attr(env[[nm]], "class") = "crate"
+  }
+  return(env)
 }
 
-.shim_crate = function(expr, ...) {
-  expr = rlang::enexpr(expr)
-  carrier::crate(eval(expr), ...)
+# Navigation utils ----
+
+#' Explore crated data for a `crate`
+#'
+#' @param x a crated function
+#' @param y item to retrieve
+#' @returns crated data from `x`
+#' @export
+#' @concept crate_utils
+#' @keywords internal
+#' @name at.crate
+`$.crate` = function(x, y) {
+  if (is.character(y)) {
+    ylab = y
+  } else {
+    ylab = deparse(substitute(y))
+  }
+  return(rlang::fn_env(x)[[ylab]])
 }
 
+#' Support for auto suggests on `crate`s
+#'
+#' @param x a crated function
+#' @param pattern a regular expression
+#' @returns the names of crated data items
+#' @exportS3Method utils::.DollarNames crate
+#' @concept crate_utils
+#' @keywords internal
+.DollarNames.crate = function(x, pattern) {
+  return(utils::.DollarNames(rlang::fn_env(x), pattern))
+}
+
+
+# Namespace qualification ----
 
 #' Qualify the namespaces of everything in an expression
 #'
@@ -197,7 +416,21 @@
 #'   tmp5$cl,
 #'   expression(ggplot2::diamonds$imaginary(stats::rnorm(1000)))
 #' )
+#'
+#' tmp6 = .qualify_expression(expression(function(n,mu) rnorm(n,mu)))
+#' testthat::expect_equal(tmp6$defined, list())
+#' testthat::expect_equal(
+#'   format(tmp6$cl),
+#'   "expression(function(n, mu) stats::rnorm(n, mu))"
+#' )
+#'
+#' tmp7 = .qualify_expression(expression(Species = NULL))
+#' testthat::expect_equal(length(tmp7$cl), 1L)
+#' testthat::expect_equal(tmp7$cl, expression(Species = NULL))
+#'
 .qualify_expression = function(expr, defined = list(), unqual = list()) {
+  # TODO: this is very slow.
+  # TODO: is it possible to do this with scrRefs attached?
   # lst = as.list(expr)
   if (is.expression(expr) || is.call(expr)) {
     # input is a complex call or expression
@@ -207,7 +440,9 @@
     # browser()
     for (i in seq_along(lst)) {
       cl = lst[[i]]
-      if (inherits(cl, "=") || inherits(cl, "<-")) {
+      if (missing(cl)) {
+        out = c(out, dplyr::expr())
+      } else if (inherits(cl, "=") || inherits(cl, "<-")) {
         # the call defines an assignation
         assignee = cl[[2]]
         if (is.name(assignee)) {
@@ -240,6 +475,16 @@
           defined = unique(c(defined, tmp$defined))
           unqual = unique(c(unqual, tmp$unqual))
           cl[[2]] = tmp$cl
+          out = c(out, cl)
+        } else if (cl[[1]] == as.name("function")) {
+          # A function definition
+          # pick up names from function formals:
+          localdefined = c(defined, lapply(names(cl[[2]]), as.name))
+          # descend into body:
+          tmp = .qualify_expression(cl[[3]], localdefined, unqual)
+          # don't inherit defined variables in function
+          unqual = unique(c(unqual, tmp$unqual))
+          cl[[3]] = tmp$cl
           out = c(out, cl)
         } else {
           # A multi component call. we need to descend into it
@@ -276,7 +521,11 @@
     }
   } else {
     # maybe a numeric or other constant?
-    out = expr
+    if (class(expr) == "NULL") {
+      out = list(expr)
+    } else {
+      out = expr
+    }
   }
 
   names(out) = names(expr)
@@ -292,7 +541,10 @@
 # internal - does a name resolve to a function or value from a package?
 .is_pkg_item = function(name) {
   # is a function
-  tmp = try(gsub("package:", "", find(as.character(name))[[1]]), silent = TRUE)
+  tmp = try(
+    gsub("package:", "", utils::find(as.character(name))[[1]]),
+    silent = TRUE
+  )
   if (inherits(tmp, "try-error")) {
     return(FALSE)
   }
@@ -314,7 +566,7 @@
   # tmp = getNamespaceName(rlang::fn_env(eval(name)))
   # tmp = find(as.character(name))[[1]]
   if (is.null(pkg)) {
-    pkg = gsub("package:", "", find(as.character(name))[[1]])
+    pkg = gsub("package:", "", utils::find(as.character(name))[[1]])
   }
   pkg = as.name(pkg)
 

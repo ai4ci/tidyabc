@@ -71,43 +71,48 @@ truncate = function(dist, x_left, x_right, ...) {
 
   x_low = if (is.na(x_left)) dist$q(0) else x_left
   x_high = if (is.na(x_right)) dist$q(1) else x_right
-  x_delta = x_high - x_low
+  # x_delta = x_high - x_low
 
-  pfn = carrier::crate(
-    function(q) {
-      base_p = dist$p(q)
-      return(
-        ifelse(
-          q > !!x_high,
-          1,
+  qfn = NULL
+  out = .super_crate(
+    x_low = x_low,
+    x_high = x_high,
+    p_low = p_low,
+    p_delta = p_delta,
+    dist = dist,
+    .fns = list(
+      pfn = function(q) {
+        base_p = dist$p(q)
+        return(
           ifelse(
-            q < !!x_low,
-            0,
-            (base_p - !!p_low) / !!p_delta
+            q > x_high,
+            1,
+            ifelse(
+              q < x_low,
+              0,
+              (base_p - p_low) / p_delta
+            )
           )
         )
-      )
-    },
-    dist = dist
+      },
+      qfn = function(p) {
+        base_p = (p * p_delta) + p_low
+        return(dist$q(base_p))
+      },
+      rfn = function(n) {
+        qfn(stats::runif(n))
+      }
+    )
   )
-  qfn = carrier::crate(
-    function(p) {
-      base_p = (p * !!p_delta) + !!p_low
-      return(dist$q(base_p))
-    },
-    dist = dist
-  )
-  rfn = function(n) {
-    qfn(stats::runif(n))
-  }
+
   name = sprintf("trunc(%s, %1.2f - %1.2f)", dist$name, x_low, x_high)
 
   return(
     new_dist_fns(
       name = name,
-      pfn = pfn,
-      qfn = qfn,
-      rfn = rfn,
+      pfn = out$pfn,
+      qfn = out$qfn,
+      rfn = out$rfn,
       ...
     )
   )

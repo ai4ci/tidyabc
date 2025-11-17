@@ -19,7 +19,6 @@
 #    - stats
 #    - stringr
 #    - systemfonts
-#    - tibble
 # ---
 
 # Axes, legends etc ----
@@ -278,6 +277,7 @@
 #'
 #' @return nothing
 #' @keywords internal
+#' @importFrom ragg agg_png
 #' @concept ggplot
 .gg_pedantic = function(
   lineSize = 0.25,
@@ -321,7 +321,7 @@
     ) %>%
     dplyr::distinct()
 
-  tmp = tibble::tibble(
+  tmp = dplyr::tibble(
     family = family,
     path = systemfonts::match_fonts(family)$path
   ) %>%
@@ -424,7 +424,7 @@
 #' @keywords internal
 #' @concept ggplot
 #' @unit
-#' tibble::tibble(pvalue = c(0.001, 0.05, 0.1), fold_change = 1:3) %>%
+#' dplyr::tibble(pvalue = c(0.001, 0.05, 0.1), fold_change = 1:3) %>%
 #'  ggplot2::ggplot(ggplot2::aes(fold_change , pvalue)) +
 #'  ggplot2::geom_point() +
 #'  ggplot2::scale_y_continuous(transform= .gg_transform_logit())
@@ -531,7 +531,7 @@
 #' @keywords internal
 #' @concept ggplot
 #' @unit
-#' tibble::tibble(pvalue = c(0.001, 0.05, 0.1), fold_change = 1:3) %>%
+#' dplyr::tibble(pvalue = c(0.001, 0.05, 0.1), fold_change = 1:3) %>%
 #'  ggplot2::ggplot(ggplot2::aes(fold_change , pvalue)) +
 #'  ggplot2::geom_point() +
 #'  .gg_scale_y_logit(n=8)
@@ -571,7 +571,7 @@
 #' @concept ggplot
 #' @unit
 #'
-#' tibble::tibble(pvalue = c(0.001, 0.05, 0.1), fold_change = 1:3) %>%
+#' dplyr::tibble(pvalue = c(0.001, 0.05, 0.1), fold_change = 1:3) %>%
 #'  ggplot2::ggplot(ggplot2::aes(fold_change , pvalue)) +
 #'  ggplot2::geom_point() +
 #'  .gg_scale_y_percent()
@@ -649,6 +649,7 @@
 #'
 #' @return a ggplot layer.
 #' @keywords internal
+#' @concept ggplot
 #'
 #' @unit
 #' # top level function contains `...` and `mapping` extensions points:
@@ -743,6 +744,7 @@
 #'
 #' @return a single deduplicated set.
 #' @keywords internal
+#' @concept ggplot
 #'
 #' @unit
 #' m1 = ggplot2::aes(x=a,y=b,colour=class)
@@ -750,7 +752,7 @@
 .gg_merge_aes = function(..., allow_override = TRUE) {
   env = rlang::caller_env()
   dots = rlang::enexprs(...)
-  is_aes = sapply(dots, \(x) {
+  is_aes = sapply(dots, function(x) {
     isTRUE(try(inherits(eval(x, env), "uneval"), silent = TRUE))
   })
   aess = dots[is_aes]
@@ -767,4 +769,115 @@
     out = ggplot2::aes(!!!out, !!!a)
   }
   return(out)
+}
+
+
+# Annoyingly simple plots ----
+
+#' Simple one liner plots from vectors with defaults
+#'
+#' @describeIn dot-gg_hist Simple histogram
+#'
+#' @param x a vector of data or counts
+#' @param y a vector or matrix of data or counts
+#' @param binwidth histogram binwidth
+#' @param bw bandwidth parameter,if given it is interpreted as a fraction of the sd of the data
+#' @param ... passed onto the geoms
+#'
+#' @returns a ggplot
+#' @keywords internal
+#' @concept ggplot
+.gg_hist = function(x, binwidth = 1, ...) {
+  ggplot2::ggplot(dplyr::tibble(x = x)) +
+    ggplot2::geom_histogram(
+      ggplot2::aes(x = x),
+      binwidth = binwidth,
+      colour = "black",
+      fill = NA,
+      ...
+    ) +
+    ggplot2::xlab(deparse(substitute(x))) +
+    ggplot2::ylab("count")
+}
+
+#' @describeIn dot-gg_hist A density plot
+#' @keywords internal
+.gg_dens = function(x, bw = NULL, ...) {
+  if (is.null(bw)) {
+    bw = stats::bw.nrd0(x)
+  } else {
+    bw = stats::sd(x) * bw # diff(range(x)) * bw
+  }
+  ggplot2::ggplot(dplyr::tibble(x = x)) +
+    ggplot2::geom_density(ggplot2::aes(x = x), bw = bw) +
+    ggplot2::xlab(deparse(substitute(x))) +
+    ggplot2::ylab("density")
+}
+
+#' @describeIn dot-gg_hist A bar chart of counts
+#' @keywords internal
+.gg_bar = function(x, ...) {
+  y = NULL
+  ggplot2::ggplot(dplyr::tibble(x = seq_along(x), y = x)) +
+    ggplot2::geom_bar(
+      ggplot2::aes(x = x, y = y),
+      stat = "identity",
+      colour = "black",
+      fill = NA,
+      ...
+    ) +
+    ggplot2::xlab("index") +
+    ggplot2::ylab(deparse(substitute(x)))
+}
+
+#' @describeIn dot-gg_hist X-Y scatter plot
+#' @keywords internal
+.gg_scatter = function(x, y, ...) {
+  ggplot2::ggplot(dplyr::tibble(x = x, y = y)) +
+    ggplot2::geom_point(ggplot2::aes(x = x, y = y), ...) +
+    ggplot2::xlab(deparse(substitute(y))) +
+    ggplot2::ylab(deparse(substitute(x)))
+}
+
+#' @describeIn dot-gg_hist Histogram with densities overlaid.
+#' @keywords internal
+.gg_denshist = function(x, y, binwidth = 1) {
+  i = NULL
+  y = as.matrix(y)
+  ggplot2::ggplot() +
+    ggplot2::geom_density(
+      data = dplyr::tibble(x = as.vector(y), i = col(y)),
+      mapping = ggplot2::aes(x = x, group = i),
+      colour = ggplot2::alpha("red", 15 / (15 + ncol(y)))
+    ) +
+    ggplot2::geom_histogram(
+      data = dplyr::tibble(x = x),
+      mapping = ggplot2::aes(x = x, y = ggplot2::after_stat(density)),
+      colour = "black",
+      fill = NA,
+      binwidth = binwidth
+    ) +
+    ggplot2::xlab(deparse(substitute(x)))
+}
+
+#' @describeIn dot-gg_hist Bar chart with lines overlaid
+#' @keywords internal
+.gg_linebar = function(x, y, binwidth = 1) {
+  i = NULL
+  y = as.matrix(y)
+  ggplot2::ggplot() +
+    ggplot2::geom_line(
+      data = dplyr::tibble(x = row(y), count = as.vector(y), i = col(y)),
+      mapping = ggplot2::aes(x = x, y = count, group = i),
+      colour = ggplot2::alpha("red", 15 / (15 + ncol(y)))
+    ) +
+    ggplot2::geom_bar(
+      data = dplyr::tibble(x = seq_along(x), y = x),
+      mapping = ggplot2::aes(x = x, y = y),
+      stat = "identity",
+      colour = "black",
+      fill = NA
+    ) +
+    ggplot2::ylab(deparse(substitute(x))) +
+    ggplot2::xlab("index")
 }

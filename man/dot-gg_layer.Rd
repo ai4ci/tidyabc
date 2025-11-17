@@ -43,6 +43,7 @@ you to pass on data, augment a aesthetic mapping, and pass on other styling
 to a set of layers filtering them so they are relevant to the geom. I almost
 never want \code{inherit.aes} to be true.
 }
+\concept{ggplot}
 \keyword{internal}
 
 \section{Unit tests}{

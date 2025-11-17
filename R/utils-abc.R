@@ -10,7 +10,8 @@
 #' @param epsilon epsilon is a tolerance threshold that controls how closely
 #'   simulated summaries must match the observed ones to be considered
 #'   plausible. This is in the unit of `abc_summary_distance`. Initially the 0.5
-#'   quantile of distances, in subsequent waves this might be decreased
+#'   quantile of distances, in subsequent waves this might be decreased.
+#'   It is the scale parameter of the kernel function. $K_h(|u|)$
 #' @param prev_sim_df the output of a previous ABC wave including a
 #'   `abc_weight` column
 #' @param proposal_list a list of empirical probability distributions that map
@@ -20,64 +21,151 @@
 #' @keywords internal
 NULL
 
-#' Sample for the prior distribution
+
+#' Combine simulation scores to a single distance metric.
 #'
-#' This uses a multivariate normal and a copula to generate correlated
-#' structure. The correlation is held as an attribute in the proposals.
-#' N.B. this used to construct derived values and apply constraints but this
-#' was complex and has been deferred. Constraints change the probability
-#' distribution also and will affect validity of proposal distribution.
 #'
-#' @inheritParams common_internal
+#' This function calculates the overall score for an individual simulation,
+#' based on combining the components output by `score_list` comparing them to
+#' the target component scores of the original observed data. The Mahalanobis
+#' distance is calculated relative to the distribution of the first wave (i.e.
+#' when the priors were directly sampled).
+#'
+#' @param component_scores - a list column of scores. each entry is itself a list
 #' @inheritParams tidyabc_common
 #'
-#' @returns a data frame of samples in MVN (prefixed `abc_mvn_`) and parameter
-#' space.
+#' @returns a vector of distances
+#'
 #' @keywords internal
-.sample_priors = function(proposal_list, n_sims) {
-  sim_df = dplyr::tibble(.rows = n_sims)
+.summary_distance = function(
+  component_scores,
+  obsscores = NULL,
+  distance_method = c("euclidean", "manhattan", "mahalanobis"),
+  wave1_cov = NULL,
+  scoreweights = NULL
+) {
+  method = match.arg(distance_method)
 
-  nms = names(proposal_list)
-  nms = nms[nms != ""]
+  result = rep(NA, length(component_scores))
+  nonnulls = which(
+    !sapply(component_scores, is.null) &
+      sapply(component_scores, function(l) all(sapply(l, is.finite)))
+  )
 
-  cor = attr(proposal_list, "cor")
-  if (is.null(cor)) {
-    cor = diag(length(nms))
+  # unnest scores from list of lists into a matrix:
+  # this relies on the naming order being consistent, which it should be as output
+  # from purrr...
+  simscores = matrix(
+    unname(unlist(component_scores[nonnulls])),
+    nrow = length(nonnulls),
+    byrow = TRUE
+  )
+
+  colnames(simscores) = names(component_scores[[1]])
+
+  # reference scores
+  if (is.null(obsscores)) {
+    obsscores = rep(0, ncol(simscores))
+  }
+  if (is.null(names(obsscores))) {
+    names(obsscores) = colnames(simscores)
+  }
+  if (!identical(sort(names(obsscores)), sort(colnames(simscores)))) {
+    stop(
+      "`obsscores` names do not match `scorer_fn` outputs. Should be a vector with names: ",
+      paste0(colnames(simscores), collapse = ",")
+    )
+  }
+  obsscores = unlist(obsscores)
+  obsscores = obsscores[colnames(simscores)]
+  obsscores = matrix(
+    unlist(obsscores),
+    nrow = nrow(simscores),
+    ncol = ncol(simscores),
+    byrow = TRUE
+  )
+
+  # score weights
+  if (is.null(scoreweights)) {
+    scoreweights = rep(1, ncol(simscores))
+  }
+  if (is.null(names(scoreweights))) {
+    names(scoreweights) = colnames(simscores)
+  }
+  if (!identical(sort(names(scoreweights)), sort(colnames(simscores)))) {
+    stop(
+      "`scoreweights` names do not match `scorer_fn` outputs. Should be a vector with names: ",
+      paste0(colnames(simscores), collapse = ",")
+    )
+  }
+  scoreweights = unlist(scoreweights)
+  scoreweights = scoreweights[colnames(simscores)]
+  scoreweights = matrix(
+    unlist(scoreweights),
+    nrow = nrow(simscores),
+    ncol = ncol(simscores),
+    byrow = TRUE
+  )
+
+  if (method == "euclidean") {
+    delta = simscores - obsscores
+    delta = delta * scoreweights
+    result[nonnulls] = sqrt(rowSums(delta^2))
   }
 
-  # generate the correlated measures as normals:
-  z = mvtnorm::rmvnorm(n_sims, mean = rep(0, length(nms)), sigma = cor)
-
-  # convert to uniform (pnorm) & map to targets (prior$q:
-  for (i in seq_along(nms)) {
-    nm = nms[[i]]
-    mvn_nm = sprintf("abc_mvn_%s", nm)
-    prior_dist = proposal_list[[nm]]
-    if (!is.dist_fns(prior_dist)) {
-      stop("Prior `", nm, "` is not an object of type `dist_fns`.")
-    }
-    sim_df[[mvn_nm]] = z[, i]
-    sim_df[[nm]] = prior_dist$q(stats::pnorm(z[, i]))
+  if (method == "manhattan") {
+    delta = simscores - obsscores
+    delta = delta * scoreweights
+    result[nonnulls] = rowSums(abs(delta))
   }
 
-  # derived = unname(proposal_list[nms == ""])
-  # 2 sided formulae are derived / 1 sided constraints
-  # tmp = sapply(sapply(derived, rlang::f_lhs), is.null)
-  # constraints = derived[as.logical(tmp)]
-  # derived = derived[!as.logical(tmp)]
+  if (is.null(wave1_cov)) {
+    wave1_cov = stats::cov(simscores)
+  }
+  # test remove correlations:
+  wave1_cov = wave1_cov * diag(ncol(wave1_cov))
 
-  # derived values:
-  # for (form in derived) {
-  #   tgt = rlang::f_lhs(form)
-  #   expr = rlang::f_rhs(form)
-  #   sim_df = sim %>% dplyr::mutate(!!tgt := !!expr)
-  # }
+  if (method == "mahalanobis") {
+    # I want columns that are high weighted to appear further away from the
+    result[nonnulls] = suppressWarnings(stats::mahalanobis(
+      simscores * scoreweights,
+      obsscores * scoreweights,
+      wave1_cov
+    ))
+  }
 
-  # sim_df = .apply_constraints_and_derived(sim_df, proposal_list)
-
-  return(sim_df)
+  return(result)
 }
 
+#' Covariance from component scores
+#'
+#' Supports calculation of Mahalanobis distance.
+#'
+#' @param component_scores a list of lists of scores, one per simulation
+#'
+#' @returns a covariance matrix
+#' @keywords internal
+.distance_covariance = function(
+  component_scores
+) {
+  nonnulls = which(
+    !sapply(component_scores, is.null) &
+      sapply(component_scores, function(l) all(sapply(l, is.finite)))
+  )
+
+  # unnest scores from list of lists into a matrix:
+  # this relies on the naming order being consistent, which it should be as output
+  # from purrr...
+  simscores = matrix(
+    unname(unlist(component_scores[nonnulls])),
+    nrow = length(nonnulls),
+    byrow = TRUE
+  )
+  wave1_cov = stats::cov(simscores)
+  return(wave1_cov)
+}
+
+# x = list(list(a=1,b=2,c=3),list(a=1,b=2,c=3),list(a=1,b=2,c=3))
 
 #' Generate comparison metrics for two sequential waves
 #'
@@ -87,8 +175,7 @@ NULL
 #'   with stats in each. The `summary` stats are
 #' @keywords internal
 .compare_waves = function(sim_df, prev_sim_df = NULL, priors_list) {
-  nms = names(priors_list)
-  nms = nms[nms != ""]
+  nms = priors_list@params
 
   sim_weight = suppressWarnings(sim_df$abc_weight)
 
@@ -151,34 +238,18 @@ NULL
       return(NA)
     }
     unname(
-      Hmisc::wtd.quantile(
+      diff(wquantile(
+        p = c(0.025, 0.975),
         x = prev_sim_df[[nm]],
-        weights = prev_weight,
-        probs = 0.975,
-        normwt = TRUE,
-        na.rm = TRUE
-      ) -
-        Hmisc::wtd.quantile(
-          x = prev_sim_df[[nm]],
-          weights = prev_weight,
-          probs = 0.025,
-          normwt = TRUE,
-          na.rm = TRUE
-        ) -
-        Hmisc::wtd.quantile(
+        w = prev_weight,
+        link = priors_list[[nm]]
+      )) -
+        diff(wquantile(
+          p = c(0.025, 0.975),
           x = sim_df[[nm]],
-          weights = sim_weight,
-          probs = 0.975,
-          normwt = TRUE,
-          na.rm = TRUE
-        ) +
-        Hmisc::wtd.quantile(
-          x = sim_df[[nm]],
-          weights = sim_weight,
-          probs = 0.025,
-          normwt = TRUE,
-          na.rm = TRUE
-        )
+          w = sim_weight,
+          link = priors_list[[nm]]
+        ))
     )
   })
   names(quantile_range_redn) = nms
@@ -202,9 +273,9 @@ NULL
 
 # Crate score function with observed data for transfer to different threads
 # crate includes .p progressr option.
-.crate_scorer_fn = function(scorer_fn, obsdata) {
+.crate_scorer_fn = function(scorer_fn, obsdata, debug = FALSE) {
   if (is.function(scorer_fn)) {
-    if (!all(names(formals(scorer_fn))[1:2] != c("simdata", "obsdata"))) {
+    if (!identical(names(formals(scorer_fn))[1:2], c("simdata", "obsdata"))) {
       stop(
         "`scorer_fn` must have 2 parameters, named `simdata` (or `.x`) then `obsdata` (or `.y`)"
       )
@@ -212,37 +283,62 @@ NULL
   } else {
     scorer_fn = rlang::as_function(scorer_fn)
   }
-
-  require(stats)
-  require(utils)
   # Crate function for parallelisation.
-  scorer_crate = .autocrate(
+  scorer_crate = carrier::crate(
     function(simdata, .p = NULL) {
+      if (is.null(simdata)) {
+        return(NULL)
+      }
       if (!is.null(.p)) {
         .p()
       }
-      scorer_fn(simdata, obsdata)
+      tryCatch(
+        scorer_fn(simdata = simdata, obsdata = obsdata),
+        error = function(e) {
+          warning(e$message)
+          if (!!debug) {
+            debug(scorer_fn)
+            on.exit(undebug(scorer_fn), add = TRUE)
+            scorer_fn(simdata = simdata, obsdata = obsdata)
+          }
+          return(NULL)
+        }
+      )
     },
-    scorer_fn = scorer_fn,
+    scorer_fn = .autocrate_fn(scorer_fn),
     obsdata = obsdata
   )
+  return(scorer_crate)
 }
 
 # Crate sim function with .p progressr option
-.crate_sim_fn = function(sim_fn) {
+.crate_sim_fn = function(sim_fn, debug = FALSE) {
   # Crate function for parallelisation.
-  require(stats)
-  require(utils)
-  sim_crate = .autocrate(
+
+  sim_crate = carrier::crate(
     function(..., .p = NULL) {
       if (!is.null(.p)) {
         .p()
       }
+      e = NULL
       args = rlang::list2(...)
       args = args[names(args) %in% names(formals(sim_fn))]
-      do.call(sim_fn, args)
+      tryCatch(
+        {
+          do.call(sim_fn, args)
+        },
+        error = function(e) {
+          warning(e$message)
+          if (!!debug) {
+            debug(sim_fn)
+            on.exit(undebug(sim_fn), add = TRUE)
+            do.call(sim_fn, args)
+          }
+          return(NULL)
+        }
+      )
     },
-    sim_fn = sim_fn
+    sim_fn = .autocrate_fn(sim_fn)
   )
 }
 
@@ -262,25 +358,30 @@ NULL
   seed = NULL,
   parallel = FALSE,
   wave1_cov = NULL,
-  n_resamples = 1
+  n_resamples = 1,
+  debug = FALSE,
+  scoreweights = NULL,
+  wave = 0
 ) {
   if (!is.null(seed)) {
     seed = set.seed(seed)
     on.exit(set.seed(seed), add = TRUE)
   }
 
-  sim_crate = .crate_sim_fn(sim_fn)
+  sim_crate = .crate_sim_fn(sim_fn, debug = debug)
 
   sim_df = .abc_do_simulation_and_scoring(
     sim_df = sim_df,
     sim_crate = sim_crate,
     n_resamples = 1,
     keep_simulations = keep_simulations,
-    scorer_crate = .crate_scorer_fn(scorer_fn, obsdata),
+    scorer_crate = .crate_scorer_fn(scorer_fn, obsdata, debug = debug),
     obsscores = obsscores,
     distance_method = distance_method,
     parallel = parallel,
-    wave1_cov = wave1_cov
+    wave1_cov = wave1_cov,
+    scoreweights = scoreweights,
+    wave = wave
   )
 
   return(sim_df)
@@ -298,7 +399,9 @@ NULL
   obsscores = NULL,
   distance_method = "euclidean",
   parallel = FALSE,
-  wave1_cov = NULL
+  wave1_cov = NULL,
+  scoreweights = NULL,
+  wave = 0
 ) {
   weights = suppressWarnings(sim_df$abc_weight)
 
@@ -317,29 +420,54 @@ NULL
     )
   }
 
-  #TODO: wave ID for progressbar?
+  # TODO: wave ID for progressbar?
+  # .wave = sprintf("Wave %d simulations:", wave)
+  .wave = interactive() &&
+    !is.null(getOption("knitr.in.progress")) &&
+    !identical(Sys.getenv("IN_PKGDOWN"), "true")
 
   if (parallel) {
-    fn_pmap = function(...) furrr::future_pmap(..., .progress = TRUE)
-    fn_map = function(...) furrr::future_map(..., .progress = TRUE)
+    fn_pmap = function(.l, .f, ..., .wave = TRUE) {
+      furrr::future_pmap(
+        .l,
+        .f,
+        ...,
+        .options = furrr::furrr_options(seed = TRUE),
+        .progress = .wave
+      )
+    }
+    fn_map = function(.x, .f, ..., .wave = TRUE) {
+      furrr::future_map(
+        .x,
+        .f,
+        ...,
+        .options = furrr::furrr_options(seed = TRUE),
+        .progress = .wave
+      )
+    }
   } else {
-    fn_pmap = function(...) purrr::pmap(..., .progress = TRUE)
-    fn_map = function(...) purrr::map(..., .progress = TRUE)
+    fn_pmap = function(.l, .f, ..., .wave = TRUE) {
+      # had to switch a standalone purrr for performance reasons
+      pmap(.l, .f, ..., .progress = .wave)
+    }
+    fn_map = function(.x, .f, ..., .wave = TRUE) {
+      map(.x, .f, ..., .progress = .wave)
+    }
   }
-  # TODO:
+  # TODO: progressr instead?
   # p = progressr::progressor(steps = nrow(sim_df))
   p = NULL
 
   if (is.null(scorer_crate)) {
     # Score fn not present so we keep simulations.
     sim_df = sim_df %>%
-      dplyr::mutate(abc_sim = fn_pmap(., sim_crate, .p = p))
+      dplyr::mutate(abc_sim = fn_pmap(., sim_crate, .p = p, .wave = .wave))
   } else {
     if (keep_simulations) {
       # keep both sim_df and scores
       sim_df = sim_df %>%
         dplyr::mutate(
-          abc_sim = fn_pmap(., sim_crate, .p = p)
+          abc_sim = fn_pmap(., sim_crate, .p = p, .wave = .wave)
         ) %>%
         dplyr::mutate(
           abc_component_score = fn_map(
@@ -357,7 +485,8 @@ NULL
             function(...) {
               sim_df = sim_crate(...)
               return(scorer_crate(sim_df, .p = p))
-            }
+            },
+            .wave = .wave
           )
         )
     }
@@ -365,11 +494,12 @@ NULL
     # given the components calculate the overall distance.
     sim_df = sim_df %>%
       dplyr::mutate(
-        abc_summary_distance = summary_distance(
+        abc_summary_distance = .summary_distance(
           abc_component_score,
           obsscores = obsscores,
           distance_method = distance_method,
-          wave1_cov = wave1_cov
+          wave1_cov = wave1_cov,
+          scoreweights = scoreweights
         )
       )
   }
@@ -386,6 +516,7 @@ NULL
 #'
 #' @inheritParams common_internal
 #' @inheritParams tidyabc_common
+#' @inheritParams .log_kernel
 #'
 #' @returns the `sim_df` with an `abc_weight` column
 #' @keywords internal
@@ -393,10 +524,18 @@ NULL
   sim_df,
   priors_list,
   epsilon,
-  proposal_list
+  proposal_list,
+  kernel
 ) {
+  # N.B. this is not currently being used
+  # as tends to produce worse results than a kernel distance only weight.
+
   params = names(priors_list)
   params = params[params != ""]
+
+  if (identical(priors_list, proposal_list)) {
+    return(.calculate_weights_wave_one(sim_df, epsilon, kernel))
+  }
 
   # In the adaptive approach the MVN space for every wave is always centred at 0
   # regardless of the wave, however correlation structure will change after each
@@ -418,6 +557,7 @@ NULL
     as.matrix()
 
   # In proposal MVN space:
+  # This should be the same copula that was used to generate the proposals:
   log_q = mvtnorm::dmvnorm(theta_new, sigma = cor, log = TRUE)
 
   # The prior probability of this particle is defined in the MVN space using the
@@ -435,99 +575,42 @@ NULL
 
   # In prior MVN space:
   log_prior = mvtnorm::dmvnorm(theta_prior, log = TRUE)
+
   # Fix dmvnorn NaNs if not finite inputs:
   # -Inf because log(P=0)
   log_prior[!apply(is.finite(theta_prior), MARGIN = 1, all)] = -Inf
 
   distances = sim_df$abc_summary_distance
-  log_abc_kernel = -0.5 * (distances / epsilon)^2
+  log_abc_kernel = .log_kernel(distances, epsilon, kernel)
 
-  log_weight = log_prior + log_abc_kernel - log_q
+  # Constant terms:
+  log_M = .log_kernel(0, epsilon = epsilon, kernel) +
+    max(log_prior) -
+    max(log_q)
 
-  if (any(is.na(log_weight))) {
-    browser()
-  }
+  # P_prior(theta) / P_proposal(theta)
+  # term can dominate, and create proposals that are outside of the
+  # gradually decreasing kernel radius, leading to low ESS and
+  # lack of convergence. Its the log_q term that causes the issue here but
+  # adjustment would be non linear in normal space.
+  # The rationale here is we want to prioritise surprising results that are
+  # close to the result we want. This is rationale for the expit in the
+  # conversion
+  log_weight = log_abc_kernel + log_prior - log_q - log_M
 
   sim_df %>%
     dplyr::mutate(
-      # Compute unnormalized ABC weights (Gaussian kernel)
-      abc_weight = exp(log_weight - max(log_weight))
+      # convert log weight to importance
+      # log_weight = pmin(log_weight,0)
+      # abc_weight = exp(log_weight - max(log_weight))
+      # Convert log_weight to importance as probability:
+      abc_weight = .expit(log_weight)
     ) %>%
     dplyr::mutate(
       abc_weight = abc_weight / sum(abc_weight)
     )
 }
 
-# # Filter proposals to match constraints and boundaries imposed by priors
-# #
-# # @inheritParams common_internal
-# # @returns the `sim_df` with invalid combinations removed, and replaced with
-# # copies of valid proposals randomly.
-# # @keywords internal
-# .apply_constraints_and_derived = function(sim_df, priors_list) {
-#   n = nrow(sim_df)
-#   # derived
-#   nms = names(priors_list)
-#   param_nms = nms[nms != ""]
-#   derived = unname(priors_list[nms == ""])
-#   # 2 sided formulae are derived / 1 sided constraints
-#   tmp = sapply(sapply(derived, rlang::f_lhs), is.null)
-#   constraints = derived[as.logical(tmp)]
-#   derived = derived[!as.logical(tmp)]
-#
-#   # derived values:
-#   for (form in derived) {
-#     tgt = rlang::f_lhs(form)
-#     expr = rlang::f_rhs(form)
-#     sim_df = sim %>% dplyr::mutate(!!tgt := !!expr)
-#   }
-#
-#   max_it = getOption("tidyabc.max_oob", 1000)
-#   while (max_it > 1) {
-#     # check validity
-#     sim_df = sim_df %>% dplyr::mutate(.valid = TRUE)
-#     for (nm in param_nms) {
-#       prior = priors_list[[nm]]
-#       col = sim_df[[nm]]
-#       keep = col >= prior$q(0) & col <= prior$q(1)
-#       sim_df = sim_df %>% dplyr::mutate(.valid = .valid & keep)
-#     }
-#
-#     for (constraint in constraints) {
-#       expr = rlang::f_rhs(constraint)
-#       sim_df = sim_df %>% dplyr::mutate(.valid = .valid & !!expr)
-#     }
-#
-#     if (any(!sim_df$.valid)) {
-#       # browser()
-#       # fix invalid
-#       valid = sim_df %>% dplyr::filter(.valid) %>% dplyr::select(-.valid)
-#       invalid = sim_df %>% dplyr::filter(!.valid) %>% dplyr::select(-.valid)
-#       alt = valid %>% dplyr::slice_sample(n = nrow(invalid), replace = TRUE)
-#       # invalid replaced with midpoint of invalid and valid particles
-#       rpl = dplyr::bind_rows(
-#         invalid %>% dplyr::mutate(.id = row_number()),
-#         alt %>% dplyr::mutate(.id = row_number())
-#       ) %>%
-#         dplyr::group_by(.id) %>%
-#         dplyr::summarise(dplyr::across(dplyr::everything(), mean)) %>%
-#         dplyr::ungroup() %>%
-#         dplyr::select(-.id)
-#
-#       sim_df = dplyr::bind_rows(
-#         valid,
-#         rpl
-#       )
-#
-#       max_it = max_it - 1
-#     } else {
-#       # exit loop and function
-#       return(sim_df %>% dplyr::select(-.valid))
-#     }
-#   }
-#   warning("Invalid proposals generated that could not be fixed.")
-#   return(sim_df %>% dplyr::filter(.valid) %>% dplyr::select(-.valid))
-# }
 
 ## Basic ----
 
@@ -539,20 +622,24 @@ NULL
 #'
 #' @inheritParams common_internal
 #' @inheritParams tidyabc_common
+#' @inheritParams .log_kernel
 #'
 #' @returns the `sim_df` with an `abc_weight` column
 #' @keywords internal
 .calculate_weights_wave_one = function(
   sim_df,
-  epsilon
+  epsilon,
+  kernel
 ) {
   distances = sim_df$abc_summary_distance
-  log_weight = -0.5 * (distances / epsilon)^2
+  log_weight = .log_kernel(distances, epsilon, kernel) -
+    .log_kernel(0, epsilon, kernel)
 
   sim_df %>%
     dplyr::mutate(
       # Compute unnormalized ABC weights (Gaussian kernel)
-      abc_weight = exp(log_weight - max(log_weight))
+      # abc_weight = exp(log_weight - max(log_weight))
+      abc_weight = .expit(log_weight)
     ) %>%
     dplyr::mutate(
       abc_weight = abc_weight / sum(abc_weight)
@@ -570,6 +657,7 @@ NULL
 #'
 #' @inheritParams common_internal
 #' @inheritParams tidyabc_common
+#' @inheritParams .log_kernel
 #'
 #' @returns the `sim_df` with an `abc_weight` column
 #' @keywords internal
@@ -578,7 +666,7 @@ NULL
   # priors_list,
   epsilon,
   prev_sim_df = NULL,
-  kernel_t
+  kernel
 ) {
   # priors = names(priors_list)
   # priors = priors[priors != ""]
@@ -602,7 +690,7 @@ NULL
 
   log_prior = mvtnorm::dmvnorm(theta_new, log = TRUE)
 
-  log_abc_kernel = -0.5 * (distances / epsilon)^2
+  log_abc_kernel = .log_kernel(distances, epsilon, kernel)
   # log_abc_kernel = log(as.integer(distances < epsilon))
 
   if (!is.null(prev_sim_df)) {
@@ -610,8 +698,7 @@ NULL
       dplyr::select(dplyr::starts_with("abc_mvn_")) %>%
       as.matrix()
     w_prev = suppressWarnings(prev_sim_df$abc_weight)
-    Sigma_score = .posterior_covariance(theta_prev, w_prev, kernel_t)
-
+    Sigma_score = .posterior_covariance(theta_prev, w_prev)
     log_q = .log_q_proposal_vectorized(
       theta_new,
       theta_prev,
@@ -622,13 +709,19 @@ NULL
     log_q = log_prior
   }
 
-  log_weight = log_prior + log_abc_kernel - log_q
-  # log_weight = log_abc_kernel
+  # Constant terms:
+  log_M = .log_kernel(0, epsilon = epsilon, kernel) +
+    max(log_prior) -
+    max(log_q)
+  log_weight = log_prior + log_abc_kernel - log_q - log_M
 
   sim_df %>%
     dplyr::mutate(
-      # Compute unnormalized ABC weights (Gaussian kernel)
-      abc_weight = exp(log_weight - max(log_weight))
+      # convert log weight to importance
+      # log_weight = pmin(log_weight,0)
+      # abc_weight = exp(log_weight - max(log_weight))
+      # Convert log_weight to importance as probability:
+      abc_weight = .expit(log_weight)
     ) %>%
     dplyr::mutate(
       abc_weight = abc_weight / sum(abc_weight)
@@ -646,11 +739,18 @@ NULL
 #' @returns a `sim_df`
 #' @keywords internal
 .sample_using_perturbation = function(
-  n_sims,
-  prev_sim_df,
   priors_list,
-  kernel_t
+  n_sims,
+  prev_sim_df
 ) {
+  # kernel_t
+  # kernel_t A kernel bandwidth parameter for proposals. This controls the
+  #   amount of noise that particles are perturbed by (and hence the spread of
+  #   the PDF of the proposal distribution), and 1 is approximately 34% of the
+  #   proposal distribution at the centre. Smaller values (default is 0.2) give a
+  #   smaller step size in generating new proposals, and proposals will be closer
+  #   to currently accepted particles.
+
   theta_prev = prev_sim_df %>%
     dplyr::select(dplyr::starts_with("abc_mvn_")) %>%
     as.matrix()
@@ -659,7 +759,7 @@ NULL
   if (is.null(w_prev)) {
     stop("Weights must be calculated first.")
   }
-  Sigma_pert = .posterior_covariance(theta_prev, w_prev, kernel_t)
+  Sigma_pert = .posterior_covariance(theta_prev, w_prev) #, kernel_t)
 
   # Step 1: resample indices with probability w_prev
   idx = sample(
@@ -669,7 +769,7 @@ NULL
     prob = w_prev
   )
 
-  # Step 2: perturb each selected particle in z space
+  # Step 2: perturb each selected particle in MVN space
   z = theta_prev[idx, , drop = FALSE] +
     mvtnorm::rmvnorm(
       n_sims,
@@ -679,12 +779,13 @@ NULL
 
   sim_df = z %>% dplyr::as_tibble()
 
-  nms = names(priors_list)
-  nms = nms[nms != ""]
+  nms = priors_list@params
+
   for (i in seq_along(nms)) {
     nm = nms[[i]]
     mvn_nm = sprintf("abc_mvn_%s", nm)
     prior_dist = priors_list[[nm]]
+    # Map to proposal space
     sim_df[[nm]] = prior_dist$q(stats::pnorm(z[, mvn_nm]))
   }
 
@@ -697,11 +798,17 @@ NULL
 #' @param theta a set of particles as a matrix
 #' @param weights the weights of the previous particles assumed calculated using
 #'   the same kernel
+#' @param kernel_t A kernel bandwidth parameter for proposals. This controls the
+#'   amount of noise that particles are perturbed by (and hence the spread of
+#'   the PDF of the proposal distribution), and 1 is approximately 34% of the
+#'   proposal distribution at the centre. Smaller values (default is 0.2) give a
+#'   smaller step size in generating new proposals, and proposals will be closer
+#'   to currently accepted particles.
 #' @inheritParams tidyabc_common
 #'
 #' @returns a covariance matrix, optionally scaled
 #' @keywords internal
-.posterior_covariance = function(theta, weights, kernel_t) {
+.posterior_covariance = function(theta, weights, kernel_t = 1) {
   if (is.null(weights)) {
     weights = rep(1 / nrow(theta), nrow(theta))
   }
@@ -711,8 +818,7 @@ NULL
 
   # Scale it (standard trick for random walk)
   d = ncol(theta) # dimension = 4
-  scaling_factor = 2.38^2 / d # optimal for Gaussian targets
-  cov_w = kernel_t * scaling_factor * cov_w
+  cov_w = kernel_t^2 / d * cov_w
 
   # Ensure positive definite (add jitter if needed)
   Sigma_pert = as.matrix(Matrix::nearPD(cov_w, keepDiag = TRUE)$mat)

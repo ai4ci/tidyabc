@@ -2,6 +2,7 @@
 % Please edit documentation in R/s3-abc_fit-class.R
 \name{abc_fit}
 \alias{abc_fit}
+\alias{new_abc_fit}
 \alias{format.abc_fit}
 \alias{summary.abc_fit}
 \alias{tidy.abc_fit}
@@ -9,9 +10,11 @@
 \alias{plot.abc_fit}
 \title{\code{abc_fit} S3 class}
 \usage{
+new_abc_fit(type, iterations, converged, priors_list, wave_df, summ_df, sim_df)
+
 \method{format}{abc_fit}(x, ...)
 
-\method{summary}{abc_fit}(x, ...)
+\method{summary}{abc_fit}(object, ..., truth = NULL)
 
 tidy.abc_fit(x, ...)
 
@@ -20,12 +23,6 @@ tidy.abc_fit(x, ...)
 \method{plot}{abc_fit}(x, ..., truth = NULL)
 }
 \arguments{
-\item{x}{a \code{abc_fit} object as output by the \code{abc_XXX} functions}
-
-\item{...}{passed on to methods}
-
-\item{truth}{a named numeric vector of known parameter values}
-
 \item{type}{the type of ABC algorithm}
 
 \item{iterations}{number of completed iterations}
@@ -37,15 +34,22 @@ tidy.abc_fit(x, ...)
 \item{summ_df}{the summary of the parameter fits after each wave.}
 
 \item{sim_df}{the final wave posteriors}
+
+\item{x}{a \code{abc_fit} object as output by the \code{abc_XXX} functions}
+
+\item{...}{passed on to methods}
+
+\item{truth}{a named numeric vector of known parameter values}
 }
 \value{
-an S3 ojbect of class \code{abc_fit} this contains the following:
+an S3 object of class \code{abc_fit} this contains the following:
 \itemize{
 \item type: the type of ABC algorithm
 \item iterations: number of completed iterations
 \item converged: boolean - did the result meet convergence criteria
 \item waves: a list of dataframes of wave convergence metrics
 \item summary: a dataframe with the summary of the parameter fits after each wave.
+\item priors: the priors for the fit as a \code{abc_prior} S3 object
 \item posteriors: the final wave posteriors
 }
 }
@@ -66,6 +70,8 @@ single ABC rejection round or after a set of SMC waves.
 }}
 \section{Functions}{
 \itemize{
+\item \code{new_abc_fit()}: Create a \code{abc_fit} object
+
 \item \code{tidy.abc_fit()}: S3 summary method
 
 }}

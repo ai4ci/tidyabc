@@ -23,9 +23,14 @@ A parameter posterior correlation plot
 }
 \examples{
 
-plot_correlations(
+p = plot_correlations(
   example_adaptive_fit(),
   example_truth()
+)
+
+p & ggplot2::theme(
+  axis.title.y = ggplot2::element_text(angle=70,vjust=0.5),
+  axis.title.x = ggplot2::element_text(angle=20,hjust=0.5)
 )
 
 }

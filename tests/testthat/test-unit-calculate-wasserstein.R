@@ -53,14 +53,66 @@ test_that("calculate_wasserstein unit test", {
     calculate_wasserstein(cmp3, ref),
     0.212977231452674
   )
+  
+  calculate_wasserstein(cmp1, ref, bootstraps = 10)
 
   # generates a failure if the overall test is failing with a link to the 
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/calculate-wasserstein.R"), c(21, 1, 21+1, 1))
+    srcref = srcref(srcfile("../../R/calculate-wasserstein.R"), c(25, 1, 25+1, 1))
   )
 })
 
 # unit test end: calculate_wasserstein ----
+# unit test start: wasserstein_calculator ----
+
+test_that("wasserstein_calculator unit test", {
+
+  # Automatically generated test case from roxygen @unit tag
+  # Do not edit here - follow the link to the source file.
+  # or navigate to topic with <F2>
+  F2 = wasserstein_calculator
+  
+
+  tmp <- wasserstein_calculator(0:10)
+  
+  # zero if no distance
+  testthat::expect_equal(tmp(0:10), 0)
+  testthat::expect_equal(tmp(10:0), 0)
+  
+  # normalised so that all mass at mean = 1
+  testthat::expect_equal(tmp(rep(5, 11)), 1)
+  
+  # smaller sample recycled and normalises to same value
+  testthat::expect_equal(tmp(rep(5, 5)), 1)
+  
+  # should be ((0+1+0+1+0+0+0+1+0+1+0) / 11) / ((5+4+3+2+1+0+1+2+3+4+5) / 11) = 0.1333...
+  testthat::expect_equal(
+    tmp(c(0, 0, 2, 2, 4, 5, 6, 8, 8, 10, 10)),
+    0.133333333333333
+  )
+  
+  withr::with_seed(100, {
+    ref <- rnorm(1000)
+    cmp1 <- rnorm(1000)
+    cmp2 <- rnorm(1000, sd = 2)
+    cmp3 <- rnorm(100)
+  })
+  
+  tmp2 <- wasserstein_calculator(ref)
+  
+  testthat::expect_equal(tmp2(cmp1), 0.0576417503974498)
+  testthat::expect_equal(tmp2(cmp2), 1.04950621760385)
+  testthat::expect_equal(tmp2(cmp3), 0.212977231452674)
+
+  # generates a failure if the overall test is failing with a link to the 
+  # source of the unit test:
+  testthat::expect(rlang::caller_env(n = 2)$ok,
+    failure_message = "Source link for failing @unit test.",
+    srcref = srcref(srcfile("../../R/calculate-wasserstein.R"), c(125, 1, 125+1, 1))
+  )
+})
+
+# unit test end: wasserstein_calculator ----
 # end of unit tests ----

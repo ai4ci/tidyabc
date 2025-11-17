@@ -39,7 +39,7 @@ example_sim_fn = function(mean, sd1, sd2) {
 #'   example_obsdata(),
 #'   example_sim_fn(3,2,1)
 #' )
-example_scorer_fn = function(obsdata, simdata) {
+example_scorer_fn = function(simdata, obsdata) {
   return(list(
     A = calculate_wasserstein(obsdata$A, simdata$A),
     B = calculate_wasserstein(obsdata$B, simdata$B)
@@ -91,10 +91,11 @@ example_obsdata = function() {
 #' example_priors_list()
 example_priors_list = function() {
   return(
-    list(
-      mean = as.dist_fns(runif, 0, 10),
-      sd1 = as.dist_fns(runif, 0, 5),
-      sd2 = as.dist_fns(runif, 0, 5)
+    priors(
+      mean ~ unif(0, 10),
+      sd1 ~ unif(0, 5),
+      sd2 ~ unif(0, 5),
+      ~ mean > sd2
     )
   )
 }
@@ -133,7 +134,7 @@ example_smc_fit = function() {
       scorer_fn = example_scorer_fn,
       n_sims = 1000,
       acceptance_rate = 0.25,
-      max_waves = 5,
+      max_time = 5, # 5 seconds to fit within examples limit
       parallel = FALSE,
       allow_continue = FALSE
     )
@@ -155,7 +156,7 @@ example_adaptive_fit = function() {
       scorer_fn = example_scorer_fn,
       n_sims = 1000,
       acceptance_rate = 0.25,
-      max_waves = 5,
+      max_time = 5, # 5 seconds to fit within examples limit
       parallel = FALSE,
       allow_continue = FALSE
     )

@@ -7,8 +7,10 @@
 new_link_fns(
   trans = ~.x,
   inv = ~.x,
-  domain = c(-Inf, Inf),
-  range = c(-Inf, Inf)
+  support = c(-Inf, Inf),
+  ddxtrans = NULL,
+  ddxinv = NULL,
+  name = NULL
 )
 }
 \arguments{
@@ -16,7 +18,7 @@ new_link_fns(
 
 \item{inv}{the reverse inverting function}
 
-\item{domain}{the domain or support of the link}
+\item{support}{the support or support of the link}
 
 \item{range}{the range of the link (typically \code{-Inf} to \code{Inf})}
 }
