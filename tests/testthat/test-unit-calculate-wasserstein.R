@@ -55,6 +55,13 @@ test_that("calculate_wasserstein unit test", {
   )
   
   calculate_wasserstein(cmp1, ref, bootstraps = 10)
+  
+  gen <- function(n, mean = 0, sd = 1) sample(pnorm(seq(-1, 1, length.out = n - n %% 2 + 1), mean, sd))
+  
+  calculate_wasserstein(gen(1000), gen(1000))
+  calculate_wasserstein(gen(1000), gen(100))
+  calculate_wasserstein(gen(100), gen(1000))
+  calculate_wasserstein(gen(200), gen(1000))
 
   # generates a failure if the overall test is failing with a link to the 
   # source of the unit test:
@@ -110,7 +117,7 @@ test_that("wasserstein_calculator unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/calculate-wasserstein.R"), c(125, 1, 125+1, 1))
+    srcref = srcref(srcfile("../../R/calculate-wasserstein.R"), c(133, 1, 133+1, 1))
   )
 })
 

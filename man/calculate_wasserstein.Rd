@@ -72,6 +72,14 @@ testthat::expect_equal(calculate_wasserstein(cmp2,ref), 1.04950621760385)
 testthat::expect_equal(calculate_wasserstein(cmp3,ref), 0.212977231452674)
 
 calculate_wasserstein(cmp1,ref,bootstraps=10)
+
+gen = function(n, mean=0, sd=1) sample(pnorm(seq(-1,1,length.out = n - n%%2 + 1), mean, sd))
+
+calculate_wasserstein(gen(1000), gen(1000))
+calculate_wasserstein(gen(1000), gen(100))
+calculate_wasserstein(gen(100), gen(1000))
+calculate_wasserstein(gen(200), gen(1000))
+
 }\if{html}{\out{</div>}}
 }
 

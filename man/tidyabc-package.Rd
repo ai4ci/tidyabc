@@ -10,6 +10,15 @@
 
 What the package does (one paragraph).
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://ai4ci.github.io/tidyabc/index.html}
+  \item \url{https://github.com/ai4ci/tidyabc}
+  \item Report bugs at \url{https://github.com/ai4ci/tidyabc/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Robert Challen \email{rob.challen@bristol.ac.uk} (\href{https://orcid.org/0000-0002-5504-7768}{ORCID})
 

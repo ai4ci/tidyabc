@@ -49,8 +49,8 @@ recommended, for the others sma}
 
 \item{simscores}{Scores for the simulated data, as output by \code{scorer_fn}.}
 
-\item{distance_method}{what metric is used to combine \code{simscores} and \code{obsscores}
-and is one of \code{"euclidean"}, \code{"manhattan"}, or \code{"mahalanobis"}.}
+\item{distance_method}{what metric is used to combine \code{simscores} and \code{obsscores}.
+One of \code{"euclidean"}, \code{"normalised"}, \code{"manhattan"}, or \code{"mahalanobis"}.}
 
 \item{keep_simulations}{keep the individual simulation results in the output
 of an ABC workflow. This can have large implications for the size of the
@@ -108,12 +108,19 @@ compatible with running in parallel.}
 \item{scoreweights}{A named vector with names matching output of \code{scorer_fn}
 that defines the importance of this component of the scoring in the overall
 distance and weighting of any given simulation. This can be used to assign
-more weight on certain parts of the model output.}
+more weight on certain parts of the model output. For \code{euclidean} and \code{manhattan}
+distance methods these weights multiply the output of \code{scorer_fn} directly.
+For the other 2 distance methods some degree of normalisation is done first
+on the first wave scores to make different components have approximately the
+same relevance to the overall score.}
 
-\item{kernel}{one of \code{"epanechnikov"}, \code{"uniform"}, \code{"triangular"}, \code{"biweight"},
-or \code{"gaussian"}. The kernel defines how the distance metric translates into
-the importance weight that decides whether a given simulation and associated
-parameters should be rejected or held for the next round.}
+\item{kernel}{one of \code{"epanechnikov"} (default), \code{"uniform"}, \code{"triangular"},
+\code{"biweight"}, or \code{"gaussian"}. The kernel defines how the distance metric
+translates into the importance weight that decides whether a given
+simulation and associated parameters should be rejected or held for the
+next round. All kernels except \code{gaussian} have a hard cut-off outside of
+which the probability of acceptance of a particle is zero. Use of
+\code{gaussian} kernels can result in poor convergence.}
 }
 \description{
 Common workflow options

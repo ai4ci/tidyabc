@@ -1,6 +1,6 @@
 Package: tidyabc
 Title: Approximate Bayesian Computing with Tidy Data
-Version: 0.0.0.9000
+Version: 0.0.0.9002
 Authors@R: 
     person(given = "Robert",
            family = "Challen",
@@ -53,3 +53,7 @@ Imports:
     tidyr,
     ragg
 VignetteBuilder: knitr
+URL: https://ai4ci.github.io/tidyabc/index.html,
+     https://github.com/ai4ci/tidyabc
+BugReports: https://github.com/ai4ci/tidyabc/issues
+

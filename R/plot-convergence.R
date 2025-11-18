@@ -161,7 +161,8 @@ plot_simulations = function(
   if (is.null(simdata)) {
     simdata = posterior_resample(
       fit$posteriors %>%
-        dplyr::slice_max(order_by = abc_weight, n = n),
+        dplyr::slice_min(order_by = abc_summary_distance, n = n),
+      # dplyr::slice_max(order_by = abc_weight, n = n),
       sim_fn = sim_fn,
       n_resamples = 1,
       max_samples = n,
@@ -315,7 +316,12 @@ plot_correlations = function(posteriors_df, truth = NULL) {
       nmx = as.symbol(cols[[j]])
       nmy = as.symbol(cols[[i]])
       plt_df = df %>%
-        dplyr::transmute(x = !!nmx, y = !!nmy, wt = wt / max(wt) * max_alpha)
+        dplyr::transmute(
+          x = !!nmx,
+          y = !!nmy,
+          wt,
+          alph = wt / max(wt) * max_alpha
+        )
 
       rx = stats::quantile(plt_df$x, c(0.01, 0.99)) * c(0.95, 1 / 0.95)
       ry = stats::quantile(plt_df$y, c(0.01, 0.99)) * c(0.95, 1 / 0.95)
@@ -372,7 +378,7 @@ plot_correlations = function(posteriors_df, truth = NULL) {
               y = y,
               width = pointwidth,
               height = pointheight,
-              alpha = wt * 0.8
+              alpha = alph
             ),
             linewidth = 0
           ) +
@@ -383,7 +389,7 @@ plot_correlations = function(posteriors_df, truth = NULL) {
           ggplot2::scale_alpha_identity()
       } else {
         plt = plt +
-          ggplot2::geom_density(ggplot2::aes(x = x)) +
+          ggplot2::geom_density(ggplot2::aes(x = x, weight = wt)) +
           ggplot2::theme(
             axis.text.y = ggplot2::element_blank(),
             axis.text.y.left = ggplot2::element_blank(),

@@ -19,10 +19,13 @@ It is the scale parameter of the kernel function. $K_h(|u|)$}
 \item{prev_sim_df}{the output of a previous ABC wave including a
 \code{abc_weight} column}
 
-\item{kernel}{one of \code{"epanechnikov"}, \code{"uniform"}, \code{"triangular"}, \code{"biweight"},
-or \code{"gaussian"}. The kernel defines how the distance metric translates into
-the importance weight that decides whether a given simulation and associated
-parameters should be rejected or held for the next round.}
+\item{kernel}{one of \code{"epanechnikov"} (default), \code{"uniform"}, \code{"triangular"},
+\code{"biweight"}, or \code{"gaussian"}. The kernel defines how the distance metric
+translates into the importance weight that decides whether a given
+simulation and associated parameters should be rejected or held for the
+next round. All kernels except \code{gaussian} have a hard cut-off outside of
+which the probability of acceptance of a particle is zero. Use of
+\code{gaussian} kernels can result in poor convergence.}
 }
 \value{
 the \code{sim_df} with an \code{abc_weight} column

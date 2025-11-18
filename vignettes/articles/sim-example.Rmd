@@ -275,10 +275,10 @@ sim1_fn = carrier::crate(
 
 scorer1_fn = function(simdata, obsdata) {
   
-  onset = calculate_wasserstein(obsdata$onset, simdata$onset)
-  diff = calculate_wasserstein(obsdata$diff, simdata$diff)
-  si = calculate_wasserstein(obsdata$si, simdata$si)
-  mad_si = abs(mean(obsdata$si) - mean(simdata$si))
+  onset = calculate_wasserstein(simdata$onset, obsdata$onset)
+  diff = calculate_wasserstein(simdata$diff, obsdata$diff)
+  si = calculate_wasserstein(simdata$si, obsdata$si)
+  mad_si = abs(mean(simdata$si) - mean(obsdata$si))
   
   return(list(
     sim_onset = onset,
@@ -287,14 +287,6 @@ scorer1_fn = function(simdata, obsdata) {
     sim_mad_si = mad_si
   ))
 }
-
-# make the serial interval fitting much more important:
-scoreweights1 = c(
-    sim_onset = 2,
-    sim_diff = 0.5,
-    sim_si = 3,
-    sim_mad_si = 3
-  )
 
 ```
 
@@ -356,14 +348,33 @@ abc_fit = abc_rejection(
   priors_list = priors,
   sim_fn = sim1_fn,
   scorer_fn = scorer1_fn,
-  n_sims = 1000000,
-  acceptance_rate = 0.001,
-  parallel = TRUE,
-  scoreweights = scoreweights1
+  n_sims = 1000,
+  acceptance_rate = 0.5,
+  parallel = TRUE
 )
 
-summary(abc_fit)
-plot(abc_fit, truth = sim_params)
+# summary(abc_fit)
+metrics = posterior_distance_metrics(abc_fit)
+
+# make the serial interval fitting much more important:
+scoreweights1 =
+  metrics$scoreweights *
+  c(
+    sim_onset = 2,
+    sim_diff = 1,
+    sim_si = 3,
+    sim_mad_si = 3
+  )
+
+# scoreweights1 = 
+#   c(
+#     sim_onset = 2,
+#     sim_diff = 1,
+#     sim_si = 3,
+#     sim_mad_si = 4
+#   )
+
+
 
 ```
 
@@ -394,13 +405,14 @@ plot_evolution(smc_fit,truth = sim_params)
 ```{r}
 
 
+
 adaptive_fit = abc_adaptive(
   obsdata = obsdata,
   priors_list = priors,
   sim_fn = sim1_fn,
   scorer_fn = scorer1_fn,
   n_sims = 4000,
-  acceptance_rate = 0.5,
+  acceptance_rate = 0.2,
   # debug_errors = TRUE,
   parallel = TRUE,
   scoreweights = scoreweights1
@@ -454,7 +466,7 @@ adaptive_fit2 = abc_adaptive(
   sim_fn = sim1_fn,
   scorer_fn = scorer1_fn,
   n_sims = 4000,
-  acceptance_rate = 0.5,
+  acceptance_rate = 0.2,
   # debug_errors = TRUE,
   parallel = TRUE,
   scoreweights = scoreweights1
@@ -467,7 +479,10 @@ summary(adaptive_fit2)
 
 plot(adaptive_fit2,truth = sim_params)
 plot_evolution(adaptive_fit2,truth = sim_params)
-plot_correlations(adaptive_fit2,truth = sim_params)
+plot_correlations(adaptive_fit2,truth = sim_params) & ggplot2::theme(
+   axis.title.y = ggplot2::element_text(angle=45,vjust=0, hjust=1),
+   axis.title.x = ggplot2::element_text(angle=45, hjust=1) #,vjust=1, hjust=0.5)
+)
 plot_convergence(adaptive_fit2)
 plot_simulations(obsdata, adaptive_fit2, sim_fn = sim1_fn)
 ```

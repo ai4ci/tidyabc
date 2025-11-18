@@ -74,8 +74,8 @@ be a named list, and is equivalent to the output of \code{scorer_fn},
 on the observed data. If not given typically it will be assumed to be all
 zeros.}
 
-\item{distance_method}{what metric is used to combine \code{simscores} and \code{obsscores}
-and is one of \code{"euclidean"}, \code{"manhattan"}, or \code{"mahalanobis"}.}
+\item{distance_method}{what metric is used to combine \code{simscores} and \code{obsscores}.
+One of \code{"euclidean"}, \code{"normalised"}, \code{"manhattan"}, or \code{"mahalanobis"}.}
 
 \item{seed}{an optional random seed}
 
@@ -102,10 +102,13 @@ whenever a \code{sim_fn} or \code{scorer_fn} throws an error an interactive debu
 session is started with the failing parameter combinations. This is not
 compatible with running in parallel.}
 
-\item{kernel}{one of \code{"epanechnikov"}, \code{"uniform"}, \code{"triangular"}, \code{"biweight"},
-or \code{"gaussian"}. The kernel defines how the distance metric translates into
-the importance weight that decides whether a given simulation and associated
-parameters should be rejected or held for the next round.}
+\item{kernel}{one of \code{"epanechnikov"} (default), \code{"uniform"}, \code{"triangular"},
+\code{"biweight"}, or \code{"gaussian"}. The kernel defines how the distance metric
+translates into the importance weight that decides whether a given
+simulation and associated parameters should be rejected or held for the
+next round. All kernels except \code{gaussian} have a hard cut-off outside of
+which the probability of acceptance of a particle is zero. Use of
+\code{gaussian} kernels can result in poor convergence.}
 
 \item{bw}{for Adaptive ABC data distributions are smoothed before modelling
 the CDF. Over smoothing can reduce convergence, under-smoothing may result
@@ -115,7 +118,11 @@ in noisy posterior estimates. This is in units of the ESS and defaults to
 \item{scoreweights}{A named vector with names matching output of \code{scorer_fn}
 that defines the importance of this component of the scoring in the overall
 distance and weighting of any given simulation. This can be used to assign
-more weight on certain parts of the model output.}
+more weight on certain parts of the model output. For \code{euclidean} and \code{manhattan}
+distance methods these weights multiply the output of \code{scorer_fn} directly.
+For the other 2 distance methods some degree of normalisation is done first
+on the first wave scores to make different components have approximately the
+same relevance to the overall score.}
 }
 \value{
 an S3 object of class \code{abc_fit} this contains the following:

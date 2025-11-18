@@ -8,7 +8,7 @@
   component_scores,
   obsscores = NULL,
   distance_method = c("euclidean", "manhattan", "mahalanobis"),
-  wave1_cov = NULL,
+  wave1_metrics = NULL,
   scoreweights = NULL
 )
 }
@@ -22,13 +22,17 @@ be a named list, and is equivalent to the output of \code{scorer_fn},
 on the observed data. If not given typically it will be assumed to be all
 zeros.}
 
-\item{distance_method}{what metric is used to combine \code{simscores} and \code{obsscores}
-and is one of \code{"euclidean"}, \code{"manhattan"}, or \code{"mahalanobis"}.}
+\item{distance_method}{what metric is used to combine \code{simscores} and \code{obsscores}.
+One of \code{"euclidean"}, \code{"normalised"}, \code{"manhattan"}, or \code{"mahalanobis"}.}
 
 \item{scoreweights}{A named vector with names matching output of \code{scorer_fn}
 that defines the importance of this component of the scoring in the overall
 distance and weighting of any given simulation. This can be used to assign
-more weight on certain parts of the model output.}
+more weight on certain parts of the model output. For \code{euclidean} and \code{manhattan}
+distance methods these weights multiply the output of \code{scorer_fn} directly.
+For the other 2 distance methods some degree of normalisation is done first
+on the first wave scores to make different components have approximately the
+same relevance to the overall score.}
 }
 \value{
 a vector of distances

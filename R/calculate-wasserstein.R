@@ -4,7 +4,7 @@
 #' wasserstein distance.
 #'
 #' In the comparison unequal lengths of the data can be accommodated. The
-#' simulated data is recycled, and sampled, until the same length as the
+#' simulated data is sorted and linearly interpolated to the same length as the
 #' observed data before the comparison.
 #'
 #' @param sim A vector of simulated data points
@@ -57,6 +57,24 @@
 #' testthat::expect_equal(calculate_wasserstein(cmp3,ref), 0.212977231452674)
 #'
 #' calculate_wasserstein(cmp1,ref,bootstraps=10)
+#'
+#' gen = function(n, mean=0, sd=1) {
+#'   sample(pnorm(seq(-1,1,length.out = n - n%%2 + 1), mean, sd))
+#' }
+#'
+#' # there should be approximately zero
+#' calculate_wasserstein(gen(1000), gen(1000))
+#' calculate_wasserstein(gen(1000), gen(100))
+#' calculate_wasserstein(gen(100), gen(1000))
+#' calculate_wasserstein(gen(200), gen(1000))
+#'
+#' # these should be approximately equal:
+#' calculate_wasserstein(gen(100,0.1), gen(1000))
+#' calculate_wasserstein(gen(200,0.1), gen(1000))
+#' calculate_wasserstein(gen(1000,0.1), gen(1000))
+#' calculate_wasserstein(gen(1000, 0.1), gen(200))
+#' calculate_wasserstein(gen(1000, 0.1), gen(100))
+#'
 calculate_wasserstein = function(sim, obs, debias = FALSE, bootstraps = 1) {
   sim = sim[!is.na(sim)]
   obs = obs[!is.na(obs)]
@@ -65,7 +83,7 @@ calculate_wasserstein = function(sim, obs, debias = FALSE, bootstraps = 1) {
   av = mean(obs)
   # What is the average distance of points in the reference data from the mean?
   # we use this to normalise the result
-  norm = mean(abs(obs - av))
+  norm = stats::sd(obs) # mean(abs(obs - av))
   size = length(obs)
 
   # no non zero items
@@ -198,14 +216,23 @@ wasserstein_calculator = function(obs, debias = FALSE, bootstraps = 1) {
 
 
 # Deterministically match size of sorted vector.
+# linear interpolation between values
 .match_size = carrier::crate(function(x, size) {
   if (length(x) == 0) {
     stop("Cannot recycle object of length zero.")
   }
 
-  idx = seq(0.50001, length(x) + 0.49999, length.out = size)
-  idx = round(idx)
+  idx = seq(1, length(x), length.out = size)
+  p = idx - floor(idx)
+  idx0 = floor(idx)
+  idx1 = ceiling(idx)
   x = sort(x)
 
-  return(x[idx])
+  out = ifelse(
+    idx0 == idx1,
+    x[idx0],
+    (1 - p) * x[idx0] + p * x[idx1]
+  )
+
+  return(out)
 })

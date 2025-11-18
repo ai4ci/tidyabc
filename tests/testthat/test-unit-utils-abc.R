@@ -36,7 +36,7 @@ test_that(".log_q_proposal_vectorized unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/utils-abc.R"), c(840, 1, 840+1, 1))
+    srcref = srcref(srcfile("../../R/utils-abc.R"), c(828, 1, 828+1, 1))
   )
 })
 

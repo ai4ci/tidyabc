@@ -196,7 +196,7 @@ abc_smc = function(
   bar_id = cli::cli_progress_bar(name = "SMC waves: ", total = max_time)
   prev_sim_df = NULL
   wave_df = NULL
-  wave1_cov = NULL
+  wave1_metrics = NULL
   summ_df = posterior_summarise(sim_df, priors_list) %>% dplyr::mutate(wave = 0)
   converged = FALSE
   i = 0
@@ -216,7 +216,7 @@ abc_smc = function(
       keep_simulations = FALSE,
       seed = NULL,
       parallel = parallel,
-      wave1_cov = wave1_cov,
+      wave1_metrics = wave1_metrics,
       debug = debug_errors,
       scoreweights = scoreweights,
       wave = i
@@ -230,8 +230,12 @@ abc_smc = function(
 
     # Extract the covariance if it has been calculated
     # This stays the same throughout all waves
-    if (is.null(wave1_cov)) {
-      wave1_cov = .distance_covariance(sim_df$abc_component_score)
+    if (is.null(wave1_metrics)) {
+      wave1_metrics = posterior_distance_metrics(
+        sim_df$abc_component_score,
+        obsscores = obsscores,
+        keep_data = FALSE
+      )
     }
 
     if (i > 1) {
@@ -421,7 +425,7 @@ abc_adaptive = function(
   # Setup first wave
 
   wave_df = NULL
-  wave1_cov = NULL
+  wave1_metrics = NULL
   # N.b. could be refactored inside the loop?
   # Generate a set of initial proposals
   sim_df = .sample_constrained(priors_list, n_sims, sampler_fn = .sample_priors)
@@ -447,7 +451,7 @@ abc_adaptive = function(
       keep_simulations = FALSE,
       seed = NULL,
       parallel = parallel,
-      wave1_cov = wave1_cov,
+      wave1_metrics = wave1_metrics,
       debug = debug_errors,
       scoreweights = scoreweights,
       wave = i
@@ -528,8 +532,12 @@ abc_adaptive = function(
     # End of recovery loop:
     # Extract the covariance if it has been calculated
     # This stays the same throughout all waves
-    if (is.null(wave1_cov)) {
-      wave1_cov = .distance_covariance(sim_df$abc_component_score)
+    if (is.null(wave1_metrics)) {
+      wave1_metrics = posterior_distance_metrics(
+        sim_df$abc_component_score,
+        obsscores,
+        keep_data = FALSE
+      )
     }
 
     metric = .compare_waves(
@@ -767,6 +775,117 @@ test_simulation = function(
   ))
 }
 
+
+#' Generate a set of metrics from component scores
+#'
+#' The component scores are summary statistics output by the user supplied
+#' `scorer_fn` as a named list. These can be variable in scale and location and
+#' various options exist for combining them. They may need to be weighted by
+#' scale as well as importance to get a model that works well. Such weights can
+#' be input into the ABC algortihms using the `scoreweights` parameter. This
+#' function helps provide diagnostics for calibrating the `scoreweights`
+#' parameter.
+#'
+#' @inheritParams  tidyabc_common
+#' @param keep_data mainly for internal use this flag gives you the component
+#'  scores as a matrix
+#'
+#' @returns a list containing the following items:
+#' - `obsscores`: the input reference scores for each component
+#' - `means`, `sds`: the means and sds of each score component
+#' - `cov`: the covariance matrix for the scores
+#' - `mad`: the mean absolute differences between the `simscores` and the `obsscores`
+#' - `rmsd`: the root mean squared differences between the `simscores` and the `obsscores`
+#' - `scoreweights`: a the `sds` divided by the `rmsd`. This weight should
+#' mean that the weights of the  individual summary scores have similar influence
+#' in the overall `abc_summary_distance` output once combined during SMC and
+#' adaptive waves, especially if euclidean distances are involved.
+#' - `simscores`: (if `keep_data`) a matrix of all the scores from these input
+#' simulation posteriors
+#' - `deltascores`: (if `keep_data`)  a matrix of the differences between `simscores` and `obsscores`.
+#'
+#' @export
+#' @concept workflow
+#' @examples
+#'
+#' fit = example_rejection_fit()
+#' metrics = posterior_distance_metrics(fit$posteriors)
+#' # other elements available:
+#' metrics$scoreweights
+posterior_distance_metrics = function(
+  posteriors_df,
+  obsscores = NULL,
+  keep_data = FALSE
+) {
+  if (inherits(posteriors_df, "abc_fit")) {
+    posteriors_df = posteriors_df$posteriors
+  }
+
+  if (!is.data.frame(posteriors_df)) {
+    # when we use this internally we pass a list of scores direct to it.
+    component_scores = posteriors_df
+  } else {
+    component_scores = posteriors_df$abc_component_score
+  }
+
+  nonnulls = which(
+    !sapply(component_scores, is.null) &
+      sapply(component_scores, function(l) all(sapply(l, is.finite)))
+  )
+
+  # unnest scores from list of lists into a matrix:
+  # this relies on the naming order being consistent, which it should be as output
+  # from purrr...
+
+  simscores = matrix(
+    unname(unlist(component_scores[nonnulls])),
+    nrow = length(nonnulls),
+    byrow = TRUE
+  )
+  colnames(simscores) = names(component_scores[[1]])
+
+  # Get obscores and check in correct format:
+  if (is.null(obsscores)) {
+    obsscores = stats::setNames(rep(0, ncol(simscores)), colnames(simscores))
+  }
+  if (is.null(names(obsscores))) {
+    names(obsscores) = colnames(simscores)
+  }
+  if (!identical(sort(names(obsscores)), sort(colnames(simscores)))) {
+    stop(
+      "`obsscores` names do not match `scorer_fn` outputs. Should be a vector with names: ",
+      paste0(colnames(simscores), collapse = ",")
+    )
+  }
+  obsscores = unlist(obsscores)
+  obsscores = obsscores[colnames(simscores)]
+
+  means = apply(simscores, MARGIN = 2, FUN = mean)
+  sds = apply(simscores, MARGIN = 2, FUN = stats::sd)
+  cov = stats::cov(simscores)
+  deltascores = simscores -
+    matrix(
+      rep(obsscores, nrow(simscores)),
+      ncol = ncol(simscores),
+      byrow = TRUE
+    )
+  mad = apply(abs(deltascores), MARGIN = 2, mean)
+  rmsd = sqrt(apply(deltascores^2, MARGIN = 2, mean))
+  scoreweights = metrics$sds / metrics$rmsd # 1 / rmsd / sum(1 / rmsd)
+  scoreweights = scoreweights / sum(scoreweights)
+
+  return(list(
+    obsscores = obsscores,
+    simscores = if (keep_data) simscores else NULL,
+    deltascores = if (keep_data) deltascores else NULL,
+    means = means,
+    sds = sds,
+    mad = mad,
+    rmsd = rmsd,
+    cov = cov,
+    scoreweights = scoreweights
+  ))
+}
 
 ## Functions for working with posteriors ----
 

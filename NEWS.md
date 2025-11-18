@@ -2,23 +2,17 @@
 
 # tidyabc (development version)
 
-* S3 class for priors
-  + formula based constructor
-  + print methods
-  + search library paths for distributions.
-  + constraints
-* Migrate scoring utilities from `ggoutbreak`
-  + migrate use of empirical CDF in `ggoutbreak`
-* Convert empirical to use 0..1 range rather than `-Inf..Inf`
-  + consider a new quantile link class that maps `0..1` (copula? / PIT?) or 
-    convert existing
-  + store splines in accessible form.
+* ABC
+  + auto calibrate kernel epsilon (? and sample size) on ESS in adaptive fits
+* Migrate 
+  + scoring utilities from `ggoutbreak`
+  + use of empirical CDF in `ggoutbreak`
+* Empirical distributions 
+  + display splines of empirical fits 
   + update splines when using `empirical` as a link function
   + see: (https://en.wikipedia.org/wiki/Copula_(statistics)#Gaussian_copula)
   + and: (https://en.wikipedia.org/wiki/Sigmoid_function)
-  + ?return environment rather than list with splines built in.
 * `dist_fns` extensions:
-  + convert function wrappers to store call rather than function.
   + convolution
   + skew
   
@@ -32,8 +26,20 @@
   + posterior visualisation and resampling
   + convergence statistics and visualisation
 * statistic functions wrappers `dist_fns` S3 class
-  + support for use as dataframe column
-  + empirical and mixture distributions
+  + support for distributions as dataframe column
+  + empirical, transformed and mixture distributions in unified framework
+  + distribution plotting
+* Empirical distributions
+  + from weighted data or from cumulative probabilities
+  + link function support for constraints on support
+  + monotonic spline based fits in Q-Q (cdf) or logit-Z (data) space with 
+    support for `q`, `p`, `d`, `r` functions.
 * standalone distribution functions (migrated from `ggrrr`)
   + e.g. re-parametrisations of standard distributions.
-  
+  + constrained gamma distribution
+  + logit normal distribution
+* S3 class for priors
+  + formula based constructor
+  + print methods
+  + search library paths for distributions.
+  + constraints

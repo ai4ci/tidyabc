@@ -50,8 +50,8 @@ test_simulation_fn = function(norm_mean, norm_sd, gamma_mean, gamma_sd) {
 
 test_scorer_fn = function(simdata, obsdata) {
   return(list(
-    data1 = calculate_wasserstein(obsdata$data1, simdata$data1),
-    data2 = calculate_wasserstein(obsdata$data2, simdata$data2)
+    data1 = calculate_wasserstein(simdata$data1, obsdata$data1),
+    data2 = calculate_wasserstein(simdata$data2, obsdata$data2)
   ))
 }
 

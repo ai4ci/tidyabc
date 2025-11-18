@@ -41,43 +41,28 @@ NULL
   component_scores,
   obsscores = NULL,
   distance_method = c("euclidean", "manhattan", "mahalanobis"),
-  wave1_cov = NULL,
+  wave1_metrics = NULL,
   scoreweights = NULL
 ) {
   method = match.arg(distance_method)
-
   result = rep(NA, length(component_scores))
+
   nonnulls = which(
     !sapply(component_scores, is.null) &
       sapply(component_scores, function(l) all(sapply(l, is.finite)))
   )
 
-  # unnest scores from list of lists into a matrix:
-  # this relies on the naming order being consistent, which it should be as output
-  # from purrr...
-  simscores = matrix(
-    unname(unlist(component_scores[nonnulls])),
-    nrow = length(nonnulls),
-    byrow = TRUE
+  metrics = posterior_distance_metrics(
+    component_scores,
+    obsscores,
+    keep_data = TRUE
   )
 
-  colnames(simscores) = names(component_scores[[1]])
+  # simulation scores as matrix:
+  simscores = metrics$simscores
 
   # reference scores
-  if (is.null(obsscores)) {
-    obsscores = rep(0, ncol(simscores))
-  }
-  if (is.null(names(obsscores))) {
-    names(obsscores) = colnames(simscores)
-  }
-  if (!identical(sort(names(obsscores)), sort(colnames(simscores)))) {
-    stop(
-      "`obsscores` names do not match `scorer_fn` outputs. Should be a vector with names: ",
-      paste0(colnames(simscores), collapse = ",")
-    )
-  }
-  obsscores = unlist(obsscores)
-  obsscores = obsscores[colnames(simscores)]
+  obsscores = metrics$obsscores
   obsscores = matrix(
     unlist(obsscores),
     nrow = nrow(simscores),
@@ -100,6 +85,17 @@ NULL
   }
   scoreweights = unlist(scoreweights)
   scoreweights = scoreweights[colnames(simscores)]
+
+  if (is.null(wave1_metrics)) {
+    wave1_scoreweights = metrics$scoreweights
+    wave1_cov = metrics$cov
+
+    if (method == "normalised") {
+      scoreweights = scoreweights * wave1_scoreweights
+    }
+  }
+
+  delta = metrics$deltascores
   scoreweights = matrix(
     unlist(scoreweights),
     nrow = nrow(simscores),
@@ -107,23 +103,15 @@ NULL
     byrow = TRUE
   )
 
-  if (method == "euclidean") {
-    delta = simscores - obsscores
+  if (method == "euclidean" || method == "normalised") {
     delta = delta * scoreweights
     result[nonnulls] = sqrt(rowSums(delta^2))
   }
 
   if (method == "manhattan") {
-    delta = simscores - obsscores
     delta = delta * scoreweights
     result[nonnulls] = rowSums(abs(delta))
   }
-
-  if (is.null(wave1_cov)) {
-    wave1_cov = stats::cov(simscores)
-  }
-  # test remove correlations:
-  wave1_cov = wave1_cov * diag(ncol(wave1_cov))
 
   if (method == "mahalanobis") {
     # I want columns that are high weighted to appear further away from the
@@ -357,7 +345,7 @@ NULL
   keep_simulations = FALSE,
   seed = NULL,
   parallel = FALSE,
-  wave1_cov = NULL,
+  wave1_metrics = NULL,
   n_resamples = 1,
   debug = FALSE,
   scoreweights = NULL,
@@ -379,7 +367,7 @@ NULL
     obsscores = obsscores,
     distance_method = distance_method,
     parallel = parallel,
-    wave1_cov = wave1_cov,
+    wave1_metrics = wave1_metrics,
     scoreweights = scoreweights,
     wave = wave
   )
@@ -399,7 +387,7 @@ NULL
   obsscores = NULL,
   distance_method = "euclidean",
   parallel = FALSE,
-  wave1_cov = NULL,
+  wave1_metrics = NULL,
   scoreweights = NULL,
   wave = 0
 ) {
@@ -498,7 +486,7 @@ NULL
           abc_component_score,
           obsscores = obsscores,
           distance_method = distance_method,
-          wave1_cov = wave1_cov,
+          wave1_metrics = wave1_metrics,
           scoreweights = scoreweights
         )
       )
