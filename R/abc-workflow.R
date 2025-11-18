@@ -725,7 +725,7 @@ test_simulation = function(
   debug = FALSE,
   debug_errors = !debug
 ) {
-  # TODO: add in check for scoreweights
+  # TODO: add in check for score weights
 
   if (!is.null(seed)) {
     seed = set.seed(seed)
