@@ -10,6 +10,7 @@
 R framework for approximate Bayesian computing with tidy data
 
 <!-- TODO: Update readme description -->
+<!-- Issue URL: https://github.com/ai4ci/tidyabc/issues/15 -->
 
 ## Installation
 

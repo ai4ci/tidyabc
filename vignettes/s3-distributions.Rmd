@@ -10,6 +10,7 @@ link-citations: TRUE
 ---
 
 <!-- TODO: Update Statistical distributions vignette -->
+<!-- Issue URL: https://github.com/ai4ci/tidyabc/issues/18 -->
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(

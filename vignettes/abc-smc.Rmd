@@ -10,6 +10,7 @@ link-citations: TRUE
 ---
 
 <!-- TODO: Update SMC ABC vignette -->
+<!-- Issue URL: https://github.com/ai4ci/tidyabc/issues/17 -->
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(

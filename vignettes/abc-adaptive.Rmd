@@ -10,6 +10,7 @@ link-citations: TRUE
 ---
 
 <!-- TODO: Update adaptive ABC vignette -->
+<!-- Issue URL: https://github.com/ai4ci/tidyabc/issues/16 -->
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
