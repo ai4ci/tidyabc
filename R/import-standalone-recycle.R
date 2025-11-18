@@ -71,6 +71,7 @@
   env = .env
 
   # TODO: Recycle `...` parameters
+  # Issue URL: https://github.com/ai4ci/tidyabc/issues/5
   # it would be nice to be able to do this so that
   # we can ensure that parameters passed on are assured to be the correct length
   # however this requires manipulating `...` and inserting it back into the

@@ -409,6 +409,7 @@ NULL
   }
 
   # TODO: Switch to progressr progress bars
+  # Issue URL: https://github.com/ai4ci/tidyabc/issues/12
   # I think this would not support wave ID for progressbar?
   # .wave = sprintf("Wave %d simulations:", wave)
   # p = progressr::progressor(steps = nrow(sim_df))

@@ -71,6 +71,7 @@ priors = function(...) {
   })
 
   # TODO: Improve handling of qualified distribution function names
+  # Issue URL: https://github.com/ai4ci/tidyabc/issues/7
   # at the moment this strips off package info and ignores it.
   # it would be better if we could somehow provide the package info to
   # as.dist_fns.character.

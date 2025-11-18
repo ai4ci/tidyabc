@@ -430,7 +430,9 @@
 #'
 .qualify_expression = function(expr, defined = list(), unqual = list()) {
   # TODO: .qualify_expression is very slow.
+  # Issue URL: https://github.com/ai4ci/tidyabc/issues/14
   # TODO: .qualify_expression with scrRefs attached?
+  # Issue URL: https://github.com/ai4ci/tidyabc/issues/13
 
   if (is.expression(expr) || is.call(expr)) {
     # input is a complex call or expression

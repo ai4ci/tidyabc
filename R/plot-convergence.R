@@ -186,6 +186,7 @@ plot_simulations = function(
     sims = lapply(simdata, function(s) s[[nm]])
     if (is.data.frame(obs)) {
       # TODO: automatic plotting of data frame like inputs
+      # Issue URL: https://github.com/ai4ci/tidyabc/issues/6
     } else {
       m = method[[nm]]
       r = c(min(floor(obs)), max(ceiling(obs)))

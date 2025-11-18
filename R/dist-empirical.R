@@ -503,6 +503,7 @@ empirical_cdf = function(
     })
 
     # TODO: Analytical density for empirical CDF
+    # Issue URL: https://github.com/ai4ci/tidyabc/issues/3
     # in theory the differential is possible to find using predict(deriv=1)
     # however we would need to think through chain rule of expit(predict(trans(x)))
     # which will probably require differential of link trans.
