@@ -339,7 +339,7 @@ empirical_cdf = function(
 ) {
   if (is.dist_fns(link)) {
     qx_from_x = link$p
-    # TODO: dqx_from_x = link$d
+
     x_from_qx = link$q
     support = c(link$q(0), link$q(1))
   } else {
@@ -372,14 +372,12 @@ empirical_cdf = function(
       f = g = NULL
       qx_from_x = carrier::crate(
         function(x) {
-          # TODO: this does no checking which may be a bad idea.
+          # this does no checking which may be a bad idea.
           x2 = suppressWarnings(f(x))
           return(stats::pnorm(x2, !!qmu, !!qsd))
         },
         f = link$trans
       )
-      # TODO: dqx_from_x = dnorm(f(x)) * f_dash(x)
-      # f_dash - link$ddxtrans
       x_from_qx = carrier::crate(
         function(q) {
           x2 = stats::qnorm(q, !!qmu, !!qsd)
@@ -504,11 +502,15 @@ empirical_cdf = function(
       return(tmp)
     })
 
-    # TODO: in theory the differential is possible to find using predict(deriv=1)
+    # TODO: Analytical density for empirical CDF
+    # in theory the differential is possible to find using predict(deriv=1)
     # however we would need to think through chain rule of expit(predict(trans(x)))
     # which will probably require differential of link trans.
-    # dqydqx_from_qx =
-    # need to incorporate this into the crate also.
+    # dqx_from_x = link$d
+    # dqx_from_x = dnorm(f(x)) * f_dash(x)
+    # f_dash - link$ddxtrans
+    # dqydqx_from_qx = ?
+    # we wouldneed to incorporate this into the crate also.
   }
 
   qfn = minx = maxx = NULL
@@ -750,7 +752,6 @@ empirical_data = function(
 ) {
   link = as.link_fns(link)
 
-  #TODO: review this:
   bw_min = .p_from_n(length(x), 40, 1000)
   if (is.null(bw) || bw < bw_min) {
     bw = bw_min

@@ -408,8 +408,11 @@ NULL
     )
   }
 
-  # TODO: wave ID for progressbar?
+  # TODO: Switch to progressr progress bars
+  # I think this would not support wave ID for progressbar?
   # .wave = sprintf("Wave %d simulations:", wave)
+  # p = progressr::progressor(steps = nrow(sim_df))
+
   .wave = interactive() &&
     !is.null(getOption("knitr.in.progress")) &&
     !identical(Sys.getenv("IN_PKGDOWN"), "true")
@@ -442,8 +445,7 @@ NULL
       map(.x, .f, ..., .progress = .wave)
     }
   }
-  # TODO: progressr instead?
-  # p = progressr::progressor(steps = nrow(sim_df))
+
   p = NULL
 
   if (is.null(scorer_crate)) {

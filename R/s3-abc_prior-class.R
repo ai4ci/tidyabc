@@ -70,7 +70,8 @@ priors = function(...) {
     setdiff(all.vars(x, functions = TRUE), all.vars(x))
   })
 
-  # TODO: at the moment this strips off package info and ignores it.
+  # TODO: Improve handling of qualified distribution function names
+  # at the moment this strips off package info and ignores it.
   # it would be better if we could somehow provide the package info to
   # as.dist_fns.character.
 

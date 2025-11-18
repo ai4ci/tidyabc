@@ -99,7 +99,8 @@ new_dist_fns = function(
         },
         p = carrier::crate(
           function(q, lower.tail = TRUE, log.p = FALSE) {
-            # TODO: delegate if lower.tail etc in formals of pfn
+            # TODO: Support for lower.tail and log.p parameters
+            # Delegate to the functions if in formals of pfn?
             tmp = pfn(q = q, !!!params)
             if (!lower.tail) {
               tmp = 1 - tmp
@@ -384,7 +385,8 @@ plot.dist_fns_list = function(
   plot_quantiles = TRUE,
   smooth = TRUE
 ) {
-  # TODO: CDF plot.
+  # TODO: CDF plot for `dist_fns`.
+  # TODO: Adopt ggplot autoplot and autolayer conventions for `dist_fns`
   # TODO: Plot for empirical density function
   # e.g. plot e$p$pfn$qx_from_qy as a function for CDF fit
 

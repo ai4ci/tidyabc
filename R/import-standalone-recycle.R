@@ -70,7 +70,8 @@
   dots = rlang::enexprs(..., .named = TRUE)
   env = .env
 
-  # TODO: it would be nice to be able to recycle `...` parameters so that
+  # TODO: Recycle `...` parameters
+  # it would be nice to be able to do this so that
   # we can ensure that parameters passed on are assured to be the correct length
   # however this requires manipulating `...` and inserting it back into the
   # caller environment.

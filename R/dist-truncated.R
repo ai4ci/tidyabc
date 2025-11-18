@@ -116,6 +116,4 @@ truncate = function(dist, x_left, x_right, ...) {
       ...
     )
   )
-
-  # TODO: could figure out knots probably
 }

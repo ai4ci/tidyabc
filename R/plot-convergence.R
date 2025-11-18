@@ -185,7 +185,7 @@ plot_simulations = function(
     obs = obsdata[[nm]]
     sims = lapply(simdata, function(s) s[[nm]])
     if (is.data.frame(obs)) {
-      # TODO: figure out how to plot a data frame?
+      # TODO: automatic plotting of data frame like inputs
     } else {
       m = method[[nm]]
       r = c(min(floor(obs)), max(ceiling(obs)))

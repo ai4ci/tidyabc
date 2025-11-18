@@ -429,9 +429,9 @@
 #' testthat::expect_equal(tmp7$cl, expression(Species = NULL))
 #'
 .qualify_expression = function(expr, defined = list(), unqual = list()) {
-  # TODO: this is very slow.
-  # TODO: is it possible to do this with scrRefs attached?
-  # lst = as.list(expr)
+  # TODO: .qualify_expression is very slow.
+  # TODO: .qualify_expression with scrRefs attached?
+
   if (is.expression(expr) || is.call(expr)) {
     # input is a complex call or expression
     # even if the expression wraps a length 1 list we need to
