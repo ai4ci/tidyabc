@@ -9,6 +9,8 @@ bibliography: references.bib
 link-citations: TRUE
 ---
 
+<!-- TODO: Update Statistical distributions vignette -->
+
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,

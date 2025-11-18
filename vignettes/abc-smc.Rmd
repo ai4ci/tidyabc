@@ -9,6 +9,8 @@ bibliography: references.bib
 link-citations: TRUE
 ---
 
+<!-- TODO: Update SMC ABC vignette -->
+
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,

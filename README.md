@@ -9,6 +9,8 @@
   
 R framework for approximate Bayesian computing with tidy data
 
+<!-- TODO: Update readme description -->
+
 ## Installation
 
 `tidyabc` is hosted on the [AI4CI r-universe](https://ai4ci.r-universe.dev/).
