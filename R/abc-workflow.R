@@ -726,6 +726,7 @@ test_simulation = function(
   debug_errors = !debug
 ) {
   # TODO: add in check for score weights
+  # Issue URL: https://github.com/ai4ci/tidyabc/issues/1
 
   if (!is.null(seed)) {
     seed = set.seed(seed)
