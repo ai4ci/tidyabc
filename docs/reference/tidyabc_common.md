@@ -28,7 +28,7 @@ Common workflow options
 - sim_fn:
 
   a user defined function that takes a set of parameters named the same
-  as the list `priors`. It must return a simulated data set in the same
+  as `priors_list`. It must return a simulated data set in the same
   format as `obsdata`, or that can be compared to `simdata` by
   `scorer_fn`. This function must not refer to global parameters, and
   will be automatically crated with `carrier`.
@@ -69,8 +69,8 @@ Common workflow options
 
 - distance_method:
 
-  what metric is used to combine `simscores` and `obsscores` and is one
-  of `"euclidean"`, `"manhattan"`, or `"mahalanobis"`.
+  what metric is used to combine `simscores` and `obsscores`. One of
+  `"euclidean"`, `"normalised"`, `"manhattan"`, or `"mahalanobis"`.
 
 - keep_simulations:
 
@@ -159,4 +159,19 @@ Common workflow options
   A named vector with names matching output of `scorer_fn` that defines
   the importance of this component of the scoring in the overall
   distance and weighting of any given simulation. This can be used to
-  assign more weight on certain parts of the model output.
+  assign more weight on certain parts of the model output. For
+  `euclidean` and `manhattan` distance methods these weights multiply
+  the output of `scorer_fn` directly. For the other 2 distance methods
+  some degree of normalisation is done first on the first wave scores to
+  make different components have approximately the same relevance to the
+  overall score.
+
+- kernel:
+
+  one of `"epanechnikov"` (default), `"uniform"`, `"triangular"`,
+  `"biweight"`, or `"gaussian"`. The kernel defines how the distance
+  metric translates into the importance weight that decides whether a
+  given simulation and associated parameters should be rejected or held
+  for the next round. All kernels except `gaussian` have a hard cut-off
+  outside of which the probability of acceptance of a particle is zero.
+  Use of `gaussian` kernels can result in poor convergence.

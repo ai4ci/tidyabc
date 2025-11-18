@@ -53,6 +53,34 @@ a vector of quantiles
 
 ## Details
 
+The process involves:
+
+1.  Link transformation: \\x\\ values are transformed using the link
+    function: \\x_1 = T(x)\\.
+
+2.  Standardization: Transformed values are standardized: \\x_2 =
+    \frac{x_1 - \mu\_{w,1}}{\sigma\_{w,1}}\\, where \\\mu\_{w,1}\\ and
+    \\\sigma\_{w,1}\\ are the weighted mean and standard deviation of
+    \\x_1\\.
+
+3.  Weighted CDF calculation: The empirical CDF \\y\\ is calculated from
+    weights \\w\\.
+
+4.  Logit transformation: \\y\\ is transformed: \\y_2 =
+    \text{logit}(y)\\.
+
+5.  Local interpolation: For a target probability \\p\\, \\p_2 =
+    \text{logit}(p)\\ is calculated. A window of \\window\\ points is
+    selected from the \\(y_2, x_2)\\ pairs around \\p_2\\. A weighted
+    linear model is fitted using Gaussian kernel weights based on
+    distance in \\y_2\\ space: \\K = \exp(-\frac{1}{2} u^2)\\, where
+    \\u\\ is the normalized distance.
+
+6.  Quantile estimation: The local model predicts \\q_2\\ for \\p_2\\.
+
+7.  Back-transformation: The quantile is transformed back: \\q =
+    T^{-1}(q_2 \cdot \sigma\_{w,1} + \mu\_{w,1})\\.
+
 This is a moderately expensive function to call (in memory terms), as it
 needs to construct the whole quantile function. if there are multiple
 calls consider using
@@ -72,22 +100,22 @@ to build a quantile function and using that.
 
     withr::with_seed(123, {
 
-      test(rnorm,qnorm,"identity",n = 10000)
-      test(rnorm,qnorm,"identity",mean=4,n = 10000)
-      test(rnorm,qnorm,"identity",sd=3, n = 100000, tol=0.05)
+      test(stats::rnorm,stats::qnorm,"identity",n = 10000)
+      test(stats::rnorm,stats::qnorm,"identity",mean=4,n = 10000)
+      test(stats::rnorm,stats::qnorm,"identity",sd=3, n = 100000, tol=0.05)
 
-      test(rnorm,qnorm,"identity",n = 5000)
-      test(rnorm,qnorm,"identity",n = 1000)
-      test(rnorm,qnorm,"identity",n = 100)
-      test(rnorm,qnorm,"identity",n = 30)
+      test(stats::rnorm,stats::qnorm,"identity",n = 5000)
+      test(stats::rnorm,stats::qnorm,"identity",n = 1000)
+      test(stats::rnorm,stats::qnorm,"identity",n = 100)
+      test(stats::rnorm,stats::qnorm,"identity",n = 30)
 
-      test(rgamma,qgamma,"log", 4,n = 10000)
-      test(rgamma,qgamma,"log", 4,n = 5000)
-      test(rgamma,qgamma,"log", 4,n = 1000)
-      test(rgamma,qgamma,"log", 4, 3,n = 100)
-      test(rgamma,qgamma,"log", 4,n = 30)
+      test(stats::rgamma,stats::qgamma,"log", 4,n = 10000)
+      test(stats::rgamma,stats::qgamma,"log", 4,n = 5000)
+      test(stats::rgamma,stats::qgamma,"log", 4,n = 1000)
+      test(stats::rgamma,stats::qgamma,"log", 4, 3,n = 100)
+      test(stats::rgamma,stats::qgamma,"log", 4,n = 30)
 
-      test(runif,qunif,as.link_fns(c(0,10)),0,10)
+      test(stats::runif,stats::qunif,as.link_fns(c(0,10)),0,10)
 
     })
 
@@ -96,8 +124,8 @@ to build a quantile function and using that.
 ``` r
 # unweighted:
 wquantile(p = c(0.25,0.5,0.75), x = stats::rnorm(1000))
-#>         25%         50%         75% 
-#> -0.68610780 -0.04486547  0.63457453 
+#>        25%        50%        75% 
+#> -0.6395344  0.0484240  0.6580429 
 
 # weighted:
 wquantile(p = c(0.25,0.5,0.75), x = seq(-2,2,0.1), w = stats::dnorm(seq(-2,2,0.1)))

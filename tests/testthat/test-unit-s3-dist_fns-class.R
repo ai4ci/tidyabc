@@ -32,7 +32,7 @@ test_that("new_dist_calls unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/s3-dist_fns-class.R"), c(166, 1, 166+1, 1))
+    srcref = srcref(srcfile("../../R/s3-dist_fns-class.R"), c(168, 1, 168+1, 1))
   )
 })
 
@@ -62,7 +62,7 @@ test_that("as.dist_fns.character unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/s3-dist_fns-class.R"), c(538, 1, 538+1, 1))
+    srcref = srcref(srcfile("../../R/s3-dist_fns-class.R"), c(543, 1, 543+1, 1))
   )
 })
 

@@ -4,7 +4,7 @@
 \alias{type_sum.dist_fns}
 \title{Pillar type name}
 \usage{
-\method{type_sum}{dist_fns}(x, ...)
+type_sum.dist_fns(x, ...)
 }
 \arguments{
 \item{x}{a \code{dist_fns} S3 object}

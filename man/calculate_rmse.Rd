@@ -2,7 +2,7 @@
 % Please edit documentation in R/calculate-rmse.R
 \name{calculate_rmse}
 \alias{calculate_rmse}
-\title{Generate a function to calculate a root mean squared error}
+\title{Generate a function to calculate a Root Mean Squared Error (RMSE)}
 \usage{
 calculate_rmse(sim, obs)
 }
@@ -20,6 +20,14 @@ must be the same length.
 This function takes reference data in the form, for example of count data, and
 returns a crated function to calculate the mean squared error from
 simulated data to the observed data.
+\deqn{
+\text{RMSE} = \sqrt{\frac{1}{N} \sum_{i=1}^{N} (x_i - y_i)^2}
+}
+where \eqn{x_i} are the simulated data points, \eqn{y_i} are the observed
+data points, and \eqn{N} is the number of data points. Both input vectors
+must be of the same length. Missing values (\code{NA}) are removed
+pairwise before calculation. Returns \code{NA} if the input vectors are
+not of equal length.
 }
 \concept{workflow}
 

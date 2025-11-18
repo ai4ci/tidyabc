@@ -32,7 +32,7 @@ posterior_resample(
 - sim_fn:
 
   a user defined function that takes a set of parameters named the same
-  as the list `priors`. It must return a simulated data set in the same
+  as `priors_list`. It must return a simulated data set in the same
   format as `obsdata`, or that can be compared to `simdata` by
   `scorer_fn`. This function must not refer to global parameters, and
   will be automatically crated with `carrier`.
@@ -76,11 +76,11 @@ sim1 = sample_df$abc_sim[[1]]
 
 sim1 %>% lapply(head, 10)
 #> $A
-#>  [1] 8.487740 3.815985 3.193516 2.381563 2.653476 4.677163 5.866941 4.230691
-#>  [9] 6.327211 1.928368
+#>  [1] 6.219357 3.019306 5.014118 3.701336 3.322469 4.511440 6.315831 5.058636
+#>  [9] 8.167976 4.697854
 #> 
 #> $B
-#>  [1] 4.706729 4.890665 4.435608 5.681729 5.119136 4.995636 4.043788 4.154802
-#>  [9] 5.947107 5.858067
+#>  [1] 5.669615 6.052935 4.118884 4.131646 4.267825 5.405490 4.433625 5.404898
+#>  [9] 4.138371 4.486834
 #> 
 ```

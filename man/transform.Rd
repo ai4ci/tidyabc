@@ -2,7 +2,7 @@
 % Please edit documentation in R/dist-transform.R
 \name{transform}
 \alias{transform}
-\title{Generate a distribution from a truncation of another}
+\title{Generate a distribution from a link transform of another}
 \usage{
 transform(link, dist, ..., name = NULL)
 }
@@ -20,7 +20,28 @@ function.}
 a \code{dist_fn} or \code{dist_fn_list} holding the transformed distribution(s)
 }
 \description{
-Generate a distribution from a truncation of another
+Generates a new distribution by applying a link transformation to an existing
+distribution \code{dist}. If \eqn{X \sim \text{dist}} and \eqn{h} is the link function,
+this function returns the distribution of \eqn{Y = h^{-1}(X)}.
+The CDF \eqn{F_Y}, quantile function \eqn{Q_Y}, PDF \eqn{f_Y}, and RNG \eqn{R_Y}
+of the transformed distribution are derived from the original distribution's
+functions \eqn{F_X}, \eqn{Q_X}, \eqn{f_X}, \eqn{R_X} and the link function \eqn{h}
+and its inverse \eqn{h^{-1}} as follows:
+\deqn{
+F_Y(y) = F_X(h(y))
+}
+\deqn{
+Q_Y(p) = h^{-1}(Q_X(p))
+}
+\deqn{
+f_Y(y) = f_X(h(y)) \cdot |h'(y)|
+}
+\deqn{
+R_Y(n) = h^{-1}(R_X(n))
+}
+where \eqn{h'(y)} is the derivative of the link function. This function implements
+these transformations for the \code{p}, \code{q}, \code{d}, and \code{r} functions of the resulting
+\code{dist_fns} object.
 }
 \concept{empirical}
 

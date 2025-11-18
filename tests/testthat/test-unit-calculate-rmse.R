@@ -42,7 +42,7 @@ test_that("calculate_rmse unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/calculate-rmse.R"), c(16, 1, 16+1, 1))
+    srcref = srcref(srcfile("../../R/calculate-rmse.R"), c(24, 1, 24+1, 1))
   )
 })
 

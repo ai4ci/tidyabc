@@ -15,9 +15,24 @@ in which case the forward link is a logit of the cumulative probability
 and the reverse is the quantile of the expit.
 }
 \details{
-\code{link_fns} and \code{link_fns_list} objects support \code{$} access for fields and \code{@} access
-for attributes. \code{link_fns_list}s can be made with the \code{c()} or \code{rep()} functions,
-or with the \code{purrr} style map functions, and they support subsetting.
-Individual \code{link_fns} members of \code{link_fns_list}s can be accessed with \code{[[}.
+A \code{link_fns} S3 object encapsulates a monotonic transformation function
+\eqn{h}, its inverse \eqn{h^{-1}}, and their derivatives \eqn{h'} and
+\eqn{(h^{-1})'}. It also defines the support (domain) \eqn{[a, b]} of the
+original space and the range \eqn{[h(a), h(b)]} of the transformed space.
+
+The function dispatches based on the input \code{x}:
+\itemize{
+\item \code{character}: Selects standard links (e.g., "log", "logit", "probit", "identity").
+For example, "log" defines \eqn{h(x) = \log(x)} with support \eqn{(0, \infty)}.
+\item \code{dist_fns}: Defines the link as the logit of the CDF and the quantile of the expit:
+\eqn{h(x) = \text{logit}(F(x))}, \eqn{h^{-1}(z) = F^{-1}(\text{expit}(z))},
+where \eqn{F} and \eqn{F^{-1}} are the CDF and quantile functions from the \code{dist_fns} object.
+The support is determined by the quantile function's range (e.g., \eqn{[Q(0), Q(1)]}).
+\item \code{family} (from \code{stats}): Uses the link function and its inverse from the GLM family object.
+\item \code{numeric}: If length 2, interprets as a support range \eqn{[a, b]} and creates a logit-like
+transformation mapping this range to \eqn{(-\infty, \infty)}: \eqn{h(x) = \text{logit}(\frac{x-a}{b-a})}.
+If all values are finite and length > 2, creates a standardization link: \eqn{h(x) = \frac{x-\mu}{\sigma}},
+where \eqn{\mu} and \eqn{\sigma} are the mean and standard deviation of the input vector.
+}
 }
 \keyword{internal}

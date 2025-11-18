@@ -1,23 +1,6 @@
 # ABC Adaptive
 
 ``` r
-# library(tidyabc)
-
-library(dplyr)
-#> 
-#> Attaching package: 'dplyr'
-#> The following objects are masked from 'package:stats':
-#> 
-#>     filter, lag
-#> The following objects are masked from 'package:base':
-#> 
-#>     intersect, setdiff, setequal, union
-library(ggplot2)
-devtools::load_all()
-#> ℹ Loading tidyabc
-```
-
-``` r
 
 # example simulation
 # Well be trying to recover norm and gamma parameters
@@ -42,8 +25,8 @@ test_simulation_fn = function(norm_mean, norm_sd, gamma_mean, gamma_sd) {
 
 test_scorer_fn = function(simdata, obsdata) {
   return(list(
-    data1 = calculate_wasserstein(obsdata$data1, simdata$data1),
-    data2 = calculate_wasserstein(obsdata$data2, simdata$data2)
+    data1 = calculate_wasserstein(simdata$data1, obsdata$data1),
+    data2 = calculate_wasserstein(simdata$data2, obsdata$data2)
   ))
 }
 ```
@@ -68,7 +51,7 @@ ggplot(
   xlab("A + B - C")
 ```
 
-![](abc-adaptive_files/figure-html/unnamed-chunk-5-1.png)
+![](abc-adaptive_files/figure-html/unnamed-chunk-4-1.png)
 
 ``` r
 
@@ -77,7 +60,7 @@ ggplot(tibble(data2 = test_obsdata$data2), aes(x=data2))+
   xlab("B x C")
 ```
 
-![](abc-adaptive_files/figure-html/unnamed-chunk-5-2.png)
+![](abc-adaptive_files/figure-html/unnamed-chunk-4-2.png)
 
 ``` r
 test_priors = priors(
@@ -112,12 +95,11 @@ adaptive_fit = abc_adaptive(
   bw=0.05
 )
 #> ABC-Adaptive
-#> Adaptive waves:  ■                                  0% | wave 1 ETA:  7m
-#> Adaptive waves:  ■                                  1% | wave 5 ETA:  5m
-#> Adaptive waves:  ■■                                 2% | wave 9 ETA:  5m
-#> Adaptive waves:  ■■                                 3% | wave 13 ETA:  5m
-#> Converged on wave: 15
+#> Adaptive waves:  ■                                  0% | wave 2 ETA:  6m
+#> Adaptive waves:  ■                                  2% | wave 6 ETA:  5m
+#> Adaptive waves:  ■■                                 3% | wave 10 ETA:  5m
 #> Adaptive waves:  ■■                                 4% | wave 14 ETA:  5m
+#> Converged on wave: 15
 
 summary(adaptive_fit)
 #> ABC adaptive fit: 15 waves - (converged)
@@ -126,32 +108,32 @@ summary(adaptive_fit)
 #> # Groups:   param [4]
 #>   param      mean_sd       median_95_CrI           ESS
 #>   <chr>      <chr>         <chr>                 <dbl>
-#> 1 gamma_mean 5.982 ± 0.055 5.967 [5.810 — 6.147] 1677.
-#> 2 gamma_sd   2.056 ± 0.097 2.059 [1.742 — 2.295] 1677.
-#> 3 norm_mean  3.978 ± 0.142 3.959 [3.613 — 4.424] 1677.
-#> 4 norm_sd    1.990 ± 0.390 2.034 [0.651 — 2.849] 1677.
+#> 1 gamma_mean 5.971 ± 0.064 5.974 [5.777 — 6.144] 1798.
+#> 2 gamma_sd   1.956 ± 0.103 1.954 [1.680 — 2.249] 1798.
+#> 3 norm_mean  3.987 ± 0.159 3.985 [3.535 — 4.420] 1798.
+#> 4 norm_sd    2.139 ± 0.353 2.182 [0.879 — 2.845] 1798.
 ```
 
 ``` r
 plot(adaptive_fit, truth=truth)
 ```
 
-![](abc-adaptive_files/figure-html/unnamed-chunk-8-1.png)
+![](abc-adaptive_files/figure-html/unnamed-chunk-7-1.png)
 
 ``` r
 plot_convergence(adaptive_fit)
 ```
 
-![](abc-adaptive_files/figure-html/unnamed-chunk-9-1.png)
+![](abc-adaptive_files/figure-html/unnamed-chunk-8-1.png)
 
 ``` r
 plot_evolution(adaptive_fit,truth)
 ```
 
-![](abc-adaptive_files/figure-html/unnamed-chunk-10-1.png)
+![](abc-adaptive_files/figure-html/unnamed-chunk-9-1.png)
 
 ``` r
 plot_correlations(adaptive_fit$posteriors, truth)
 ```
 
-![](abc-adaptive_files/figure-html/unnamed-chunk-11-1.png)
+![](abc-adaptive_files/figure-html/unnamed-chunk-10-1.png)

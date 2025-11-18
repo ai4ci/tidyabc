@@ -357,14 +357,14 @@ abc_fit = abc_rejection(
 metrics = posterior_distance_metrics(abc_fit)
 
 # make the serial interval fitting much more important:
-scoreweights1 =
-  metrics$scoreweights *
-  c(
-    sim_onset = 2,
-    sim_diff = 1,
-    sim_si = 3,
-    sim_mad_si = 3
-  )
+scoreweights1 = metrics$scoreweights 
+# *
+#   c(
+#     sim_onset = 2,
+#     sim_diff = 1,
+#     sim_si = 3,
+#     sim_mad_si = 3
+#   )
 
 # scoreweights1 = 
 #   c(

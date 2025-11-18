@@ -4,7 +4,7 @@
 \alias{type_sum.link_fns_list}
 \title{Pillar type name}
 \usage{
-\method{type_sum}{link_fns_list}(x, ...)
+type_sum.link_fns_list(x, ...)
 }
 \arguments{
 \item{x}{a \code{link_fns_list} S3 object}

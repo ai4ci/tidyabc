@@ -2,7 +2,7 @@
 % Please edit documentation in R/calculate-wasserstein.R
 \name{calculate_wasserstein}
 \alias{calculate_wasserstein}
-\title{Calculate a wasserstein distance}
+\title{Calculate a Wasserstein distance}
 \usage{
 calculate_wasserstein(sim, obs, debias = FALSE, bootstraps = 1)
 }
@@ -26,12 +26,40 @@ by the average distance of the observed data from the mean.
 }
 \description{
 This function takes simulation and observed data and calculates a normalised
-wasserstein distance.
+Wasserstein distance.
 }
 \details{
 In the comparison unequal lengths of the data can be accommodated. The
-simulated data is recycled, and sampled, until the same length as the
+simulated data is sorted and linearly interpolated to the same length as the
 observed data before the comparison.
+
+\deqn{
+W = \frac{1}{N_{obs} \cdot \sigma_{obs}} \sum_{i=1}^{N_{obs}} | \hat{x}_i - y_i |
+}
+
+where \eqn{y_i} are the ordered observed data points, \eqn{\hat{x}_i} are the
+simulated data points after matching size (potentially via interpolation),
+debiasing (optional), and sorting, \eqn{N_{obs}} is the number of observed
+points, and \eqn{\sigma_{obs}} is the standard deviation of the observed data
+(used for normalisation).
+
+Size matching via linear interpolation:
+
+Let \eqn{x} be the sorted simulated
+data of length \eqn{N_{sim}}, and \eqn{N_{obs}} be the target length.
+
+Indices \eqn{idx} are generated as \eqn{idx = \frac{(i-1) \cdot (N_{sim} - 1)}{N_{obs} - 1} + 1}
+for \eqn{i = 1, ..., N_{obs}}. Then \eqn{\hat{x}_i} is calculated as:
+
+\deqn{
+\hat{x}_i = (1 - p_i) \cdot x_{\lfloor idx_i \rfloor} + p_i \cdot x_{\lceil idx_i \rceil}
+}
+
+where \eqn{p_i = idx_i - \lfloor idx_i \rfloor}. If \eqn{\lfloor idx_i \rfloor = \lceil idx_i \rceil},
+then \eqn{\hat{x}_i = x_{\lfloor idx_i \rfloor}}.
+
+For bootstrapping (\code{bootstraps > 1}), the process is repeated \code{bootstraps}
+times with random sampling, and the final distance is the average of the results.
 }
 \concept{workflow}
 
@@ -46,18 +74,16 @@ testthat::expect_equal(calculate_wasserstein(0:10, 0:10), 0)
 testthat::expect_equal(calculate_wasserstein(10:0, 0:10), 0)
 
 # normalised so that all mass at mean = 1
-testthat::expect_equal(calculate_wasserstein(rep(5, 11), 0:10), 1)
+ref = mean(abs(0:10-5))/sd(0:10)
+testthat::expect_equal(calculate_wasserstein(rep(5, 11), 0:10), ref)
 
 # smaller sample recycled and normalises to same value
-testthat::expect_equal(calculate_wasserstein(rep(5, 5), 0:10), 1)
+testthat::expect_equal(calculate_wasserstein(rep(5, 5), 0:10), ref)
 
 # should be ((0+1+0+1+0+0+0+1+0+1+0) / 11) / ((5+4+3+2+1+0+1+2+3+4+5) / 11) = 0.1333...
 testthat::expect_equal(
-  calculate_wasserstein(
-    c(0, 0, 2, 2, 4, 5, 6, 8, 8, 10, 10),
-    0:10
- ),
-  0.133333333333333
+  calculate_wasserstein(c(0, 0, 2, 2, 4, 5, 6, 8, 8, 10, 10), 0:10),
+  0.109640488937369
 )
 
 withr::with_seed(100, {
@@ -67,18 +93,51 @@ withr::with_seed(100, {
    cmp3 = rnorm(100)
 })
 
-testthat::expect_equal(calculate_wasserstein(cmp1,ref), 0.0576417503974498)
-testthat::expect_equal(calculate_wasserstein(cmp2,ref), 1.04950621760385)
-testthat::expect_equal(calculate_wasserstein(cmp3,ref), 0.212977231452674)
+testthat::expect_equal(
+  calculate_wasserstein(cmp1, ref),
+  0.0458673541615467
+)
+testthat::expect_equal(
+  calculate_wasserstein(cmp2, ref),
+  0.835125114099775
+)
+testthat::expect_equal(
+  calculate_wasserstein(cmp3, ref),
+  0.180171816429487
+)
 
-calculate_wasserstein(cmp1,ref,bootstraps=10)
+tmp = withr::with_seed(100, {
+ calculate_wasserstein(cmp1,ref,bootstraps=10)
+})
+testthat::expect_equal(tmp, 0.0678606864134826)
 
-gen = function(n, mean=0, sd=1) sample(pnorm(seq(-1,1,length.out = n - n%%2 + 1), mean, sd))
 
-calculate_wasserstein(gen(1000), gen(1000))
-calculate_wasserstein(gen(1000), gen(100))
-calculate_wasserstein(gen(100), gen(1000))
-calculate_wasserstein(gen(200), gen(1000))
+gen = function(n, mean=0, sd=1) {
+  sample(pnorm(seq(-1,1,length.out = n - n%%2 + 1), mean, sd))
+}
+
+# there should be approximately zero
+testthat::expect_equal(calculate_wasserstein(gen(1000), gen(1000)), 0)
+testthat::expect_equal(calculate_wasserstein(gen(1000), gen(100)), 0)
+testthat::expect_equal(
+  calculate_wasserstein(gen(100), gen(1000)),
+  0,tolerance = 0.01
+)
+testthat::expect_equal(
+  calculate_wasserstein(gen(200), gen(1000)),
+  0,tolerance = 0.01
+)
+
+# these should be approximately equal:
+tmp2 = max(abs(diff(c(
+calculate_wasserstein(gen(100,0.1), gen(1000)),
+calculate_wasserstein(gen(200,0.1), gen(1000)),
+calculate_wasserstein(gen(1000,0.1), gen(1000)),
+calculate_wasserstein(gen(1000, 0.1), gen(200)),
+calculate_wasserstein(gen(1000, 0.1), gen(100))
+))))
+
+testthat::expect_equal(tmp2, 0, tolerance = 0.01)
 
 }\if{html}{\out{</div>}}
 }

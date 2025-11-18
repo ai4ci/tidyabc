@@ -46,6 +46,30 @@ be input into the ABC algortihms using the \code{scoreweights} parameter. This
 function helps provide diagnostics for calibrating the \code{scoreweights}
 parameter.
 }
+\details{
+Given a list of component scores \eqn{S_s^{(i)} = (s_1^{(i)}, \dots, s_m^{(i)})}
+from \eqn{n} simulations and observed scores \eqn{S_o = (s_1^{(o)}, \dots, s_m^{(o)})},
+this function calculates:
+\itemize{
+\item The mean \eqn{\mu_j} and standard deviation \eqn{\sigma_j} of each score component \eqn{j}:
+\deqn{
+    \mu_j = \frac{1}{n}\sum_{i=1}^n s_j^{(i)}, \quad
+    \sigma_j = \sqrt{\frac{1}{n-1}\sum_{i=1}^n (s_j^{(i)} - \mu_j)^2}
+  }
+\item The covariance matrix \eqn{\Sigma} of the score components.
+\item The root mean squared difference (RMSD) between simulated and observed scores for each component:
+\deqn{
+    \text{RMSD}_j = \sqrt{\frac{1}{n}\sum_{i=1}^n (s_j^{(i)} - s_j^{(o)})^2}
+  }
+\item A recommended vector of \code{scoreweights} \eqn{w_j}, calculated as the ratio of the component's
+standard deviation to its RMSD, normalized to sum to 1:
+\deqn{
+    w_j = \frac{\sigma_j / \text{RMSD}_j}{\sum_{k=1}^m (\sigma_k / \text{RMSD}_k)}
+  }
+These weights help balance the influence of different summary statistics in
+the overall distance metric, especially when using Euclidean distance.
+}
+}
 \examples{
 
 fit = example_rejection_fit()

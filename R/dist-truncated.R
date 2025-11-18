@@ -1,5 +1,26 @@
 #' Generate a distribution from a truncation of another
 #'
+#' Generates a truncated distribution from an existing distribution `dist`.
+#' The new distribution is restricted to the interval \eqn{[x_{left}, x_{right}]}
+#' (or \eqn{(x_{left}, x_{right})} if open bounds are intended, though the
+#' quantile function will map 0 to \eqn{x_{left}} and 1 to \eqn{x_{right}}).
+#' The probability density function (PDF) of the truncated distribution \eqn{f_T(x)}
+#' is related to the original PDF \eqn{f(x)} by a normalization constant:
+#' \deqn{
+#' f_T(x) = \frac{f(x)}{F(x_{right}) - F(x_{left})} \mathbb{I}_{[x_{left}, x_{right}]}(x)
+#' }
+#' where \eqn{F} is the original CDF and \eqn{\mathbb{I}} is the indicator function.
+#' Consequently, the CDF \eqn{F_T} and quantile function \eqn{Q_T} are:
+#' \deqn{
+#' F_T(x) = \frac{F(x) - F(x_{left})}{F(x_{right}) - F(x_{left})}
+#' }
+#' \deqn{
+#' Q_T(p) = Q(F(x_{left}) + p \cdot (F(x_{right}) - F(x_{left})))
+#' }
+#' where \eqn{Q} is the quantile function of the original distribution.
+#' This function implements these transformations for the `p`, `q`, and `r` functions
+#' of the resulting `dist_fns` object.
+#'
 #' @param dist a distribution as a name, function or a `dist_fn` S3 object
 #' @param x_left The lower end of the interval or NA for open
 #' @param x_right The upper end of the interval or NA for open

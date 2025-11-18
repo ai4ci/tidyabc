@@ -46,6 +46,10 @@ plot(x, ...)
 
   an `abc_prior` S3 object
 
+- ...:
+
+  passed on to methods
+
 ## Value
 
 an S3 object of class `abc_prior` which contains

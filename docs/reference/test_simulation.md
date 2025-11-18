@@ -22,7 +22,7 @@ test_simulation(
 - sim_fn:
 
   a user defined function that takes a set of parameters named the same
-  as the list `priors`. It must return a simulated data set in the same
+  as `priors_list`. It must return a simulated data set in the same
   format as `obsdata`, or that can be compared to `simdata` by
   `scorer_fn`. This function must not refer to global parameters, and
   will be automatically crated with `carrier`.

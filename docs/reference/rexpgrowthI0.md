@@ -34,7 +34,7 @@ a vector of `n` samples from an exponential growth process
 ## Examples
 
 ``` r
-hist(rexpgrowthI0(10,0.1,20), breaks=40)
+graphics::hist(rexpgrowthI0(10,0.1,20), breaks=40)
 
-hist(rexpgrowthI0(1000,-0.1,40), breaks=40)
+graphics::hist(rexpgrowthI0(1000,-0.1,40), breaks=40)
 ```

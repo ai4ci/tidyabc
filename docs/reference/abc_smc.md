@@ -54,7 +54,7 @@ abc_smc(
 - sim_fn:
 
   a user defined function that takes a set of parameters named the same
-  as the list `priors`. It must return a simulated data set in the same
+  as `priors_list`. It must return a simulated data set in the same
   format as `obsdata`, or that can be compared to `simdata` by
   `scorer_fn`. This function must not refer to global parameters, and
   will be automatically crated with `carrier`.
@@ -104,8 +104,8 @@ abc_smc(
 
 - distance_method:
 
-  what metric is used to combine `simscores` and `obsscores` and is one
-  of `"euclidean"`, `"manhattan"`, or `"mahalanobis"`.
+  what metric is used to combine `simscores` and `obsscores`. One of
+  `"euclidean"`, `"normalised"`, `"manhattan"`, or `"mahalanobis"`.
 
 - seed:
 
@@ -131,12 +131,27 @@ abc_smc(
   session is started with the failing parameter combinations. This is
   not compatible with running in parallel.
 
+- kernel:
+
+  one of `"epanechnikov"` (default), `"uniform"`, `"triangular"`,
+  `"biweight"`, or `"gaussian"`. The kernel defines how the distance
+  metric translates into the importance weight that decides whether a
+  given simulation and associated parameters should be rejected or held
+  for the next round. All kernels except `gaussian` have a hard cut-off
+  outside of which the probability of acceptance of a particle is zero.
+  Use of `gaussian` kernels can result in poor convergence.
+
 - scoreweights:
 
   A named vector with names matching output of `scorer_fn` that defines
   the importance of this component of the scoring in the overall
   distance and weighting of any given simulation. This can be used to
-  assign more weight on certain parts of the model output.
+  assign more weight on certain parts of the model output. For
+  `euclidean` and `manhattan` distance methods these weights multiply
+  the output of `scorer_fn` directly. For the other 2 distance methods
+  some degree of normalisation is done first on the first wave scores to
+  make different components have approximately the same relevance to the
+  overall score.
 
 ## Value
 
@@ -157,6 +172,61 @@ an S3 object of class `abc_fit` this contains the following:
 
 - posteriors: the final wave posteriors
 
+## Details
+
+Performs the ABC Sequential Monte Carlo (SMC) algorithm. This iterative
+method refines parameter estimates across multiple waves.
+
+1.  **Initialization (Wave 1):** Parameters \\\theta^{(i)}\\ are sampled
+    from the prior \\P(\theta)\\. Simulations \\D_s^{(i)} =
+    M(\theta^{(i)})\\ are run, summaries \\S_s^{(i)}\\ are computed, and
+    distances \\d^{(i)} = d(S_s^{(i)}, S_o)\\ are calculated. A
+    tolerance threshold \\\epsilon_1\\ is set as the \\\alpha =
+    \texttt{acceptance\\rate}\\ quantile of these initial distances.
+    Unnormalized weights \\\tilde{w}^{(i)}\_1\\ are calculated using a
+    kernel \\K\_{\epsilon_1}(d^{(i)})\\.
+
+2.  **Subsequent Waves (\\t \> 1\\):**
+
+    - **Proposal Generation:** A particle \\\theta^{(j)}\_{t-1}\\ is
+      selected from the previous wave's accepted particles with
+      probability proportional to its weight \\w^{(j)}\_{t-1}\\. The
+      particle is then perturbed in a transformed MVN space using a
+      multivariate normal kernel with covariance \\\Sigma_t =
+      \frac{\kappa_t^2}{d} \text{Cov}\_{w\_{t-1}}(\theta\_{t-1})\\,
+      where \\\text{Cov}\_{w\_{t-1}}\\ is the weighted covariance from
+      wave \\t-1\\, \\d\\ is the parameter dimension, and \\\kappa_t\\
+      is the `kernel_t` parameter. The new proposal \\\theta^{(i)}\_t\\
+      is generated as: \$\$ \theta^{(i)}\_t = \theta^{(j)}\_{t-1} +
+      \zeta, \quad \zeta \sim \mathcal{N}(0, \Sigma_t) \$\$ This
+      proposal is mapped back to the original parameter space using the
+      prior's copula transformation (from MVN space defined by prior
+      CDFs).
+
+    - **Simulation and Weighting:** Simulations \\D_s^{(i)} =
+      M(\theta^{(i)}\_t)\\ are run for the new proposals. Distances
+      \\d^{(i)}\_t\\ are computed. The tolerance \\\epsilon_t\\ is set
+      as the \\\alpha\\-quantile of distances from the *current* wave's
+      simulations. The unnormalized weight for particle \\i\\ in wave
+      \\t\\ is calculated as: \$\$ \tilde{w}^{(i)}\_t =
+      \frac{P(\theta^{(i)}\_t)
+      K\_{\epsilon_t}(d^{(i)}\_t)}{q_t(\theta^{(i)}\_t)} \$\$ where
+      \\P(\theta^{(i)}\_t)\\ is the prior density, \\K\_{\epsilon_t}\\
+      is the ABC kernel, and \\q_t(\theta^{(i)}\_t)\\ is the proposal
+      density from the previous wave's weighted particles (calculated
+      using the perturbation kernel). This proposal density is computed
+      as a weighted sum: \$\$ q_t(\theta^{(i)}\_t) = \sum_j
+      w^{(j)}\_{t-1} \phi(\theta^{(i)}\_t; \theta^{(j)}\_{t-1},
+      \Sigma_t) \$\$ where \\\phi(\cdot; \mu, \Sigma)\\ is the PDF of a
+      multivariate normal with mean \\\mu\\ and covariance \\\Sigma\\.
+
+3.  **Normalization:** Weights \\w^{(i)}\_t\\ are normalized to sum to
+    one. Particles with negligible weights are typically filtered out.
+
+4.  **Termination:** The process repeats until a maximum number of waves
+    or time is reached, or convergence criteria are met based on changes
+    in parameter estimates or effective sample size (ESS).
+
 ## Examples
 
 ``` r
@@ -172,10 +242,10 @@ fit = abc_smc(
   allow_continue = FALSE
 )
 #> ABC-SMC
-#> SMC waves:  ■■■■■■■■■■                        30% | wave 2 ETA:  4s
-#> SMC waves:  ■■■■■■■■■■■■■                     42% | wave 3 ETA:  3s
+#> SMC waves:  ■■■■■■■                           20% | wave 1 ETA:  4s
+#> SMC waves:  ■■■■■■■■■■■■■■■■■■                56% | wave 4 ETA:  2s
 #> Converged on wave: 8
-#> SMC waves:  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■      90% | wave 7 ETA:  1s
+#> SMC waves:  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■     94% | wave 7 ETA:  0s
 
 summary(fit)
 #> ABC SMC fit: 8 waves - (converged)
@@ -184,7 +254,7 @@ summary(fit)
 #> # Groups:   param [3]
 #>   param mean_sd       median_95_CrI           ESS
 #>   <chr> <chr>         <chr>                 <dbl>
-#> 1 mean  4.981 ± 0.031 4.978 [4.911 — 5.074]  259.
-#> 2 sd1   1.992 ± 0.070 1.991 [1.830 — 2.190]  259.
-#> 3 sd2   0.988 ± 0.038 0.985 [0.895 — 1.090]  259.
+#> 1 mean  4.978 ± 0.034 4.979 [4.876 — 5.072]  248.
+#> 2 sd1   1.983 ± 0.067 1.982 [1.805 — 2.164]  248.
+#> 3 sd2   0.989 ± 0.044 0.989 [0.878 — 1.106]  248.
 ```

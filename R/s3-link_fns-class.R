@@ -21,6 +21,29 @@
 #' in which case the forward link is a logit of the cumulative probability
 #' and the reverse is the quantile of the expit.
 #'
+#' A `link_fns` S3 object encapsulates a monotonic transformation function
+#' \eqn{h}, its inverse \eqn{h^{-1}}, and their derivatives \eqn{h'} and
+#' \eqn{(h^{-1})'}. It also defines the support (domain) \eqn{[a, b]} of the
+#' original space and the range \eqn{[h(a), h(b)]} of the transformed space.
+#'
+#' The function dispatches based on the input `x`:
+#' \itemize{
+#'   \item `character`: Selects standard links (e.g., "log", "logit", "probit", "identity").
+#'     For example, "log" defines \eqn{h(x) = \log(x)} with support \eqn{(0, \infty)}.
+#'   \item `dist_fns`: Defines the link as the logit of the CDF and the quantile of the expit:
+#'     \eqn{h(x) = \text{logit}(F(x))}, \eqn{h^{-1}(z) = F^{-1}(\text{expit}(z))},
+#'     where \eqn{F} and \eqn{F^{-1}} are the CDF and quantile functions from the `dist_fns` object.
+#'     The support is determined by the quantile function's range (e.g., \eqn{[Q(0), Q(1)]}).
+#'   \item `family` (from `stats`): Uses the link function and its inverse from the GLM family object.
+#'   \item `numeric`: If length 2, interprets as a support range \eqn{[a, b]} and creates a logit-like
+#'     transformation mapping this range to \eqn{(-\infty, \infty)}: \eqn{h(x) = \text{logit}(\frac{x-a}{b-a})}.
+#'     If all values are finite and length > 2, creates a standardization link: \eqn{h(x) = \frac{x-\mu}{\sigma}},
+#'     where \eqn{\mu} and \eqn{\sigma} are the mean and standard deviation of the input vector.
+#' }
+#'
+#' @param x The input specifying the link (character name, `dist_fns`, `family`, or numeric support).
+#' @param ... Additional arguments passed to methods (currently unused).
+#'
 #' `link_fns` and `link_fns_list` objects support `$` access for fields and `@` access
 #' for attributes. `link_fns_list`s can be made with the `c()` or `rep()` functions,
 #' or with the `purrr` style map functions, and they support subsetting.

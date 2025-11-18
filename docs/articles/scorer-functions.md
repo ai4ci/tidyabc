@@ -1,4 +1,4 @@
-# Tidy distribution functions
+# Scoring and summarising functions
 
 ## Comparing observation versus simulated data
 

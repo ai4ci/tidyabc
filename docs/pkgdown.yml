@@ -6,9 +6,9 @@ articles:
   abc-smc: abc-smc.html
   s3-distributions: s3-distributions.html
   scorer-functions: scorer-functions.html
-  articles/sim_example: sim_example.html
+  articles/sim-example: sim-example.html
   tidyabc: tidyabc.html
-last_built: 2025-11-17T18:32Z
+last_built: 2025-11-18T22:16Z
 urls:
   reference: https://ai4ci.github.io/tidyabc/reference
   article: https://ai4ci.github.io/tidyabc/articles

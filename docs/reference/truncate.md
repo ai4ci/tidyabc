@@ -1,6 +1,21 @@
 # Generate a distribution from a truncation of another
 
-Generate a distribution from a truncation of another
+Generates a truncated distribution from an existing distribution `dist`.
+The new distribution is restricted to the interval \\\[x\_{left},
+x\_{right}\]\\ (or \\(x\_{left}, x\_{right})\\ if open bounds are
+intended, though the quantile function will map 0 to \\x\_{left}\\ and 1
+to \\x\_{right}\\). The probability density function (PDF) of the
+truncated distribution \\f_T(x)\\ is related to the original PDF
+\\f(x)\\ by a normalization constant: \$\$ f_T(x) =
+\frac{f(x)}{F(x\_{right}) - F(x\_{left})} \mathbb{I}\_{\[x\_{left},
+x\_{right}\]}(x) \$\$ where \\F\\ is the original CDF and \\\mathbb{I}\\
+is the indicator function. Consequently, the CDF \\F_T\\ and quantile
+function \\Q_T\\ are: \$\$ F_T(x) = \frac{F(x) -
+F(x\_{left})}{F(x\_{right}) - F(x\_{left})} \$\$ \$\$ Q_T(p) =
+Q(F(x\_{left}) + p \cdot (F(x\_{right}) - F(x\_{left}))) \$\$ where
+\\Q\\ is the quantile function of the original distribution. This
+function implements these transformations for the `p`, `q`, and `r`
+functions of the resulting `dist_fns` object.
 
 ## Usage
 

@@ -29,10 +29,6 @@ new_link_fns(
 
   the support or support of the link
 
-- range:
-
-  the range of the link (typically `-Inf` to `Inf`)
-
 ## Value
 
 a new `link_fns` S3 object

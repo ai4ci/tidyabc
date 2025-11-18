@@ -63,7 +63,7 @@ test_that("empirical unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(57, 1, 57+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(83, 1, 83+1, 1))
   )
 })
 
@@ -129,7 +129,7 @@ test_that("empirical_cdf unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(290, 1, 290+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(344, 1, 344+1, 1))
   )
 })
 
@@ -158,7 +158,7 @@ test_that(".interpolate unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(565, 1, 565+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(622, 1, 622+1, 1))
   )
 })
 
@@ -202,7 +202,7 @@ test_that(".monotonicpolyspline unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(593, 1, 593+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(650, 1, 650+1, 1))
   )
 })
 
@@ -241,7 +241,7 @@ test_that("empirical_data unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(725, 1, 725+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(802, 1, 802+1, 1))
   )
 })
 
@@ -289,7 +289,7 @@ test_that("wquantile unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(1265, 1, 1265+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(1359, 1, 1359+1, 1))
   )
 })
 
@@ -342,7 +342,7 @@ test_that(".fit_lm_1d unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(1393, 1, 1393+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(1487, 1, 1487+1, 1))
   )
 })
 

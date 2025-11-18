@@ -114,6 +114,47 @@ This function imputes tails of distributions within the constraints of
 the link functions. Given perfect data as samples or as quantiles it
 should well approximate the tail.
 
+If `p` is provided, data is treated as CDF points \\(x_i, p_i)\\. The
+function calls `empirical_cdf(x, p, ...)` internally. This involves:
+
+1.  Transformation: \\x\\ values are mapped via a link function \\T\\ to
+    a standardized scale \\q_x = T(x)\\.
+
+2.  Interpolation: Monotonic splines (or piecewise linear functions if
+    `smooth=FALSE`) are fitted between \\(q_x, p)\\ pairs in Q-Q space,
+    yielding functions \\F\_{cdf}(q_x)\\ and \\F\_{qf}(p)\\.
+
+3.  Tail Extrapolation: The fit is extended to \\(0,0)\\ and \\(1,1)\\
+    if necessary.
+
+4.  Final Functions: \\P(X \leq x) = F\_{cdf}(T(x))\\ and \\Q(p) =
+    T^{-1}(F\_{qf}(p))\\.
+
+If `w` is provided (or `p` is NULL), data is treated as weighted samples
+\\(x_i, w_i)\\. The function calls `empirical_data(x, w, ...)`
+internally. This involves:
+
+1.  Transformation: \\x\\ values are mapped via a link function \\T\\ to
+    \\x_T = T(x)\\.
+
+2.  Standardization: Values are standardized \\x_Z = (x_T -
+    \mu\_{w,T})/\sigma\_{w,T}\\.
+
+3.  Weighted CDF: Empirical CDF \\y = P(X_T \leq x_T)\\ is calculated
+    from \\w\\.
+
+4.  Logit Transformation: \\y_L = \text{logit}(y)\\.
+
+5.  Local Fitting: `locfit` is used to fit models between \\x_Z\\ and
+    \\y_L\\.
+
+6.  Final Functions: Composed from fitted models and the inverse link
+    \\T^{-1}\\.
+
+If `fit_spline=TRUE` (or `knots` is specified) when fitting from data,
+the resulting `empirical_data` fit is re-interpolated using
+`empirical_cdf` at quantiles defined by `knots`.
+
 ## Unit tests
 
 

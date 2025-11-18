@@ -31,7 +31,18 @@ forward and reverse transformation.}
 a \code{dist_fn} of the mixture distribution
 }
 \description{
-Construct a mixture distribution
+Constructs a mixture distribution from a list of component distributions
+\eqn{\text{dist}_i} with corresponding weights \eqn{w_i}.
+The CDF \eqn{F_{\text{mix}}} of the mixture is a weighted sum of the component CDFs:
+\deqn{
+F_{\text{mix}}(x) = \sum_{i=1}^{k} w_i \cdot F_i(x)
+}
+where \eqn{F_i} is the CDF of the \eqn{i}-th component distribution and
+\eqn{\sum w_i = 1}. The implementation first evaluates the weighted CDF on a grid
+of \eqn{x} values (including tail points defined by \code{tail_p} and potentially
+knot points from empirical components). The resulting \eqn{(x, F_{\text{mix}}(x))}
+pairs are then used as input to \code{empirical_cdf} to create the final smooth or
+piecewise linear \code{dist_fns} object representing the mixture distribution.
 }
 \concept{empirical}
 

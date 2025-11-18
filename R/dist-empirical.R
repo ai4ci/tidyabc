@@ -21,6 +21,32 @@
 #' link functions. Given perfect data as samples or as quantiles it should
 #' well approximate the tail.
 #'
+#' If `p` is provided, data is treated as CDF points \eqn{(x_i, p_i)}.
+#' The function calls `empirical_cdf(x, p, ...)` internally. This involves:
+#' 1. Transformation: \eqn{x} values are mapped via a link function \eqn{T} to
+#'    a standardized scale \eqn{q_x = T(x)}.
+#' 2. Interpolation: Monotonic splines (or piecewise linear functions if
+#'    `smooth=FALSE`) are fitted between \eqn{(q_x, p)} pairs in Q-Q space,
+#'    yielding functions \eqn{F_{cdf}(q_x)} and \eqn{F_{qf}(p)}.
+#' 3. Tail Extrapolation: The fit is extended to \eqn{(0,0)} and \eqn{(1,1)} if
+#'    necessary.
+#' 4. Final Functions: \eqn{P(X \leq x) = F_{cdf}(T(x))} and
+#'    \eqn{Q(p) = T^{-1}(F_{qf}(p))}.
+#'
+#' If `w` is provided (or `p` is NULL), data is treated as weighted samples \eqn{(x_i, w_i)}.
+#' The function calls `empirical_data(x, w, ...)` internally. This involves:
+#' 1. Transformation: \eqn{x} values are mapped via a link function \eqn{T} to
+#'    \eqn{x_T = T(x)}.
+#' 2. Standardization: Values are standardized \eqn{x_Z = (x_T - \mu_{w,T})/\sigma_{w,T}}.
+#' 3. Weighted CDF: Empirical CDF \eqn{y = P(X_T \leq x_T)} is calculated from \eqn{w}.
+#' 4. Logit Transformation: \eqn{y_L = \text{logit}(y)}.
+#' 5. Local Fitting: `locfit` is used to fit models between \eqn{x_Z} and \eqn{y_L}.
+#' 6. Final Functions: Composed from fitted models and the inverse link \eqn{T^{-1}}.
+#'
+#' If `fit_spline=TRUE` (or `knots` is specified) when fitting from data,
+#' the resulting `empirical_data` fit is re-interpolated using `empirical_cdf`
+#' at quantiles defined by `knots`.
+#'
 #' @param x either a vector of samples from a distribution `X` or cut-offs for
 #'   cumulative probabilities when combined with `p`
 #' @param p for CDF fits, a vector the same length as `x` giving
@@ -267,6 +293,34 @@ empirical = function(
 #' increasing spline fit to CDF in transformed X and logit Y space. The end
 #' points are linearly interpolated in this space to the `tail_p`th quantile.
 #' The function can fit data provided as `x, P(X<=x)` pairs.
+#'
+#' Constructs an empirical distribution from CDF points \eqn{(x_i, p_i)} by fitting
+#' monotonic splines in a transformed quantile–quantile (Q–Q) space.
+#' The input \eqn{x} is first mapped to a standardized probability scale via a
+#' link-dependent transformation \eqn{q_x = T(x)}. The resulting pairs
+#' \eqn{(q_x, p)} are then used to build two monotonic interpolation functions:
+#' \deqn{
+#'   p = F_{\text{cdf}}(q_x), \quad q_x = F_{\text{qf}}(p)
+#' }
+#' where \eqn{F_{\text{cdf}}} and \eqn{F_{\text{qf}}} are constructed as follows:
+#' \itemize{
+#'   \item If \code{smooth = FALSE}, both are piecewise linear interpolants
+#'     (via \code{stats::approx}).
+#'   \item If \code{smooth = TRUE}, both are strictly monotonic cubic splines
+#'     fitted using the \code{"monoH.FC"} method from \code{stats::splinefun},
+#'     converted to polynomial spline form (\code{polySpline}). Monotonicity is
+#'     enforced by requiring \eqn{q_x} and \eqn{p} to be strictly increasing after
+#'     tie-breaking perturbations.
+#' }
+#' Tail extrapolation is applied by linearly extending the first and last
+#' segments in Q–Q space to the points \eqn{(0,0)} and \eqn{(1,1)} if not already
+#' included. The final distribution functions are:
+#' \deqn{
+#'   P(X \leq x) = F_{\text{cdf}}(T(x)), \quad
+#'   Q(p) = T^{-1}(F_{\text{qf}}(p))
+#' }
+#' where \eqn{T} and \eqn{T^{-1}} are derived from the \code{link} argument.
+#'
 #'
 #' This function imputes tails of distributions. Given perfect data as samples
 #' or as quantiles it should recover the tail
@@ -712,6 +766,26 @@ NULL
 #' The empirical distribution fitted is a piecewise linear in z transformed X
 #' and logit Y space. The evaluation points are linearly interpolated in this
 #' space given a bandwidth for interpolation.
+#'
+#' 1. Link Transformation: Input data `x` is transformed using the specified
+#'    link function: \eqn{x_T = T(x)}, where \eqn{T} is the transformation defined
+#'    by the `link` argument.
+#' 2. Standardization (Z-space): Transformed values \eqn{x_T} are standardized:
+#'    \eqn{x_Z = \frac{x_T - \mu_{w,T}}{\sigma_{w,T}}}, where \eqn{\mu_{w,T}} and
+#'    \eqn{\sigma_{w,T}} are the weighted mean and standard deviation of \eqn{x_T}.
+#' 3. Weighted Empirical CDF: The cumulative weights are calculated to form
+#'    probabilities \eqn{y = P(X_T \leq x_T)}.
+#' 4. Logit Transformation: CDF probabilities are transformed:
+#'    \eqn{y_L = \text{logit}(y)}.
+#' 5. Local Fitting (via `.logit_z_locfit`): Local likelihood models (using `locfit`)
+#'    are fitted between \eqn{x_Z} and \eqn{y_L} to represent the CDF, its derivative
+#'    (density), and the inverse (quantile) function in the transformed space.
+#' 6. Function Construction: The final `p`, `q`, `r`, and `d` functions are
+#'    constructed by composing the fitted models from step 5 with the inverse
+#'    link transformation \eqn{T^{-1}}. For example, the final CDF is
+#'    \eqn{P(X \leq q) = F_{fitted}(\text{logit}^{-1}(T(q)))}, and the final
+#'    quantile function is \eqn{Q(p) = T^{-1}(Q_{fitted}(p))}, where \eqn{Q_{fitted}}
+#'    is the quantile function derived from the fitted models in Z-space.
 #'
 #' This function imputes tails of distributions. Given perfect data as samples
 #' or as quantiles it should recover the tail
@@ -1239,6 +1313,24 @@ wmean = function(x, w = NULL, na.rm = TRUE) {
 #' base quantile. It takes a weight and a link function specification which
 #' allows us to define the support of the quantile function. It is
 #' optimised for imputing the tail of distributions and not speed.
+#'
+#' The process involves:
+#' 1. Link transformation: \eqn{x} values are transformed using the link function:
+#'    \eqn{x_1 = T(x)}.
+#' 2. Standardization: Transformed values are standardized:
+#'    \eqn{x_2 = \frac{x_1 - \mu_{w,1}}{\sigma_{w,1}}}, where \eqn{\mu_{w,1}} and
+#'    \eqn{\sigma_{w,1}} are the weighted mean and standard deviation of \eqn{x_1}.
+#' 3. Weighted CDF calculation: The empirical CDF \eqn{y} is calculated from weights \eqn{w}.
+#' 4. Logit transformation: \eqn{y} is transformed:
+#'    \eqn{y_2 = \text{logit}(y)}.
+#' 5. Local interpolation: For a target probability \eqn{p}, \eqn{p_2 = \text{logit}(p)}
+#'    is calculated. A window of \eqn{window} points is selected from the \eqn{(y_2, x_2)}
+#'    pairs around \eqn{p_2}. A weighted linear model is fitted using Gaussian kernel
+#'    weights based on distance in \eqn{y_2} space: \eqn{K = \exp(-\frac{1}{2} u^2)},
+#'    where \eqn{u} is the normalized distance.
+#' 6. Quantile estimation: The local model predicts \eqn{q_2} for \eqn{p_2}.
+#' 7. Back-transformation: The quantile is transformed back:
+#'    \eqn{q = T^{-1}(q_2 \cdot \sigma_{w,1} + \mu_{w,1})}.
 #'
 #' This is a moderately expensive function to call (in memory terms), as it
 #' needs to construct the whole quantile function. if there are multiple calls

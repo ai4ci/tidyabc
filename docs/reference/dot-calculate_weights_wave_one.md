@@ -27,7 +27,13 @@ this is just their distance by a kernel function.
 
 - kernel:
 
-  one of "epanechnikov", "uniform", "triangular", "biweight", "gaussian"
+  one of `"epanechnikov"` (default), `"uniform"`, `"triangular"`,
+  `"biweight"`, or `"gaussian"`. The kernel defines how the distance
+  metric translates into the importance weight that decides whether a
+  given simulation and associated parameters should be rejected or held
+  for the next round. All kernels except `gaussian` have a hard cut-off
+  outside of which the probability of acceptance of a particle is zero.
+  Use of `gaussian` kernels can result in poor convergence.
 
 ## Value
 

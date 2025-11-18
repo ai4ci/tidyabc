@@ -37,6 +37,15 @@ plot(x, ..., truth = NULL)
 
   boolean - did the result meet convergence criteria
 
+- priors_list:
+
+  a named list of priors specified as a `abc_prior` S3 object (see
+  [`priors()`](https://ai4ci.github.io/tidyabc/reference/priors.md)),
+  this can include derived values as unnamed 2-sided formulae, where the
+  LHS of the formula will be assigned to the value of the RHS, plus
+  optionally a set of constraints as one sided formulae where the RHS of
+  the formulae will resolve to a boolean value.
+
 - wave_df:
 
   a list of dataframes of wave convergence metrics
@@ -56,6 +65,10 @@ plot(x, ..., truth = NULL)
 - ...:
 
   passed on to methods
+
+- object:
+
+  a `abc_fit` object as output by the `abc_XXX` functions
 
 - truth:
 

@@ -32,5 +32,6 @@ utils::globalVariables(c(
   "xmax",
   "xmin",
   "xs",
-  "y"
+  "y",
+  "alph"
 ))

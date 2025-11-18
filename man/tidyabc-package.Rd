@@ -13,7 +13,7 @@ What the package does (one paragraph).
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://ai4ci.github.io/tidyabc/index.html}
+  \item \url{https://ai4ci.github.io/tidyabc}
   \item \url{https://github.com/ai4ci/tidyabc}
   \item Report bugs at \url{https://github.com/ai4ci/tidyabc/issues}
 }

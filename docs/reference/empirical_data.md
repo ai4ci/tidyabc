@@ -80,6 +80,34 @@ The empirical distribution fitted is a piecewise linear in z transformed
 X and logit Y space. The evaluation points are linearly interpolated in
 this space given a bandwidth for interpolation.
 
+1.  Link Transformation: Input data `x` is transformed using the
+    specified link function: \\x_T = T(x)\\, where \\T\\ is the
+    transformation defined by the `link` argument.
+
+2.  Standardization (Z-space): Transformed values \\x_T\\ are
+    standardized: \\x_Z = \frac{x_T - \mu\_{w,T}}{\sigma\_{w,T}}\\,
+    where \\\mu\_{w,T}\\ and \\\sigma\_{w,T}\\ are the weighted mean and
+    standard deviation of \\x_T\\.
+
+3.  Weighted Empirical CDF: The cumulative weights are calculated to
+    form probabilities \\y = P(X_T \leq x_T)\\.
+
+4.  Logit Transformation: CDF probabilities are transformed: \\y_L =
+    \text{logit}(y)\\.
+
+5.  Local Fitting (via `.logit_z_locfit`): Local likelihood models
+    (using `locfit`) are fitted between \\x_Z\\ and \\y_L\\ to represent
+    the CDF, its derivative (density), and the inverse (quantile)
+    function in the transformed space.
+
+6.  Function Construction: The final `p`, `q`, `r`, and `d` functions
+    are constructed by composing the fitted models from step 5 with the
+    inverse link transformation \\T^{-1}\\. For example, the final CDF
+    is \\P(X \leq q) = F\_{fitted}(\text{logit}^{-1}(T(q)))\\, and the
+    final quantile function is \\Q(p) = T^{-1}(Q\_{fitted}(p))\\, where
+    \\Q\_{fitted}\\ is the quantile function derived from the fitted
+    models in Z-space.
+
 This function imputes tails of distributions. Given perfect data as
 samples or as quantiles it should recover the tail
 

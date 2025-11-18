@@ -1,7 +1,7 @@
-# Calculate a wasserstein distance
+# Calculate a Wasserstein distance
 
 This function takes simulation and observed data and calculates a
-normalised wasserstein distance.
+normalised Wasserstein distance.
 
 ## Usage
 
@@ -42,8 +42,37 @@ mean.
 ## Details
 
 In the comparison unequal lengths of the data can be accommodated. The
-simulated data is recycled, and sampled, until the same length as the
-observed data before the comparison.
+simulated data is sorted and linearly interpolated to the same length as
+the observed data before the comparison.
+
+\$\$ W = \frac{1}{N\_{obs} \cdot \sigma\_{obs}} \sum\_{i=1}^{N\_{obs}}
+\| \hat{x}\_i - y_i \| \$\$
+
+where \\y_i\\ are the ordered observed data points, \\\hat{x}\_i\\ are
+the simulated data points after matching size (potentially via
+interpolation), debiasing (optional), and sorting, \\N\_{obs}\\ is the
+number of observed points, and \\\sigma\_{obs}\\ is the standard
+deviation of the observed data (used for normalisation).
+
+Size matching via linear interpolation:
+
+Let \\x\\ be the sorted simulated data of length \\N\_{sim}\\, and
+\\N\_{obs}\\ be the target length.
+
+Indices \\idx\\ are generated as \\idx = \frac{(i-1) \cdot (N\_{sim} -
+1)}{N\_{obs} - 1} + 1\\ for \\i = 1, ..., N\_{obs}\\. Then
+\\\hat{x}\_i\\ is calculated as:
+
+\$\$ \hat{x}\_i = (1 - p_i) \cdot x\_{\lfloor idx_i \rfloor} + p_i \cdot
+x\_{\lceil idx_i \rceil} \$\$
+
+where \\p_i = idx_i - \lfloor idx_i \rfloor\\. If \\\lfloor idx_i
+\rfloor = \lceil idx_i \rceil\\, then \\\hat{x}\_i = x\_{\lfloor idx_i
+\rfloor}\\.
+
+For bootstrapping (`bootstraps > 1`), the process is repeated
+`bootstraps` times with random sampling, and the final distance is the
+average of the results.
 
 ## Unit tests
 
@@ -82,3 +111,20 @@ observed data before the comparison.
     testthat::expect_equal(calculate_wasserstein(cmp3,ref), 0.212977231452674)
 
     calculate_wasserstein(cmp1,ref,bootstraps=10)
+
+    gen = function(n, mean=0, sd=1) {
+      sample(pnorm(seq(-1,1,length.out = n - n
+    }
+
+    # there should be approximately zero
+    calculate_wasserstein(gen(1000), gen(1000))
+    calculate_wasserstein(gen(1000), gen(100))
+    calculate_wasserstein(gen(100), gen(1000))
+    calculate_wasserstein(gen(200), gen(1000))
+
+    # these should be approximately equal:
+    calculate_wasserstein(gen(100,0.1), gen(1000))
+    calculate_wasserstein(gen(200,0.1), gen(1000))
+    calculate_wasserstein(gen(1000,0.1), gen(1000))
+    calculate_wasserstein(gen(1000, 0.1), gen(200))
+    calculate_wasserstein(gen(1000, 0.1), gen(100))

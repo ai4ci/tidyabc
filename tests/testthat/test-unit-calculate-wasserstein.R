@@ -20,18 +20,16 @@ test_that("calculate_wasserstein unit test", {
   testthat::expect_equal(calculate_wasserstein(10:0, 0:10), 0)
   
   # normalised so that all mass at mean = 1
-  testthat::expect_equal(calculate_wasserstein(rep(5, 11), 0:10), 1)
+  ref <- mean(abs(0:10 - 5)) / sd(0:10)
+  testthat::expect_equal(calculate_wasserstein(rep(5, 11), 0:10), ref)
   
   # smaller sample recycled and normalises to same value
-  testthat::expect_equal(calculate_wasserstein(rep(5, 5), 0:10), 1)
+  testthat::expect_equal(calculate_wasserstein(rep(5, 5), 0:10), ref)
   
   # should be ((0+1+0+1+0+0+0+1+0+1+0) / 11) / ((5+4+3+2+1+0+1+2+3+4+5) / 11) = 0.1333...
   testthat::expect_equal(
-    calculate_wasserstein(
-      c(0, 0, 2, 2, 4, 5, 6, 8, 8, 10, 10),
-      0:10
-    ),
-    0.133333333333333
+    calculate_wasserstein(c(0, 0, 2, 2, 4, 5, 6, 8, 8, 10, 10), 0:10),
+    0.109640488937369
   )
   
   withr::with_seed(100, {
@@ -43,31 +41,57 @@ test_that("calculate_wasserstein unit test", {
   
   testthat::expect_equal(
     calculate_wasserstein(cmp1, ref),
-    0.0576417503974498
+    0.0458673541615467
   )
   testthat::expect_equal(
     calculate_wasserstein(cmp2, ref),
-    1.04950621760385
+    0.835125114099775
   )
   testthat::expect_equal(
     calculate_wasserstein(cmp3, ref),
-    0.212977231452674
+    0.180171816429487
   )
   
-  calculate_wasserstein(cmp1, ref, bootstraps = 10)
+  tmp <- withr::with_seed(100, {
+    calculate_wasserstein(cmp1, ref, bootstraps = 10)
+  })
+  testthat::expect_equal(tmp, 0.0678606864134826)
   
-  gen <- function(n, mean = 0, sd = 1) sample(pnorm(seq(-1, 1, length.out = n - n %% 2 + 1), mean, sd))
   
-  calculate_wasserstein(gen(1000), gen(1000))
-  calculate_wasserstein(gen(1000), gen(100))
-  calculate_wasserstein(gen(100), gen(1000))
-  calculate_wasserstein(gen(200), gen(1000))
+  gen <- function(n, mean = 0, sd = 1) {
+    sample(pnorm(seq(-1, 1, length.out = n - n %% 2 + 1), mean, sd))
+  }
+  
+  # there should be approximately zero
+  testthat::expect_equal(calculate_wasserstein(gen(1000), gen(1000)), 0)
+  testthat::expect_equal(calculate_wasserstein(gen(1000), gen(100)), 0)
+  testthat::expect_equal(
+    calculate_wasserstein(gen(100), gen(1000)),
+    0,
+    tolerance = 0.01
+  )
+  testthat::expect_equal(
+    calculate_wasserstein(gen(200), gen(1000)),
+    0,
+    tolerance = 0.01
+  )
+  
+  # these should be approximately equal:
+  tmp2 <- max(abs(diff(c(
+    calculate_wasserstein(gen(100, 0.1), gen(1000)),
+    calculate_wasserstein(gen(200, 0.1), gen(1000)),
+    calculate_wasserstein(gen(1000, 0.1), gen(1000)),
+    calculate_wasserstein(gen(1000, 0.1), gen(200)),
+    calculate_wasserstein(gen(1000, 0.1), gen(100))
+  ))))
+  
+  testthat::expect_equal(tmp2, 0, tolerance = 0.01)
 
   # generates a failure if the overall test is failing with a link to the 
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/calculate-wasserstein.R"), c(25, 1, 25+1, 1))
+    srcref = srcref(srcfile("../../R/calculate-wasserstein.R"), c(53, 1, 53+1, 1))
   )
 })
 
@@ -87,37 +111,12 @@ test_that("wasserstein_calculator unit test", {
   # zero if no distance
   testthat::expect_equal(tmp(0:10), 0)
   testthat::expect_equal(tmp(10:0), 0)
-  
-  # normalised so that all mass at mean = 1
-  testthat::expect_equal(tmp(rep(5, 11)), 1)
-  
-  # smaller sample recycled and normalises to same value
-  testthat::expect_equal(tmp(rep(5, 5)), 1)
-  
-  # should be ((0+1+0+1+0+0+0+1+0+1+0) / 11) / ((5+4+3+2+1+0+1+2+3+4+5) / 11) = 0.1333...
-  testthat::expect_equal(
-    tmp(c(0, 0, 2, 2, 4, 5, 6, 8, 8, 10, 10)),
-    0.133333333333333
-  )
-  
-  withr::with_seed(100, {
-    ref <- rnorm(1000)
-    cmp1 <- rnorm(1000)
-    cmp2 <- rnorm(1000, sd = 2)
-    cmp3 <- rnorm(100)
-  })
-  
-  tmp2 <- wasserstein_calculator(ref)
-  
-  testthat::expect_equal(tmp2(cmp1), 0.0576417503974498)
-  testthat::expect_equal(tmp2(cmp2), 1.04950621760385)
-  testthat::expect_equal(tmp2(cmp3), 0.212977231452674)
 
   # generates a failure if the overall test is failing with a link to the 
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/calculate-wasserstein.R"), c(133, 1, 133+1, 1))
+    srcref = srcref(srcfile("../../R/calculate-wasserstein.R"), c(192, 1, 192+1, 1))
   )
 })
 

@@ -87,6 +87,36 @@ spline is bounded by 0 and 1 in both dimensions.
 This function imputes tails of distributions within the constraints of the
 link functions. Given perfect data as samples or as quantiles it should
 well approximate the tail.
+
+If \code{p} is provided, data is treated as CDF points \eqn{(x_i, p_i)}.
+The function calls \code{empirical_cdf(x, p, ...)} internally. This involves:
+\enumerate{
+\item Transformation: \eqn{x} values are mapped via a link function \eqn{T} to
+a standardized scale \eqn{q_x = T(x)}.
+\item Interpolation: Monotonic splines (or piecewise linear functions if
+\code{smooth=FALSE}) are fitted between \eqn{(q_x, p)} pairs in Q-Q space,
+yielding functions \eqn{F_{cdf}(q_x)} and \eqn{F_{qf}(p)}.
+\item Tail Extrapolation: The fit is extended to \eqn{(0,0)} and \eqn{(1,1)} if
+necessary.
+\item Final Functions: \eqn{P(X \leq x) = F_{cdf}(T(x))} and
+\eqn{Q(p) = T^{-1}(F_{qf}(p))}.
+}
+
+If \code{w} is provided (or \code{p} is NULL), data is treated as weighted samples \eqn{(x_i, w_i)}.
+The function calls \code{empirical_data(x, w, ...)} internally. This involves:
+\enumerate{
+\item Transformation: \eqn{x} values are mapped via a link function \eqn{T} to
+\eqn{x_T = T(x)}.
+\item Standardization: Values are standardized \eqn{x_Z = (x_T - \mu_{w,T})/\sigma_{w,T}}.
+\item Weighted CDF: Empirical CDF \eqn{y = P(X_T \leq x_T)} is calculated from \eqn{w}.
+\item Logit Transformation: \eqn{y_L = \text{logit}(y)}.
+\item Local Fitting: \code{locfit} is used to fit models between \eqn{x_Z} and \eqn{y_L}.
+\item Final Functions: Composed from fitted models and the inverse link \eqn{T^{-1}}.
+}
+
+If \code{fit_spline=TRUE} (or \code{knots} is specified) when fitting from data,
+the resulting \code{empirical_data} fit is re-interpolated using \code{empirical_cdf}
+at quantiles defined by \code{knots}.
 }
 \concept{empirical}
 

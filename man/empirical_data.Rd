@@ -56,6 +56,27 @@ parameter and is either something like "log", "logit", etc.
 The empirical distribution fitted is a piecewise linear in z transformed X
 and logit Y space. The evaluation points are linearly interpolated in this
 space given a bandwidth for interpolation.
+\enumerate{
+\item Link Transformation: Input data \code{x} is transformed using the specified
+link function: \eqn{x_T = T(x)}, where \eqn{T} is the transformation defined
+by the \code{link} argument.
+\item Standardization (Z-space): Transformed values \eqn{x_T} are standardized:
+\eqn{x_Z = \frac{x_T - \mu_{w,T}}{\sigma_{w,T}}}, where \eqn{\mu_{w,T}} and
+\eqn{\sigma_{w,T}} are the weighted mean and standard deviation of \eqn{x_T}.
+\item Weighted Empirical CDF: The cumulative weights are calculated to form
+probabilities \eqn{y = P(X_T \leq x_T)}.
+\item Logit Transformation: CDF probabilities are transformed:
+\eqn{y_L = \text{logit}(y)}.
+\item Local Fitting (via \code{.logit_z_locfit}): Local likelihood models (using \code{locfit})
+are fitted between \eqn{x_Z} and \eqn{y_L} to represent the CDF, its derivative
+(density), and the inverse (quantile) function in the transformed space.
+\item Function Construction: The final \code{p}, \code{q}, \code{r}, and \code{d} functions are
+constructed by composing the fitted models from step 5 with the inverse
+link transformation \eqn{T^{-1}}. For example, the final CDF is
+\eqn{P(X \leq q) = F_{fitted}(\text{logit}^{-1}(T(q)))}, and the final
+quantile function is \eqn{Q(p) = T^{-1}(Q_{fitted}(p))}, where \eqn{Q_{fitted}}
+is the quantile function derived from the fitted models in Z-space.
+}
 
 This function imputes tails of distributions. Given perfect data as samples
 or as quantiles it should recover the tail

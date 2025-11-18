@@ -129,6 +129,58 @@ are executed until a maximum is reached or the results converge sufficiently
 that the changes between waves are small. A relatively small number of
 simulations may be attempted with a high acceptance rate, over multiple waves.
 }
+\details{
+Performs the ABC Sequential Monte Carlo (SMC) algorithm.
+This iterative method refines parameter estimates across multiple waves.
+\enumerate{
+\item \strong{Initialization (Wave 1):}
+Parameters \eqn{\theta^{(i)}} are sampled from the prior \eqn{P(\theta)}.
+Simulations \eqn{D_s^{(i)} = M(\theta^{(i)})} are run, summaries \eqn{S_s^{(i)}}
+are computed, and distances \eqn{d^{(i)} = d(S_s^{(i)}, S_o)} are calculated.
+A tolerance threshold \eqn{\epsilon_1} is set as the
+\eqn{\alpha = \texttt{acceptance\_rate}} quantile of these initial distances.
+Unnormalized weights \eqn{\tilde{w}^{(i)}_1} are calculated using a kernel
+\eqn{K_{\epsilon_1}(d^{(i)})}.
+\item \strong{Subsequent Waves (\eqn{t > 1}):}
+\itemize{
+\item \strong{Proposal Generation:} A particle \eqn{\theta^{(j)}_{t-1}} is selected
+from the previous wave's accepted particles with probability proportional
+to its weight \eqn{w^{(j)}_{t-1}}. The particle is then perturbed in a
+transformed MVN space using a multivariate normal kernel with covariance
+\eqn{\Sigma_t = \frac{\kappa_t^2}{d} \text{Cov}_{w_{t-1}}(\theta_{t-1})},
+where \eqn{\text{Cov}_{w_{t-1}}} is the weighted covariance from wave \eqn{t-1},
+\eqn{d} is the parameter dimension, and \eqn{\kappa_t} is the \code{kernel_t} parameter.
+The new proposal \eqn{\theta^{(i)}_t} is generated as:
+\deqn{
+       \theta^{(i)}_t = \theta^{(j)}_{t-1} + \zeta, \quad \zeta \sim \mathcal{N}(0, \Sigma_t)
+     }
+This proposal is mapped back to the original parameter space using the
+prior's copula transformation (from MVN space defined by prior CDFs).
+\item \strong{Simulation and Weighting:} Simulations \eqn{D_s^{(i)} = M(\theta^{(i)}_t)}
+are run for the new proposals. Distances \eqn{d^{(i)}_t} are computed.
+The tolerance \eqn{\epsilon_t} is set as the \eqn{\alpha}-quantile of
+distances from the \emph{current} wave's simulations. The unnormalized weight
+for particle \eqn{i} in wave \eqn{t} is calculated as:
+\deqn{
+       \tilde{w}^{(i)}_t = \frac{P(\theta^{(i)}_t) K_{\epsilon_t}(d^{(i)}_t)}{q_t(\theta^{(i)}_t)}
+     }
+where \eqn{P(\theta^{(i)}_t)} is the prior density, \eqn{K_{\epsilon_t}}
+is the ABC kernel, and \eqn{q_t(\theta^{(i)}_t)} is the proposal density
+from the previous wave's weighted particles (calculated using the
+perturbation kernel). This proposal density is computed as a weighted sum:
+\deqn{
+       q_t(\theta^{(i)}_t) = \sum_j w^{(j)}_{t-1} \phi(\theta^{(i)}_t; \theta^{(j)}_{t-1}, \Sigma_t)
+     }
+where \eqn{\phi(\cdot; \mu, \Sigma)} is the PDF of a multivariate normal
+with mean \eqn{\mu} and covariance \eqn{\Sigma}.
+}
+\item \strong{Normalization:} Weights \eqn{w^{(i)}_t} are normalized to sum to one.
+Particles with negligible weights are typically filtered out.
+\item \strong{Termination:} The process repeats until a maximum number of waves or
+time is reached, or convergence criteria are met based on changes in
+parameter estimates or effective sample size (ESS).
+}
+}
 \examples{
 
 fit = abc_smc(

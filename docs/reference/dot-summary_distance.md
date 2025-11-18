@@ -13,7 +13,7 @@ first wave (i.e. when the priors were directly sampled).
   component_scores,
   obsscores = NULL,
   distance_method = c("euclidean", "manhattan", "mahalanobis"),
-  wave1_cov = NULL,
+  wave1_metrics = NULL,
   scoreweights = NULL
 )
 ```
@@ -32,15 +32,20 @@ first wave (i.e. when the priors were directly sampled).
 
 - distance_method:
 
-  what metric is used to combine `simscores` and `obsscores` and is one
-  of `"euclidean"`, `"manhattan"`, or `"mahalanobis"`.
+  what metric is used to combine `simscores` and `obsscores`. One of
+  `"euclidean"`, `"normalised"`, `"manhattan"`, or `"mahalanobis"`.
 
 - scoreweights:
 
   A named vector with names matching output of `scorer_fn` that defines
   the importance of this component of the scoring in the overall
   distance and weighting of any given simulation. This can be used to
-  assign more weight on certain parts of the model output.
+  assign more weight on certain parts of the model output. For
+  `euclidean` and `manhattan` distance methods these weights multiply
+  the output of `scorer_fn` directly. For the other 2 distance methods
+  some degree of normalisation is done first on the first wave scores to
+  make different components have approximately the same relevance to the
+  overall score.
 
 ## Value
 

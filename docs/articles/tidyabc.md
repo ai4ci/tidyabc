@@ -44,8 +44,8 @@ test_simulation_fn = function(norm_mean, norm_sd, gamma_mean, gamma_sd) {
 
 test_scorer_fn = function(simdata, obsdata) {
   return(list(
-    data1 = calculate_wasserstein(obsdata$data1, simdata$data1),
-    data2 = calculate_wasserstein(obsdata$data2, simdata$data2)
+    data1 = calculate_wasserstein(simdata$data1, obsdata$data1),
+    data2 = calculate_wasserstein(simdata$data2, obsdata$data2)
   ))
 }
 ```
@@ -122,10 +122,10 @@ summary(rejection_fit)
 #> # Groups:   param [4]
 #>   param      mean_sd       median_95_CrI           ESS
 #>   <chr>      <chr>         <chr>                 <dbl>
-#> 1 gamma_mean 5.984 ± 0.319 6.004 [5.164 — 6.866]  70.9
-#> 2 gamma_sd   2.426 ± 0.525 2.449 [1.314 — 3.617]  70.9
-#> 3 norm_mean  4.046 ± 0.786 4.087 [2.122 — 5.856]  70.9
-#> 4 norm_sd    2.165 ± 1.574 1.639 [0.127 — 6.273]  70.9
+#> 1 gamma_mean 5.903 ± 0.396 5.933 [5.040 — 6.695]  78.0
+#> 2 gamma_sd   1.908 ± 0.595 1.906 [0.752 — 3.113]  78.0
+#> 3 norm_mean  3.991 ± 0.919 3.923 [2.067 — 6.048]  78.0
+#> 4 norm_sd    2.240 ± 1.406 2.081 [0.148 — 5.713]  78.0
 ```
 
 ``` r

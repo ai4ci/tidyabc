@@ -1,8 +1,8 @@
-# Pegasus R0 / Generation time - EXERCISE
+# Early outbreak and Generation time
 
 ## Simulation
 
-## Setup siumulation —-
+### Setup simulation
 
 ``` r
 sim_params = list(
@@ -84,7 +84,7 @@ index_case_onset = observed %>% dplyr::transmute(onset_time = floor(symptom_time
 ggplot(index_case_onset, aes(x=onset_time))+geom_histogram(binwidth = 1)
 ```
 
-![](sim_example_files/figure-html/unnamed-chunk-2-1.png)
+![](sim-example_files/figure-html/unnamed-chunk-2-1.png)
 
 ### Delay to observation
 
@@ -99,7 +99,7 @@ ggplot(delay_distribution, aes(x = obs_delay))+geom_histogram(binwidth = 1)+
   xlab("symptom to observation")
 ```
 
-![](sim_example_files/figure-html/unnamed-chunk-3-1.png)
+![](sim-example_files/figure-html/unnamed-chunk-3-1.png)
 
 ### Observed serial interval
 
@@ -122,7 +122,7 @@ ggplot(serial_pairs) +
   xlab("symptom serial interval (given observed)")
 ```
 
-![](sim_example_files/figure-html/unnamed-chunk-4-1.png)
+![](sim-example_files/figure-html/unnamed-chunk-4-1.png)
 
 ``` r
 obsdata = list(
@@ -148,36 +148,23 @@ model makes the following hard assumptions:
   t_obs_2)
 - cases only observed if t_obs / t_obs_2 within time window (0-T)
 
-``` math
+\\ \begin{align} t\_{max} - T\_{inf} &\sim Exp(r_0) \\ \Delta T\_{inf
+\rightarrow onset} &\sim Gamma(\mu\_{onset},\sigma\_{onset}) \\ \Delta
+T\_{onset \rightarrow obs} &\sim Gamma(\mu\_{obs},\sigma\_{obs}) \\
+\Delta T\_{gt} &\sim Gamma(\mu\_{gt},\sigma\_{gt}) \\ \end{align} \\
 
-\begin{align}
-t_{max} - T_{inf} &\sim Exp(r_0) \\
-\Delta T_{inf \rightarrow onset} &\sim Gamma(\mu_{onset},\sigma_{onset}) \\
-\Delta T_{onset \rightarrow obs} &\sim Gamma(\mu_{obs},\sigma_{obs}) \\
-\Delta T_{gt} &\sim Gamma(\mu_{gt},\sigma_{gt}) \\
-\end{align}
-```
+\\ \begin{align} T\_{onset} &= T\_{inf} + \Delta T\_{inf \rightarrow
+onset} \\ T\_{obs} &= T\_{onset} + \Delta T\_{onset \rightarrow obs}\\
+T\_{inf_2} &= T\_{inf_1} + \Delta T\_{gt} \\ \Delta T\_{onset_1
+\rightarrow onset_2} &= \Delta T\_{gt} + \Delta T\_{inf_2 \rightarrow
+onset_2} - \Delta T\_{inf_1 \rightarrow onset_1} \\ \end{align} \\
 
-``` math
-
-\begin{align}
-T_{onset} &= T_{inf} + \Delta T_{inf \rightarrow onset} \\
-T_{obs} &= T_{onset} + \Delta T_{onset \rightarrow obs}\\
-T_{inf_2} &= T_{inf_1} + \Delta T_{gt} \\
-\Delta T_{onset_1 \rightarrow onset_2} &=  \Delta T_{gt} + \Delta T_{inf_2 \rightarrow onset_2} -  \Delta T_{inf_1 \rightarrow onset_1} \\
-\end{align}
-```
-
-``` math
-
-\begin{align}
-O_1 &= I(t_0 \le T_{onset_1}, T_{obs_1} \le t_{max}) \\
-O_{1,2} &= I(O_1, t_0 \le T_{onset_2}, T_{obs_2} \le t_{max})\\
-T_{onset_1}|O_1 &\Rightarrow \text{primary case times}\\
-\Delta T_{onset_1 \rightarrow obs_1}|O_1 &\Rightarrow \text{onset to interview delay}\\
-\Delta T_{onset_1 \rightarrow onset_2}|O_{1,2} &\Rightarrow \text{onset to onset serial interval}\\
-\end{align}
-```
+\\ \begin{align} O_1 &= I(t_0 \le T\_{onset_1}, T\_{obs_1} \le t\_{max})
+\\ O\_{1,2} &= I(O_1, t_0 \le T\_{onset_2}, T\_{obs_2} \le t\_{max})\\
+T\_{onset_1}\|O_1 &\Rightarrow \text{primary case times}\\ \Delta
+T\_{onset_1 \rightarrow obs_1}\|O_1 &\Rightarrow \text{onset to
+interview delay}\\ \Delta T\_{onset_1 \rightarrow onset_2}\|O\_{1,2}
+&\Rightarrow \text{onset to onset serial interval}\\ \end{align} \\
 
 ``` r
 n = nrow(observed)
@@ -188,23 +175,12 @@ sim1_fn = carrier::crate(
     # Primary case infection time
     # exponentially distributed in time. Need to make sure we have enough samples 
     # before t0 observation cutoff to account for early observed cases.
-    # if (r0>0) {
-    #   t_inf_1 = T_obs - stats::rexp(n, r0)
-    # } else {
-    #   # Decling epidemic (quite unlikely)
-    #   t_early = - stats::qgamma(0.99,mean_onset,sd_onset) # t starts at 0
-    #   if (r0==0) {
-    #     t_inf_1 = stats::runif(n,t_early,T_obs)
-    #   } else {
-    #     t_inf_1 = t_early+stats::rexp(n, -r0)
-    #   } 
-    # }
     
     t_early = - stats::qgamma(0.99,mean_onset,sd_onset) # t starts at 0
     t_inf_1 = tidyabc::rexpgrowth(n, r0, T_obs, t_early)
     
-    onset_delay = ggoutbreak::rgamma2(n, mean_onset, sd_onset, convex = FALSE)
-    obs_delay = ggoutbreak::rgamma2(n, mean_obs, sd_obs, convex = FALSE)
+    onset_delay = tidyabc::rgamma2(n, mean_onset, sd_onset)
+    obs_delay = tidyabc::rgamma2(n, mean_obs, sd_obs)
     
     t_onset_1 = t_inf_1 + onset_delay
     t_obs_1 = t_onset_1 + obs_delay
@@ -228,9 +204,9 @@ sim1_fn = carrier::crate(
     index_1ary = rep(seq_along(case_2ary), case_2ary)
     n2 = length(index_1ary)
     
-    gt_delay = ggoutbreak::rgamma2(n2, mean_gt, sd_gt, convex = FALSE)
-    onset_delay_2 = ggoutbreak::rgamma2(n2, mean_onset, sd_onset, convex = FALSE)
-    obs_delay_2 = ggoutbreak::rgamma2(n2, mean_obs, sd_obs, convex = FALSE)
+    gt_delay = tidyabc::rgamma2(n2, mean_gt, sd_gt)
+    onset_delay_2 = tidyabc::rgamma2(n2, mean_onset, sd_onset)
+    obs_delay_2 = tidyabc::rgamma2(n2, mean_obs, sd_obs)
     
     t_inf_2 = t_inf_1[index_1ary] + gt_delay
     t_onset_2 = t_inf_2 + onset_delay_2
@@ -261,10 +237,10 @@ sim1_fn = carrier::crate(
 ``` r
 scorer1_fn = function(simdata, obsdata) {
   
-  onset = calculate_wasserstein(obsdata$onset, simdata$onset)
-  diff = calculate_wasserstein(obsdata$diff, simdata$diff)
-  si = calculate_wasserstein(obsdata$si, simdata$si)
-  mad_si = abs(mean(obsdata$si) - mean(simdata$si))
+  onset = calculate_wasserstein(simdata$onset, obsdata$onset)
+  diff = calculate_wasserstein(simdata$diff, obsdata$diff)
+  si = calculate_wasserstein(simdata$si, obsdata$si)
+  mad_si = abs(mean(simdata$si) - mean(obsdata$si))
   
   return(list(
     sim_onset = onset,
@@ -273,14 +249,6 @@ scorer1_fn = function(simdata, obsdata) {
     sim_mad_si = mad_si
   ))
 }
-
-# make the serial interval fitting much more important:
-scoreweights1 = c(
-    sim_onset = 2,
-    sim_diff = 0.5,
-    sim_si = 3,
-    sim_mad_si = 3
-  )
 ```
 
 ``` r
@@ -350,42 +318,42 @@ abc_fit = abc_rejection(
   priors_list = priors,
   sim_fn = sim1_fn,
   scorer_fn = scorer1_fn,
-  n_sims = 1000000,
-  acceptance_rate = 0.001,
-  parallel = TRUE,
-  scoreweights = scoreweights1
+  n_sims = 1000,
+  acceptance_rate = 0.5,
+  parallel = TRUE
 )
 ```
 
     ## ABC rejection, 1 wave.
 
-    ## Warning in stats::qnorm(q, -0.205013900337245, 0.0663277312263509): NaNs
+    ## Warning in stats::qnorm(q, -0.218539809534936, 0.0688397280660186): NaNs
+    ## produced
+
+    ## Warning in stats::qnorm(q, -0.244607370400033, 0.151144461187998): NaNs
     ## produced
 
 ``` r
-summary(abc_fit)
+# summary(abc_fit)
+metrics = posterior_distance_metrics(abc_fit)
+
+# make the serial interval fitting much more important:
+scoreweights1 = metrics$scoreweights 
+# *
+#   c(
+#     sim_onset = 2,
+#     sim_diff = 1,
+#     sim_si = 3,
+#     sim_mad_si = 3
+#   )
+
+# scoreweights1 = 
+#   c(
+#     sim_onset = 2,
+#     sim_diff = 1,
+#     sim_si = 3,
+#     sim_mad_si = 4
+#   )
 ```
-
-    ## ABC rejection fit: single wave
-    ## Parameter estimates:
-    ## # A tibble: 8 × 4
-    ## # Groups:   param [8]
-    ##   param      mean_sd       median_95_CrI            ESS
-    ##   <chr>      <chr>         <chr>                  <dbl>
-    ## 1 R0         2.227 ± 0.545 2.115 [1.467 — 3.490]   591.
-    ## 2 mean_gt    5.261 ± 1.681 4.938 [2.196 — 9.861]   591.
-    ## 3 mean_obs   6.230 ± 1.903 6.032 [2.837 — 10.770]  591.
-    ## 4 mean_onset 8.112 ± 1.953 8.067 [3.408 — 11.686]  591.
-    ## 5 r0         0.186 ± 0.030 0.184 [0.121 — 0.268]   591.
-    ## 6 sd_gt      3.696 ± 2.175 3.508 [0.240 — 7.721]   591.
-    ## 7 sd_obs     4.491 ± 1.863 4.412 [1.108 — 7.779]   591.
-    ## 8 sd_onset   5.094 ± 1.396 5.012 [2.149 — 7.753]   591.
-
-``` r
-plot(abc_fit, truth = sim_params)
-```
-
-![](sim_example_files/figure-html/unnamed-chunk-10-1.png)
 
 ``` r
 smc_fit = abc_smc(
@@ -403,7 +371,10 @@ smc_fit = abc_smc(
 
     ## ABC-SMC
 
-    ## Warning in stats::qnorm(q, -0.18810727283479, 0.0594144584708982): NaNs
+    ## Warning in stats::qnorm(q, -0.206492510850451, 0.0698523318900587): NaNs
+    ## produced
+
+    ## Warning in stats::qnorm(q, -0.220619577453376, 0.140110644777754): NaNs
     ## produced
 
     ## SMC waves:  ■                                  1% | wave 1 ETA:  5m
@@ -412,70 +383,88 @@ smc_fit = abc_smc(
 
     ## SMC waves:  ■■                                 4% | wave 3 ETA:  5m
 
-    ## SMC waves:  ■■■                                7% | wave 4 ETA:  5m
+    ## SMC waves:  ■■■                                6% | wave 4 ETA:  5m
 
-    ## SMC waves:  ■■■■                               9% | wave 5 ETA:  5m
+    ## SMC waves:  ■■■                                8% | wave 5 ETA:  5m
 
-    ## SMC waves:  ■■■■                              12% | wave 6 ETA:  4m
+    ## SMC waves:  ■■■■                              10% | wave 6 ETA:  5m
 
-    ## SMC waves:  ■■■■■                             14% | wave 7 ETA:  4m
+    ## SMC waves:  ■■■■■                             13% | wave 7 ETA:  4m
 
-    ## SMC waves:  ■■■■■■                            17% | wave 8 ETA:  4m
+    ## SMC waves:  ■■■■■                             15% | wave 8 ETA:  4m
 
-    ## SMC waves:  ■■■■■■■                           19% | wave 9 ETA:  4m
+    ## SMC waves:  ■■■■■■                            17% | wave 9 ETA:  4m
 
-    ## SMC waves:  ■■■■■■■■                          22% | wave 10 ETA:  4m
+    ## SMC waves:  ■■■■■■■                           20% | wave 10 ETA:  4m
 
-    ## SMC waves:  ■■■■■■■■                          25% | wave 11 ETA:  4m
+    ## SMC waves:  ■■■■■■■■                          22% | wave 11 ETA:  4m
 
-    ## SMC waves:  ■■■■■■■■■                         27% | wave 12 ETA:  4m
+    ## SMC waves:  ■■■■■■■■                          25% | wave 12 ETA:  4m
 
-    ## SMC waves:  ■■■■■■■■■■                        30% | wave 13 ETA:  4m
+    ## SMC waves:  ■■■■■■■■■                         27% | wave 13 ETA:  4m
 
-    ## SMC waves:  ■■■■■■■■■■■                       32% | wave 14 ETA:  3m
+    ## SMC waves:  ■■■■■■■■■■                        29% | wave 14 ETA:  4m
 
-    ## SMC waves:  ■■■■■■■■■■■                       35% | wave 15 ETA:  3m
+    ## SMC waves:  ■■■■■■■■■■■                       32% | wave 15 ETA:  3m
 
-    ## SMC waves:  ■■■■■■■■■■■■                      38% | wave 16 ETA:  3m
+    ## SMC waves:  ■■■■■■■■■■■                       34% | wave 16 ETA:  3m
 
-    ## SMC waves:  ■■■■■■■■■■■■■                     40% | wave 17 ETA:  3m
+    ## SMC waves:  ■■■■■■■■■■■■                      37% | wave 17 ETA:  3m
 
-    ## SMC waves:  ■■■■■■■■■■■■■■                    43% | wave 18 ETA:  3m
+    ## SMC waves:  ■■■■■■■■■■■■■                     39% | wave 18 ETA:  3m
 
-    ## SMC waves:  ■■■■■■■■■■■■■■■                   46% | wave 19 ETA:  3m
+    ## SMC waves:  ■■■■■■■■■■■■■■                    42% | wave 19 ETA:  3m
 
-    ## Converged on wave: 20
+    ## SMC waves:  ■■■■■■■■■■■■■■                    44% | wave 20 ETA:  3m
+
+    ## SMC waves:  ■■■■■■■■■■■■■■■                   47% | wave 21 ETA:  3m
+
+    ## SMC waves:  ■■■■■■■■■■■■■■■■                  49% | wave 22 ETA:  3m
+
+    ## SMC waves:  ■■■■■■■■■■■■■■■■■                 52% | wave 23 ETA:  2m
+
+    ## SMC waves:  ■■■■■■■■■■■■■■■■■                 54% | wave 24 ETA:  2m
+
+    ## SMC waves:  ■■■■■■■■■■■■■■■■■■                57% | wave 25 ETA:  2m
+
+    ## SMC waves:  ■■■■■■■■■■■■■■■■■■■               60% | wave 26 ETA:  2m
+
+    ## SMC waves:  ■■■■■■■■■■■■■■■■■■■■              62% | wave 27 ETA:  2m
+
+    ## SMC waves:  ■■■■■■■■■■■■■■■■■■■■              65% | wave 28 ETA:  2m
+
+    ## Converged on wave: 29
 
 ``` r
 summary(smc_fit)
 ```
 
-    ## ABC SMC fit: 20 waves - (converged)
+    ## ABC SMC fit: 29 waves - (converged)
     ## Parameter estimates:
     ## # A tibble: 8 × 4
     ## # Groups:   param [8]
     ##   param      mean_sd       median_95_CrI            ESS
     ##   <chr>      <chr>         <chr>                  <dbl>
-    ## 1 R0         2.101 ± 0.289 2.062 [1.605 — 2.723]  6328.
-    ## 2 mean_gt    5.168 ± 1.119 5.040 [2.992 — 8.360]  6328.
-    ## 3 mean_obs   5.468 ± 1.331 5.264 [3.129 — 9.261]  6328.
-    ## 4 mean_onset 7.159 ± 1.574 7.035 [3.888 — 11.027] 6328.
-    ## 5 r0         0.181 ± 0.020 0.180 [0.133 — 0.238]  6328.
-    ## 6 sd_gt      3.947 ± 1.666 3.972 [0.552 — 7.404]  6328.
-    ## 7 sd_obs     3.840 ± 1.479 3.649 [1.324 — 7.300]  6328.
-    ## 8 sd_onset   4.662 ± 1.089 4.558 [2.456 — 7.329]  6328.
+    ## 1 R0         2.029 ± 0.243 1.990 [1.616 — 2.556]  6340.
+    ## 2 mean_gt    4.403 ± 1.001 4.268 [2.547 — 7.584]  6340.
+    ## 3 mean_obs   5.238 ± 0.645 5.152 [4.029 — 7.595]  6340.
+    ## 4 mean_onset 5.738 ± 1.617 5.625 [2.334 — 10.199] 6340.
+    ## 5 r0         0.201 ± 0.018 0.201 [0.161 — 0.255]  6340.
+    ## 6 sd_gt      3.386 ± 1.476 3.374 [0.490 — 6.908]  6340.
+    ## 7 sd_obs     3.351 ± 0.664 3.264 [2.117 — 5.695]  6340.
+    ## 8 sd_onset   3.640 ± 1.173 3.502 [1.408 — 6.855]  6340.
 
 ``` r
 plot(smc_fit,truth = sim_params)
 ```
 
-![](sim_example_files/figure-html/unnamed-chunk-12-1.png)
+![](sim-example_files/figure-html/unnamed-chunk-12-1.png)
 
 ``` r
 plot_evolution(smc_fit,truth = sim_params)
 ```
 
-![](sim_example_files/figure-html/unnamed-chunk-12-2.png)
+![](sim-example_files/figure-html/unnamed-chunk-12-2.png)
 
 ``` r
 adaptive_fit = abc_adaptive(
@@ -484,7 +473,7 @@ adaptive_fit = abc_adaptive(
   sim_fn = sim1_fn,
   scorer_fn = scorer1_fn,
   n_sims = 4000,
-  acceptance_rate = 0.5,
+  acceptance_rate = 0.2,
   # debug_errors = TRUE,
   parallel = TRUE,
   scoreweights = scoreweights1
@@ -493,24 +482,20 @@ adaptive_fit = abc_adaptive(
 
     ## ABC-Adaptive
 
-    ## Warning in stats::qnorm(q, -0.206791663418369, 0.0654413385144222): NaNs
+    ## Warning in stats::qnorm(q, -0.203372935374894, 0.0701163450564314): NaNs
     ## produced
 
     ## Adaptive waves:  ■                                  0% | wave 1 ETA:  6m
 
-    ## Adaptive waves:  ■                                  1% | wave 2 ETA:  5m
-
-    ## Adaptive waves:  ■■                                 2% | wave 4 ETA:  5m
+    ## Adaptive waves:  ■                                  1% | wave 3 ETA:  5m
 
     ## Adaptive waves:  ■■                                 3% | wave 6 ETA:  5m
 
-    ## Adaptive waves:  ■■                                 4% | wave 7 ETA:  5m
+    ## Adaptive waves:  ■■                                 4% | wave 8 ETA:  5m
 
-    ## Adaptive waves:  ■■■                                5% | wave 9 ETA:  5m
+    ## Adaptive waves:  ■■                                 5% | wave 10 ETA:  5m
 
-    ## Adaptive waves:  ■■■                                6% | wave 10 ETA:  5m
-
-    ## Adaptive waves:  ■■■                                7% | wave 12 ETA:  5m
+    ## Adaptive waves:  ■■■                                6% | wave 12 ETA:  5m
 
     ## Converged on wave: 13
 
@@ -522,28 +507,28 @@ summary(adaptive_fit)
     ## Parameter estimates:
     ## # A tibble: 8 × 4
     ## # Groups:   param [8]
-    ##   param      mean_sd       median_95_CrI             ESS
-    ##   <chr>      <chr>         <chr>                   <dbl>
-    ## 1 R0         2.253 ± 0.674 2.111 [1.391 — 3.586]  15023.
-    ## 2 mean_gt    4.707 ± 1.076 4.454 [2.492 — 9.342]  15023.
-    ## 3 mean_obs   6.791 ± 1.766 6.630 [2.416 — 10.930] 15023.
-    ## 4 mean_onset 8.215 ± 1.730 8.003 [3.500 — 11.609] 15023.
-    ## 5 r0         0.195 ± 0.044 0.192 [0.069 — 0.323]  15023.
-    ## 6 sd_gt      2.879 ± 1.420 2.858 [0.306 — 6.634]  15023.
-    ## 7 sd_obs     4.060 ± 1.696 3.991 [0.723 — 7.516]  15023.
-    ## 8 sd_onset   4.767 ± 1.402 4.668 [1.489 — 7.601]  15023.
+    ##   param      mean_sd       median_95_CrI            ESS
+    ##   <chr>      <chr>         <chr>                  <dbl>
+    ## 1 R0         2.669 ± 0.713 2.541 [1.735 — 4.057]  4731.
+    ## 2 mean_gt    5.169 ± 1.215 4.922 [2.091 — 9.709]  4731.
+    ## 3 mean_obs   5.781 ± 1.015 5.507 [3.725 — 9.855]  4731.
+    ## 4 mean_onset 7.531 ± 1.769 7.395 [2.159 — 11.314] 4731.
+    ## 5 r0         0.246 ± 0.032 0.247 [0.138 — 0.349]  4731.
+    ## 6 sd_gt      3.835 ± 1.460 3.961 [0.559 — 7.052]  4731.
+    ## 7 sd_obs     3.619 ± 1.027 3.396 [1.595 — 6.703]  4731.
+    ## 8 sd_onset   4.031 ± 1.810 4.010 [0.517 — 7.536]  4731.
 
 ``` r
 plot(adaptive_fit,truth = sim_params)
 ```
 
-![](sim_example_files/figure-html/unnamed-chunk-14-1.png)
+![](sim-example_files/figure-html/unnamed-chunk-14-1.png)
 
 ``` r
 plot_evolution(adaptive_fit,truth = sim_params)
 ```
 
-![](sim_example_files/figure-html/unnamed-chunk-14-2.png)
+![](sim-example_files/figure-html/unnamed-chunk-14-2.png)
 
 ``` r
 plot_correlations(adaptive_fit,truth = sim_params) & ggplot2::theme(
@@ -551,19 +536,19 @@ plot_correlations(adaptive_fit,truth = sim_params) & ggplot2::theme(
 )
 ```
 
-![](sim_example_files/figure-html/unnamed-chunk-14-3.png)
+![](sim-example_files/figure-html/unnamed-chunk-14-3.png)
 
 ``` r
 plot_convergence(adaptive_fit)
 ```
 
-![](sim_example_files/figure-html/unnamed-chunk-14-4.png)
+![](sim-example_files/figure-html/unnamed-chunk-14-4.png)
 
 ``` r
 plot_simulations(obsdata, adaptive_fit, sim_fn = sim1_fn)
 ```
 
-![](sim_example_files/figure-html/unnamed-chunk-14-5.png)
+![](sim-example_files/figure-html/unnamed-chunk-14-5.png)
 
 ``` r
 priors2 = priors(
@@ -607,7 +592,7 @@ adaptive_fit2 = abc_adaptive(
   sim_fn = sim1_fn,
   scorer_fn = scorer1_fn,
   n_sims = 4000,
-  acceptance_rate = 0.5,
+  acceptance_rate = 0.2,
   # debug_errors = TRUE,
   parallel = TRUE,
   scoreweights = scoreweights1
@@ -616,76 +601,75 @@ adaptive_fit2 = abc_adaptive(
 
     ## ABC-Adaptive
 
-    ## Warning in stats::qnorm(q, -0.200590853219569, 0.0666229038704867): NaNs
+    ## Warning in stats::qnorm(q, -0.219098965642995, 0.0641085802091193): NaNs
     ## produced
 
     ## Adaptive waves:  ■                                  0% | wave 1 ETA:  6m
 
-    ## Adaptive waves:  ■                                  2% | wave 3 ETA:  5m
+    ## Adaptive waves:  ■                                  1% | wave 3 ETA:  5m
 
-    ## Adaptive waves:  ■■                                 3% | wave 5 ETA:  5m
+    ## Adaptive waves:  ■■                                 2% | wave 5 ETA:  5m
 
-    ## Adaptive waves:  ■■                                 3% | wave 6 ETA:  5m
+    ## Adaptive waves:  ■■                                 3% | wave 7 ETA:  5m
 
-    ## Adaptive waves:  ■■                                 5% | wave 8 ETA:  5m
+    ## Adaptive waves:  ■■                                 4% | wave 9 ETA:  5m
 
-    ## Adaptive waves:  ■■■                                5% | wave 9 ETA:  5m
+    ## Adaptive waves:  ■■■                                6% | wave 11 ETA:  5m
 
-    ## Adaptive waves:  ■■■                                7% | wave 11 ETA:  5m
+    ## Adaptive waves:  ■■■                                6% | wave 12 ETA:  5m
 
-    ## Adaptive waves:  ■■■                                8% | wave 12 ETA:  5m
+    ## Converged on wave: 14
 
-    ## Adaptive waves:  ■■■■                               8% | wave 13 ETA:  5m
-
-    ## Adaptive waves:  ■■■■                               9% | wave 14 ETA:  5m
-
-    ## Converged on wave: 15
+    ## Adaptive waves:  ■■■                                7% | wave 13 ETA:  5m
 
 ``` r
 summary(adaptive_fit2)
 ```
 
-    ## ABC adaptive fit: 15 waves - (converged)
+    ## ABC adaptive fit: 14 waves - (converged)
     ## Parameter estimates:
     ## # A tibble: 8 × 4
     ## # Groups:   param [8]
-    ##   param      mean_sd       median_95_CrI             ESS
-    ##   <chr>      <chr>         <chr>                   <dbl>
-    ## 1 R0         2.158 ± 0.471 2.068 [1.474 — 3.161]  18741.
-    ## 2 mean_gt    4.724 ± 0.976 4.430 [2.736 — 8.976]  18741.
-    ## 3 mean_obs   4.936 ± 0.781 4.860 [3.509 — 6.764]  18741.
-    ## 4 mean_onset 7.319 ± 1.483 7.055 [4.756 — 11.063] 18741.
-    ## 5 r0         0.186 ± 0.035 0.184 [0.088 — 0.293]  18741.
-    ## 6 sd_gt      2.909 ± 1.453 2.812 [0.354 — 6.784]  18741.
-    ## 7 sd_obs     2.774 ± 0.712 2.735 [1.553 — 4.570]  18741.
-    ## 8 sd_onset   4.817 ± 0.805 4.798 [3.384 — 6.608]  18741.
+    ##   param      mean_sd       median_95_CrI           ESS
+    ##   <chr>      <chr>         <chr>                 <dbl>
+    ## 1 R0         2.191 ± 0.292 2.159 [1.747 — 2.791] 6183.
+    ## 2 mean_gt    4.448 ± 0.735 4.298 [2.464 — 7.941] 6183.
+    ## 3 mean_obs   4.950 ± 0.344 4.928 [4.053 — 6.062] 6183.
+    ## 4 mean_onset 6.899 ± 1.180 6.649 [4.654 — 9.984] 6183.
+    ## 5 r0         0.213 ± 0.020 0.213 [0.145 — 0.286] 6183.
+    ## 6 sd_gt      3.058 ± 1.115 3.113 [0.583 — 6.404] 6183.
+    ## 7 sd_obs     2.908 ± 0.384 2.880 [2.009 — 4.113] 6183.
+    ## 8 sd_onset   4.702 ± 0.778 4.720 [3.258 — 6.500] 6183.
 
 ``` r
 plot(adaptive_fit2,truth = sim_params)
 ```
 
-![](sim_example_files/figure-html/unnamed-chunk-17-1.png)
+![](sim-example_files/figure-html/unnamed-chunk-17-1.png)
 
 ``` r
 plot_evolution(adaptive_fit2,truth = sim_params)
 ```
 
-![](sim_example_files/figure-html/unnamed-chunk-17-2.png)
+![](sim-example_files/figure-html/unnamed-chunk-17-2.png)
 
 ``` r
-plot_correlations(adaptive_fit2,truth = sim_params)
+plot_correlations(adaptive_fit2,truth = sim_params) & ggplot2::theme(
+   axis.title.y = ggplot2::element_text(angle=45,vjust=0, hjust=1),
+   axis.title.x = ggplot2::element_text(angle=45, hjust=1) #,vjust=1, hjust=0.5)
+)
 ```
 
-![](sim_example_files/figure-html/unnamed-chunk-17-3.png)
+![](sim-example_files/figure-html/unnamed-chunk-17-3.png)
 
 ``` r
 plot_convergence(adaptive_fit2)
 ```
 
-![](sim_example_files/figure-html/unnamed-chunk-17-4.png)
+![](sim-example_files/figure-html/unnamed-chunk-17-4.png)
 
 ``` r
 plot_simulations(obsdata, adaptive_fit2, sim_fn = sim1_fn)
 ```
 
-![](sim_example_files/figure-html/unnamed-chunk-17-5.png)
+![](sim-example_files/figure-html/unnamed-chunk-17-5.png)

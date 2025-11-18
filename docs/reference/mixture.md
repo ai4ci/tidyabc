@@ -1,6 +1,16 @@
 # Construct a mixture distribution
 
-Construct a mixture distribution
+Constructs a mixture distribution from a list of component distributions
+\\\text{dist}\_i\\ with corresponding weights \\w_i\\. The CDF
+\\F\_{\text{mix}}\\ of the mixture is a weighted sum of the component
+CDFs: \$\$ F\_{\text{mix}}(x) = \sum\_{i=1}^{k} w_i \cdot F_i(x) \$\$
+where \\F_i\\ is the CDF of the \\i\\-th component distribution and
+\\\sum w_i = 1\\. The implementation first evaluates the weighted CDF on
+a grid of \\x\\ values (including tail points defined by `tail_p` and
+potentially knot points from empirical components). The resulting \\(x,
+F\_{\text{mix}}(x))\\ pairs are then used as input to `empirical_cdf` to
+create the final smooth or piecewise linear `dist_fns` object
+representing the mixture distribution.
 
 ## Usage
 

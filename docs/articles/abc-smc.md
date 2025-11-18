@@ -44,8 +44,8 @@ test_simulation_fn = function(norm_mean, norm_sd, gamma_mean, gamma_sd) {
 
 test_scorer_fn = function(simdata, obsdata) {
   return(list(
-    data1 = calculate_wasserstein(obsdata$data1, simdata$data1),
-    data2 = calculate_wasserstein(obsdata$data2, simdata$data2)
+    data1 = calculate_wasserstein(simdata$data1, obsdata$data1),
+    data2 = calculate_wasserstein(simdata$data2, obsdata$data2)
   ))
 }
 
@@ -120,24 +120,24 @@ smc_fit = abc_smc(
 #> ABC-SMC
 #> SMC waves:  ■                                  0% | wave 1 ETA:  6m
 #> SMC waves:  ■                                  1% | wave 2 ETA:  5m
-#> SMC waves:  ■                                  2% | wave 5 ETA:  5m
-#> SMC waves:  ■■                                 3% | wave 9 ETA:  5m
-#> SMC waves:  ■■                                 4% | wave 13 ETA:  5m
-#> SMC waves:  ■■                                 5% | wave 16 ETA:  5m
-#> Converged on wave: 20
-#> SMC waves:  ■■■                                5% | wave 19 ETA:  5m
+#> SMC waves:  ■■                                 2% | wave 5 ETA:  5m
+#> SMC waves:  ■■                                 3% | wave 8 ETA:  5m
+#> SMC waves:  ■■                                 4% | wave 11 ETA:  5m
+#> SMC waves:  ■■                                 4% | wave 14 ETA:  5m
+#> Converged on wave: 17
+#> SMC waves:  ■■■                                5% | wave 16 ETA:  5m
 
 summary(smc_fit)
-#> ABC SMC fit: 20 waves - (converged)
+#> ABC SMC fit: 17 waves - (converged)
 #> Parameter estimates:
 #> # A tibble: 4 × 4
 #> # Groups:   param [4]
 #>   param      mean_sd       median_95_CrI           ESS
 #>   <chr>      <chr>         <chr>                 <dbl>
-#> 1 gamma_mean 5.970 ± 0.044 5.969 [5.857 — 6.085]  769.
-#> 2 gamma_sd   1.981 ± 0.061 1.979 [1.832 — 2.150]  769.
-#> 3 norm_mean  3.997 ± 0.169 3.996 [3.558 — 4.450]  769.
-#> 4 norm_sd    2.020 ± 0.323 2.031 [1.218 — 2.753]  769.
+#> 1 gamma_mean 5.971 ± 0.049 5.969 [5.844 — 6.097]  797.
+#> 2 gamma_sd   1.972 ± 0.073 1.970 [1.792 — 2.167]  797.
+#> 3 norm_mean  3.991 ± 0.171 3.990 [3.553 — 4.417]  797.
+#> 4 norm_sd    1.965 ± 0.399 1.989 [0.864 — 2.845]  797.
 ```
 
 ``` r

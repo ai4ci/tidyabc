@@ -36,7 +36,38 @@ This function allows "updating" of the prior with an empirical posterior
 distribution which will retain the bounds of the prior, and is effectively a
 spline based transform of the prior distribution, based on the density of
 data in prior space. This gives a clean density when data is close to a
-prior distribution limit and work better than a standard density for
+prior distribution limit and work better than a standard density.
+}
+\details{
+This takes weighted posterior samples \eqn{\{(\theta^{(i)}, w^{(i)})\}}
+for each parameter \eqn{\theta_j} and constructs an empirical distribution
+function \eqn{Q_j(\theta_j)} that approximates the posterior marginal for
+that parameter.
+
+For each parameter \eqn{\theta_j}, the empirical distribution \eqn{Q_j} is
+fitted using the \code{empirical()} function. The fitting is performed on the
+weighted samples \eqn{(\theta_{j}^{(i)}, w^{(i)})}. A key feature is the use
+of a link function \eqn{h_j(\cdot)} during the fitting process. This link
+function is typically taken from the original prior distribution \eqn{P_j(\theta_j)}
+(i.e., \eqn{h_j = P_j}). This ensures that the fitted empirical distribution
+\eqn{Q_j} respects the support constraints defined by the prior (e.g., positive
+values for a log-normal prior). The fitting effectively occurs in the transformed
+space defined by the link: \eqn{h_j(\theta_j^{(i)})}.
+
+The resulting empirical distribution \eqn{Q_j} is a \code{dist_fns} object that
+includes the support constraints from the original prior. The set of all fitted
+marginal distributions \eqn{\{Q_j\}} forms the new proposal list for the next
+wave.
+
+Additionally, the weighted covariance matrix \eqn{R} of the samples in the
+MVN space (defined by the prior copula) is calculated:
+\deqn{
+  R = \text{Cov}_{w}(\Phi^{-1}(P_1(\theta_1)), \dots, \Phi^{-1}(P_d(\theta_d)))
+}
+where \eqn{\Phi^{-1}} is the quantile function of the standard normal.
+This covariance matrix is stored as an attribute (\code{"cor"}) of the returned
+proposal list and is used to induce correlation structure when sampling
+new proposals from the empirical distributions in subsequent waves.
 }
 \examples{
 

@@ -1,6 +1,17 @@
-# Generate a distribution from a truncation of another
+# Generate a distribution from a link transform of another
 
-Generate a distribution from a truncation of another
+Generates a new distribution by applying a link transformation to an
+existing distribution `dist`. If \\X \sim \text{dist}\\ and \\h\\ is the
+link function, this function returns the distribution of \\Y =
+h^{-1}(X)\\. The CDF \\F_Y\\, quantile function \\Q_Y\\, PDF \\f_Y\\,
+and RNG \\R_Y\\ of the transformed distribution are derived from the
+original distribution's functions \\F_X\\, \\Q_X\\, \\f_X\\, \\R_X\\ and
+the link function \\h\\ and its inverse \\h^{-1}\\ as follows: \$\$
+F_Y(y) = F_X(h(y)) \$\$ \$\$ Q_Y(p) = h^{-1}(Q_X(p)) \$\$ \$\$ f_Y(y) =
+f_X(h(y)) \cdot \|h'(y)\| \$\$ \$\$ R_Y(n) = h^{-1}(R_X(n)) \$\$ where
+\\h'(y)\\ is the derivative of the link function. This function
+implements these transformations for the `p`, `q`, `d`, and `r`
+functions of the resulting `dist_fns` object.
 
 ## Usage
 

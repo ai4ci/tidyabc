@@ -27,7 +27,7 @@ test_that("transform unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-transform.R"), c(13, 1, 13+1, 1))
+    srcref = srcref(srcfile("../../R/dist-transform.R"), c(36, 1, 36+1, 1))
   )
 })
 

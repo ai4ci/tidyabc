@@ -39,6 +39,26 @@ allows us to define the support of the quantile function. It is
 optimised for imputing the tail of distributions and not speed.
 }
 \details{
+The process involves:
+\enumerate{
+\item Link transformation: \eqn{x} values are transformed using the link function:
+\eqn{x_1 = T(x)}.
+\item Standardization: Transformed values are standardized:
+\eqn{x_2 = \frac{x_1 - \mu_{w,1}}{\sigma_{w,1}}}, where \eqn{\mu_{w,1}} and
+\eqn{\sigma_{w,1}} are the weighted mean and standard deviation of \eqn{x_1}.
+\item Weighted CDF calculation: The empirical CDF \eqn{y} is calculated from weights \eqn{w}.
+\item Logit transformation: \eqn{y} is transformed:
+\eqn{y_2 = \text{logit}(y)}.
+\item Local interpolation: For a target probability \eqn{p}, \eqn{p_2 = \text{logit}(p)}
+is calculated. A window of \eqn{window} points is selected from the \eqn{(y_2, x_2)}
+pairs around \eqn{p_2}. A weighted linear model is fitted using Gaussian kernel
+weights based on distance in \eqn{y_2} space: \eqn{K = \exp(-\frac{1}{2} u^2)},
+where \eqn{u} is the normalized distance.
+\item Quantile estimation: The local model predicts \eqn{q_2} for \eqn{p_2}.
+\item Back-transformation: The quantile is transformed back:
+\eqn{q = T^{-1}(q_2 \cdot \sigma_{w,1} + \mu_{w,1})}.
+}
+
 This is a moderately expensive function to call (in memory terms), as it
 needs to construct the whole quantile function. if there are multiple calls
 consider using \code{empirical()} to build a quantile function and using that.

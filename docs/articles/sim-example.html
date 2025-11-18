@@ -11,7 +11,13 @@
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
 <link rel="icon" sizes="any" href="../favicon.ico">
 <link rel="manifest" href="../site.webmanifest">
-<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
+  window.MathJax = {
+    chtml: {
+      fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
+    }
+  };
+</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
@@ -25,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">tidyabc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9003</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,6 +58,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/ai4ci/tidyabc/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -67,7 +74,7 @@
       <img src="../logo.svg" class="logo" alt=""><h1>Early outbreak and Generation time</h1>
             
       
-
+      <small class="dont-index">Source: <a href="https://github.com/ai4ci/tidyabc/blob/HEAD/vignettes/articles/sim-example.Rmd" class="external-link"><code>vignettes/articles/sim-example.Rmd</code></a></small>
       <div class="d-none name"><code>sim-example.Rmd</code></div>
     </div>
 
@@ -114,7 +121,7 @@
 <span>  fn_imports <span class="op">=</span> \<span class="op">(</span><span class="va">t</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">t</span> <span class="op">==</span> <span class="fl">1</span>, <span class="va">sim_params</span><span class="op">$</span><span class="va">I0</span>, <span class="fl">0</span><span class="op">)</span>,</span>
 <span>  max_time <span class="op">=</span> <span class="fl">40</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## ..................complete</span></span>
+<pre><code><span><span class="co">## ....................complete</span></span>
 <span><span class="co">## interfacer: development mode active (local function).</span></span></code></pre>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">delayed</span> <span class="op">=</span> <span class="va">truth</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
@@ -153,7 +160,7 @@
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">index_case_onset</span> <span class="op">=</span> <span class="va">observed</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/transmute.html" class="external-link">transmute</a></span><span class="op">(</span>onset_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">floor</a></span><span class="op">(</span><span class="va">symptom_time</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">ggplot</span><span class="op">(</span><span class="va">index_case_onset</span>, <span class="fu">aes</span><span class="op">(</span>x<span class="op">=</span><span class="va">onset_time</span><span class="op">)</span><span class="op">)</span><span class="op">+</span><span class="fu">geom_histogram</span><span class="op">(</span>binwidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">index_case_onset</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">onset_time</span><span class="op">)</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html" class="external-link">geom_histogram</a></span><span class="op">(</span>binwidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" width="700"></p>
 </div>
 <div class="section level3">
@@ -166,8 +173,8 @@
 <span>  obs_delay <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">floor</a></span><span class="op">(</span><span class="va">observation_time</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">floor</a></span><span class="op">(</span><span class="va">symptom_time</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">ggplot</span><span class="op">(</span><span class="va">delay_distribution</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">obs_delay</span><span class="op">)</span><span class="op">)</span><span class="op">+</span><span class="fu">geom_histogram</span><span class="op">(</span>binwidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">+</span></span>
-<span>  <span class="fu">xlab</span><span class="op">(</span><span class="st">"symptom to observation"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">delay_distribution</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">obs_delay</span><span class="op">)</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html" class="external-link">geom_histogram</a></span><span class="op">(</span>binwidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">"symptom to observation"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" width="700"></p>
 </div>
 <div class="section level3">
@@ -175,21 +182,21 @@
 </h3>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">serial_pairs</span> <span class="op">=</span> <span class="va">observed</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu">inner_join</span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">inner_join</a></span><span class="op">(</span></span>
 <span>    <span class="va">traced_contacts</span>,</span>
 <span>    by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span> <span class="op">=</span> <span class="st">"infector"</span><span class="op">)</span>,</span>
 <span>    suffix <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">".1"</span>, <span class="st">".2"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu">transmute</span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/transmute.html" class="external-link">transmute</a></span><span class="op">(</span></span>
 <span>    serial_interval <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">floor</a></span><span class="op">(</span><span class="va">symptom_time.2</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">floor</a></span><span class="op">(</span><span class="va">symptom_time.1</span><span class="op">)</span> <span class="co">#order known</span></span>
 <span>    <span class="co"># serial_interval = abs(floor(symptom_time.2) - floor(symptom_time.1)) #order uncertain</span></span>
 <span>  <span class="op">)</span> </span>
 <span></span>
 <span></span>
 <span></span>
-<span><span class="fu">ggplot</span><span class="op">(</span><span class="va">serial_pairs</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">geom_histogram</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">serial_interval</span><span class="op">)</span>, binwidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">+</span></span>
-<span>  <span class="fu">xlab</span><span class="op">(</span><span class="st">"symptom serial interval (given observed)"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">serial_pairs</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html" class="external-link">geom_histogram</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">serial_interval</span><span class="op">)</span>, binwidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">"symptom serial interval (given observed)"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-4-1.png" class="r-plt" width="700"></p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">obsdata</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -216,31 +223,36 @@ gt_delay)</li>
 t_obs_2)</li>
 <li>cases only observed if t_obs / t_obs_2 within time window (0-T)</li>
 </ul>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><msub><mi>t</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><mo>−</mo><msub><mi>T</mi><mrow><mi>i</mi><mi>n</mi><mi>f</mi></mrow></msub></mtd><mtd columnalign="left" style="text-align: left"><mo>∼</mo><mi>E</mi><mi>x</mi><mi>p</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>r</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"><mi>Δ</mi><msub><mi>T</mi><mrow><mi>i</mi><mi>n</mi><mi>f</mi><mo>→</mo><mi>o</mi><mi>n</mi><mi>s</mi><mi>e</mi><mi>t</mi></mrow></msub></mtd><mtd columnalign="left" style="text-align: left"><mo>∼</mo><mi>G</mi><mi>a</mi><mi>m</mi><mi>m</mi><mi>a</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>μ</mi><mrow><mi>o</mi><mi>n</mi><mi>s</mi><mi>e</mi><mi>t</mi></mrow></msub><mo>,</mo><msub><mi>σ</mi><mrow><mi>o</mi><mi>n</mi><mi>s</mi><mi>e</mi><mi>t</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"><mi>Δ</mi><msub><mi>T</mi><mrow><mi>o</mi><mi>n</mi><mi>s</mi><mi>e</mi><mi>t</mi><mo>→</mo><mi>o</mi><mi>b</mi><mi>s</mi></mrow></msub></mtd><mtd columnalign="left" style="text-align: left"><mo>∼</mo><mi>G</mi><mi>a</mi><mi>m</mi><mi>m</mi><mi>a</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>μ</mi><mrow><mi>o</mi><mi>b</mi><mi>s</mi></mrow></msub><mo>,</mo><msub><mi>σ</mi><mrow><mi>o</mi><mi>b</mi><mi>s</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"><mi>Δ</mi><msub><mi>T</mi><mrow><mi>g</mi><mi>t</mi></mrow></msub></mtd><mtd columnalign="left" style="text-align: left"><mo>∼</mo><mi>G</mi><mi>a</mi><mi>m</mi><mi>m</mi><mi>a</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>μ</mi><mrow><mi>g</mi><mi>t</mi></mrow></msub><mo>,</mo><msub><mi>σ</mi><mrow><mi>g</mi><mi>t</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"></mtd></mtr></mtable><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 \begin{align}
 t_{max} - T_{inf} &amp;\sim Exp(r_0) \\
-\Delta T_{inf \rightarrow onset} &amp;\sim Gamma(\mu_{onset},\sigma_{onset}) \\
-\Delta T_{onset \rightarrow obs} &amp;\sim Gamma(\mu_{obs},\sigma_{obs}) \\
+\Delta T_{inf \rightarrow onset} &amp;\sim
+Gamma(\mu_{onset},\sigma_{onset}) \\
+\Delta T_{onset \rightarrow obs} &amp;\sim Gamma(\mu_{obs},\sigma_{obs})
+\\
 \Delta T_{gt} &amp;\sim Gamma(\mu_{gt},\sigma_{gt}) \\
 \end{align}
-</annotation></semantics></math></p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><msub><mi>T</mi><mrow><mi>o</mi><mi>n</mi><mi>s</mi><mi>e</mi><mi>t</mi></mrow></msub></mtd><mtd columnalign="left" style="text-align: left"><mo>=</mo><msub><mi>T</mi><mrow><mi>i</mi><mi>n</mi><mi>f</mi></mrow></msub><mo>+</mo><mi>Δ</mi><msub><mi>T</mi><mrow><mi>i</mi><mi>n</mi><mi>f</mi><mo>→</mo><mi>o</mi><mi>n</mi><mi>s</mi><mi>e</mi><mi>t</mi></mrow></msub></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"><msub><mi>T</mi><mrow><mi>o</mi><mi>b</mi><mi>s</mi></mrow></msub></mtd><mtd columnalign="left" style="text-align: left"><mo>=</mo><msub><mi>T</mi><mrow><mi>o</mi><mi>n</mi><mi>s</mi><mi>e</mi><mi>t</mi></mrow></msub><mo>+</mo><mi>Δ</mi><msub><mi>T</mi><mrow><mi>o</mi><mi>n</mi><mi>s</mi><mi>e</mi><mi>t</mi><mo>→</mo><mi>o</mi><mi>b</mi><mi>s</mi></mrow></msub></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"><msub><mi>T</mi><mrow><mi>i</mi><mi>n</mi><msub><mi>f</mi><mn>2</mn></msub></mrow></msub></mtd><mtd columnalign="left" style="text-align: left"><mo>=</mo><msub><mi>T</mi><mrow><mi>i</mi><mi>n</mi><msub><mi>f</mi><mn>1</mn></msub></mrow></msub><mo>+</mo><mi>Δ</mi><msub><mi>T</mi><mrow><mi>g</mi><mi>t</mi></mrow></msub></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"><mi>Δ</mi><msub><mi>T</mi><mrow><mi>o</mi><mi>n</mi><mi>s</mi><mi>e</mi><msub><mi>t</mi><mn>1</mn></msub><mo>→</mo><mi>o</mi><mi>n</mi><mi>s</mi><mi>e</mi><msub><mi>t</mi><mn>2</mn></msub></mrow></msub></mtd><mtd columnalign="left" style="text-align: left"><mo>=</mo><mi>Δ</mi><msub><mi>T</mi><mrow><mi>g</mi><mi>t</mi></mrow></msub><mo>+</mo><mi>Δ</mi><msub><mi>T</mi><mrow><mi>i</mi><mi>n</mi><msub><mi>f</mi><mn>2</mn></msub><mo>→</mo><mi>o</mi><mi>n</mi><mi>s</mi><mi>e</mi><msub><mi>t</mi><mn>2</mn></msub></mrow></msub><mo>−</mo><mi>Δ</mi><msub><mi>T</mi><mrow><mi>i</mi><mi>n</mi><msub><mi>f</mi><mn>1</mn></msub><mo>→</mo><mi>o</mi><mi>n</mi><mi>s</mi><mi>e</mi><msub><mi>t</mi><mn>1</mn></msub></mrow></msub></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"></mtd></mtr></mtable><annotation encoding="application/x-tex">
+\]</span></p>
+<p><span class="math display">\[
 \begin{align}
 T_{onset} &amp;= T_{inf} + \Delta T_{inf \rightarrow onset} \\
 T_{obs} &amp;= T_{onset} + \Delta T_{onset \rightarrow obs}\\
 T_{inf_2} &amp;= T_{inf_1} + \Delta T_{gt} \\
-\Delta T_{onset_1 \rightarrow onset_2} &amp;=  \Delta T_{gt} + \Delta T_{inf_2 \rightarrow onset_2} -  \Delta T_{inf_1 \rightarrow onset_1} \\
+\Delta T_{onset_1 \rightarrow onset_2} &amp;=  \Delta T_{gt} + \Delta
+T_{inf_2 \rightarrow onset_2} -  \Delta T_{inf_1 \rightarrow onset_1} \\
 \end{align}
-</annotation></semantics></math></p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><msub><mi>O</mi><mn>1</mn></msub></mtd><mtd columnalign="left" style="text-align: left"><mo>=</mo><mi>I</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>t</mi><mn>0</mn></msub><mo>≤</mo><msub><mi>T</mi><mrow><mi>o</mi><mi>n</mi><mi>s</mi><mi>e</mi><msub><mi>t</mi><mn>1</mn></msub></mrow></msub><mo>,</mo><msub><mi>T</mi><mrow><mi>o</mi><mi>b</mi><msub><mi>s</mi><mn>1</mn></msub></mrow></msub><mo>≤</mo><msub><mi>t</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"><msub><mi>O</mi><mrow><mn>1</mn><mo>,</mo><mn>2</mn></mrow></msub></mtd><mtd columnalign="left" style="text-align: left"><mo>=</mo><mi>I</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>O</mi><mn>1</mn></msub><mo>,</mo><msub><mi>t</mi><mn>0</mn></msub><mo>≤</mo><msub><mi>T</mi><mrow><mi>o</mi><mi>n</mi><mi>s</mi><mi>e</mi><msub><mi>t</mi><mn>2</mn></msub></mrow></msub><mo>,</mo><msub><mi>T</mi><mrow><mi>o</mi><mi>b</mi><msub><mi>s</mi><mn>2</mn></msub></mrow></msub><mo>≤</mo><msub><mi>t</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"><msub><mi>T</mi><mrow><mi>o</mi><mi>n</mi><mi>s</mi><mi>e</mi><msub><mi>t</mi><mn>1</mn></msub></mrow></msub><mo stretchy="false" form="prefix">|</mo><msub><mi>O</mi><mn>1</mn></msub></mtd><mtd columnalign="left" style="text-align: left"><mo>⇒</mo><mtext mathvariant="normal">primary case times</mtext></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"><mi>Δ</mi><msub><mi>T</mi><mrow><mi>o</mi><mi>n</mi><mi>s</mi><mi>e</mi><msub><mi>t</mi><mn>1</mn></msub><mo>→</mo><mi>o</mi><mi>b</mi><msub><mi>s</mi><mn>1</mn></msub></mrow></msub><mo stretchy="false" form="prefix">|</mo><msub><mi>O</mi><mn>1</mn></msub></mtd><mtd columnalign="left" style="text-align: left"><mo>⇒</mo><mtext mathvariant="normal">onset to interview delay</mtext></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"><mi>Δ</mi><msub><mi>T</mi><mrow><mi>o</mi><mi>n</mi><mi>s</mi><mi>e</mi><msub><mi>t</mi><mn>1</mn></msub><mo>→</mo><mi>o</mi><mi>n</mi><mi>s</mi><mi>e</mi><msub><mi>t</mi><mn>2</mn></msub></mrow></msub><mo stretchy="false" form="prefix">|</mo><msub><mi>O</mi><mrow><mn>1</mn><mo>,</mo><mn>2</mn></mrow></msub></mtd><mtd columnalign="left" style="text-align: left"><mo>⇒</mo><mtext mathvariant="normal">onset to onset serial interval</mtext></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"></mtd></mtr></mtable><annotation encoding="application/x-tex">
+\]</span></p>
+<p><span class="math display">\[
 \begin{align}
 O_1 &amp;= I(t_0 \le T_{onset_1}, T_{obs_1} \le t_{max}) \\
 O_{1,2} &amp;= I(O_1, t_0 \le T_{onset_2}, T_{obs_2} \le t_{max})\\
 T_{onset_1}|O_1 &amp;\Rightarrow \text{primary case times}\\
-\Delta T_{onset_1 \rightarrow obs_1}|O_1 &amp;\Rightarrow \text{onset to interview delay}\\
-\Delta T_{onset_1 \rightarrow onset_2}|O_{1,2} &amp;\Rightarrow \text{onset to onset serial interval}\\
+\Delta T_{onset_1 \rightarrow obs_1}|O_1 &amp;\Rightarrow \text{onset to
+interview delay}\\
+\Delta T_{onset_1 \rightarrow onset_2}|O_{1,2} &amp;\Rightarrow
+\text{onset to onset serial interval}\\
 \end{align}
-</annotation></semantics></math></p>
+\]</span></p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">n</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">observed</span><span class="op">)</span></span>
 <span></span>
@@ -310,10 +322,10 @@ T_{onset_1}|O_1 &amp;\Rightarrow \text{primary case times}\\
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">scorer1_fn</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">simdata</span>, <span class="va">obsdata</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  </span>
-<span>  <span class="va">onset</span> <span class="op">=</span> <span class="fu"><a href="../reference/calculate_wasserstein.html">calculate_wasserstein</a></span><span class="op">(</span><span class="va">obsdata</span><span class="op">$</span><span class="va">onset</span>, <span class="va">simdata</span><span class="op">$</span><span class="va">onset</span><span class="op">)</span></span>
-<span>  <span class="va">diff</span> <span class="op">=</span> <span class="fu"><a href="../reference/calculate_wasserstein.html">calculate_wasserstein</a></span><span class="op">(</span><span class="va">obsdata</span><span class="op">$</span><span class="va">diff</span>, <span class="va">simdata</span><span class="op">$</span><span class="va">diff</span><span class="op">)</span></span>
-<span>  <span class="va">si</span> <span class="op">=</span> <span class="fu"><a href="../reference/calculate_wasserstein.html">calculate_wasserstein</a></span><span class="op">(</span><span class="va">obsdata</span><span class="op">$</span><span class="va">si</span>, <span class="va">simdata</span><span class="op">$</span><span class="va">si</span><span class="op">)</span></span>
-<span>  <span class="va">mad_si</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">obsdata</span><span class="op">$</span><span class="va">si</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">simdata</span><span class="op">$</span><span class="va">si</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">onset</span> <span class="op">=</span> <span class="fu"><a href="../reference/calculate_wasserstein.html">calculate_wasserstein</a></span><span class="op">(</span><span class="va">simdata</span><span class="op">$</span><span class="va">onset</span>, <span class="va">obsdata</span><span class="op">$</span><span class="va">onset</span><span class="op">)</span></span>
+<span>  <span class="va">diff</span> <span class="op">=</span> <span class="fu"><a href="../reference/calculate_wasserstein.html">calculate_wasserstein</a></span><span class="op">(</span><span class="va">simdata</span><span class="op">$</span><span class="va">diff</span>, <span class="va">obsdata</span><span class="op">$</span><span class="va">diff</span><span class="op">)</span></span>
+<span>  <span class="va">si</span> <span class="op">=</span> <span class="fu"><a href="../reference/calculate_wasserstein.html">calculate_wasserstein</a></span><span class="op">(</span><span class="va">simdata</span><span class="op">$</span><span class="va">si</span>, <span class="va">obsdata</span><span class="op">$</span><span class="va">si</span><span class="op">)</span></span>
+<span>  <span class="va">mad_si</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">simdata</span><span class="op">$</span><span class="va">si</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">obsdata</span><span class="op">$</span><span class="va">si</span><span class="op">)</span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    sim_onset <span class="op">=</span> <span class="va">onset</span>,</span>
@@ -321,15 +333,7 @@ T_{onset_1}|O_1 &amp;\Rightarrow \text{primary case times}\\
 <span>    sim_si<span class="op">=</span><span class="va">si</span>,</span>
 <span>    sim_mad_si <span class="op">=</span> <span class="va">mad_si</span></span>
 <span>  <span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
-<span></span>
-<span><span class="co"># make the serial interval fitting much more important:</span></span>
-<span><span class="va">scoreweights1</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    sim_onset <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>    sim_diff <span class="op">=</span> <span class="fl">0.5</span>,</span>
-<span>    sim_si <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>    sim_mad_si <span class="op">=</span> <span class="fl">3</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span><span class="op">}</span></span></code></pre></div>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">test</span> <span class="op">=</span> <span class="fu">tidyabc</span><span class="fu">::</span><span class="fu"><a href="../reference/test_simulation.html">test_simulation</a></span><span class="op">(</span></span>
 <span>  sim_fn <span class="op">=</span> <span class="va">sim1_fn</span>, </span>
@@ -394,34 +398,37 @@ that they are convex:</p>
 <span>  priors_list <span class="op">=</span> <span class="va">priors</span>,</span>
 <span>  sim_fn <span class="op">=</span> <span class="va">sim1_fn</span>,</span>
 <span>  scorer_fn <span class="op">=</span> <span class="va">scorer1_fn</span>,</span>
-<span>  n_sims <span class="op">=</span> <span class="fl">1000000</span>,</span>
-<span>  acceptance_rate <span class="op">=</span> <span class="fl">0.001</span>,</span>
-<span>  parallel <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  scoreweights <span class="op">=</span> <span class="va">scoreweights1</span></span>
+<span>  n_sims <span class="op">=</span> <span class="fl">1000</span>,</span>
+<span>  acceptance_rate <span class="op">=</span> <span class="fl">0.5</span>,</span>
+<span>  parallel <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## ABC rejection, 1 wave.</span></span></code></pre>
-<pre><code><span><span class="co">## Warning in stats::qnorm(q, -0.20495398356742, 0.0671647634884672): NaNs</span></span>
+<pre><code><span><span class="co">## Warning in stats::qnorm(q, -0.218539809534936, 0.0688397280660186): NaNs</span></span>
 <span><span class="co">## produced</span></span></code></pre>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">abc_fit</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## ABC rejection fit: single wave</span></span>
-<span><span class="co">## Parameter estimates:</span></span>
-<span><span class="co">## <span style="color: #949494;"># A tibble: 8 × 4</span></span></span>
-<span><span class="co">## <span style="color: #949494;"># Groups:   param [8]</span></span></span>
-<span><span class="co">##   param      mean_sd       median_95_CrI            ESS</span></span>
-<span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span> R0         2.300 ± 0.586 2.177 [1.471 — 3.810]   579.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span> mean_gt    5.380 ± 1.618 5.148 [2.346 — 9.827]   579.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">3</span> mean_obs   6.454 ± 1.820 6.298 [3.035 — 10.725]  579.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">4</span> mean_onset 7.965 ± 2.018 7.849 [3.589 — 11.751]  579.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">5</span> r0         0.190 ± 0.031 0.188 [0.121 — 0.284]   579.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">6</span> sd_gt      3.800 ± 2.056 3.844 [0.198 — 7.619]   579.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">7</span> sd_obs     4.607 ± 1.729 4.532 [1.426 — 7.781]   579.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">8</span> sd_onset   4.958 ± 1.448 4.830 [2.221 — 7.729]   579.</span></span></code></pre>
+<pre><code><span><span class="co">## Warning in stats::qnorm(q, -0.244607370400033, 0.151144461187998): NaNs</span></span>
+<span><span class="co">## produced</span></span></code></pre>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># summary(abc_fit)</span></span>
+<span><span class="va">metrics</span> <span class="op">=</span> <span class="fu"><a href="../reference/posterior_distance_metrics.html">posterior_distance_metrics</a></span><span class="op">(</span><span class="va">abc_fit</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># make the serial interval fitting much more important:</span></span>
+<span><span class="va">scoreweights1</span> <span class="op">=</span> <span class="va">metrics</span><span class="op">$</span><span class="va">scoreweights</span> </span>
+<span><span class="co"># *</span></span>
+<span><span class="co">#   c(</span></span>
+<span><span class="co">#     sim_onset = 2,</span></span>
+<span><span class="co">#     sim_diff = 1,</span></span>
+<span><span class="co">#     sim_si = 3,</span></span>
+<span><span class="co">#     sim_mad_si = 3</span></span>
+<span><span class="co">#   )</span></span>
+<span></span>
+<span><span class="co"># scoreweights1 = </span></span>
+<span><span class="co">#   c(</span></span>
+<span><span class="co">#     sim_onset = 2,</span></span>
+<span><span class="co">#     sim_diff = 1,</span></span>
+<span><span class="co">#     sim_si = 3,</span></span>
+<span><span class="co">#     sim_mad_si = 4</span></span>
+<span><span class="co">#   )</span></span></code></pre></div>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">abc_fit</span>, truth <span class="op">=</span> <span class="va">sim_params</span><span class="op">)</span></span></code></pre></div>
-<p><img src="sim-example_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" width="700"></p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">smc_fit</span> <span class="op">=</span> <span class="fu"><a href="../reference/abc_smc.html">abc_smc</a></span><span class="op">(</span></span>
 <span>  obsdata <span class="op">=</span> <span class="va">obsdata</span>,</span>
 <span>  priors_list <span class="op">=</span> <span class="va">priors</span>,</span>
@@ -434,7 +441,9 @@ that they are convex:</p>
 <span>  scoreweights <span class="op">=</span> <span class="va">scoreweights1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## ABC-SMC</span></span></code></pre>
-<pre><code><span><span class="co">## Warning in stats::qnorm(q, -0.211797607006716, 0.0690185813812886): NaNs</span></span>
+<pre><code><span><span class="co">## Warning in stats::qnorm(q, -0.206492510850451, 0.0698523318900587): NaNs</span></span>
+<span><span class="co">## produced</span></span></code></pre>
+<pre><code><span><span class="co">## Warning in stats::qnorm(q, -0.220619577453376, 0.140110644777754): NaNs</span></span>
 <span><span class="co">## produced</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■                               </span>   1% | wave 1 ETA:  5m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■                              </span>   2% | wave 2 ETA:  5m</span></span></code></pre>
@@ -442,102 +451,107 @@ that they are convex:</p>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■                             </span>   6% | wave 4 ETA:  5m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■                             </span>   8% | wave 5 ETA:  5m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■                            </span>  10% | wave 6 ETA:  5m</span></span></code></pre>
-<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■                           </span>  12% | wave 7 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■                           </span>  13% | wave 7 ETA:  4m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■                           </span>  15% | wave 8 ETA:  4m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■                          </span>  17% | wave 9 ETA:  4m</span></span></code></pre>
-<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■                         </span>  19% | wave 10 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■                         </span>  20% | wave 10 ETA:  4m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■                        </span>  22% | wave 11 ETA:  4m</span></span></code></pre>
-<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■                        </span>  24% | wave 12 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■                        </span>  25% | wave 12 ETA:  4m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■■                       </span>  27% | wave 13 ETA:  4m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■                      </span>  29% | wave 14 ETA:  4m</span></span></code></pre>
-<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■                      </span>  32% | wave 15 ETA:  3m</span></span></code></pre>
+<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■                     </span>  32% | wave 15 ETA:  3m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■                     </span>  34% | wave 16 ETA:  3m</span></span></code></pre>
-<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■                    </span>  36% | wave 17 ETA:  3m</span></span></code></pre>
+<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■                    </span>  37% | wave 17 ETA:  3m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■                   </span>  39% | wave 18 ETA:  3m</span></span></code></pre>
-<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■                   </span>  41% | wave 19 ETA:  3m</span></span></code></pre>
-<pre><code><span><span class="co">## Converged on wave: 20</span></span></code></pre>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■                  </span>  42% | wave 19 ETA:  3m</span></span></code></pre>
+<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■                  </span>  44% | wave 20 ETA:  3m</span></span></code></pre>
+<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■                 </span>  47% | wave 21 ETA:  3m</span></span></code></pre>
+<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■                </span>  49% | wave 22 ETA:  3m</span></span></code></pre>
+<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■               </span>  52% | wave 23 ETA:  2m</span></span></code></pre>
+<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■               </span>  54% | wave 24 ETA:  2m</span></span></code></pre>
+<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■              </span>  57% | wave 25 ETA:  2m</span></span></code></pre>
+<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■             </span>  60% | wave 26 ETA:  2m</span></span></code></pre>
+<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■            </span>  62% | wave 27 ETA:  2m</span></span></code></pre>
+<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■            </span>  65% | wave 28 ETA:  2m</span></span></code></pre>
+<pre><code><span><span class="co">## Converged on wave: 29</span></span></code></pre>
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">smc_fit</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## ABC SMC fit: 20 waves - (converged)</span></span>
+<pre><code><span><span class="co">## ABC SMC fit: 29 waves - (converged)</span></span>
 <span><span class="co">## Parameter estimates:</span></span>
 <span><span class="co">## <span style="color: #949494;"># A tibble: 8 × 4</span></span></span>
 <span><span class="co">## <span style="color: #949494;"># Groups:   param [8]</span></span></span>
 <span><span class="co">##   param      mean_sd       median_95_CrI            ESS</span></span>
 <span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span> R0         2.086 ± 0.320 2.041 [1.551 — 2.781]  <span style="text-decoration: underline;">6</span>328.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span> mean_gt    5.045 ± 1.167 4.866 [2.831 — 8.359]  <span style="text-decoration: underline;">6</span>328.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">3</span> mean_obs   5.537 ± 1.396 5.349 [3.055 — 9.529]  <span style="text-decoration: underline;">6</span>328.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">4</span> mean_onset 7.311 ± 1.635 7.209 [3.721 — 11.143] <span style="text-decoration: underline;">6</span>328.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">5</span> r0         0.179 ± 0.022 0.178 [0.128 — 0.246]  <span style="text-decoration: underline;">6</span>328.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">6</span> sd_gt      3.688 ± 1.707 3.647 [0.467 — 7.334]  <span style="text-decoration: underline;">6</span>328.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">7</span> sd_obs     3.927 ± 1.496 3.756 [1.316 — 7.379]  <span style="text-decoration: underline;">6</span>328.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">8</span> sd_onset   4.655 ± 1.085 4.542 [2.491 — 7.352]  <span style="text-decoration: underline;">6</span>328.</span></span></code></pre>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> R0         2.029 ± 0.243 1.990 [1.616 — 2.556]  <span style="text-decoration: underline;">6</span>340.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span> mean_gt    4.403 ± 1.001 4.268 [2.547 — 7.584]  <span style="text-decoration: underline;">6</span>340.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span> mean_obs   5.238 ± 0.645 5.152 [4.029 — 7.595]  <span style="text-decoration: underline;">6</span>340.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">4</span> mean_onset 5.738 ± 1.617 5.625 [2.334 — 10.199] <span style="text-decoration: underline;">6</span>340.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">5</span> r0         0.201 ± 0.018 0.201 [0.161 — 0.255]  <span style="text-decoration: underline;">6</span>340.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">6</span> sd_gt      3.386 ± 1.476 3.374 [0.490 — 6.908]  <span style="text-decoration: underline;">6</span>340.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">7</span> sd_obs     3.351 ± 0.664 3.264 [2.117 — 5.695]  <span style="text-decoration: underline;">6</span>340.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">8</span> sd_onset   3.640 ± 1.173 3.502 [1.408 — 6.855]  <span style="text-decoration: underline;">6</span>340.</span></span></code></pre>
+<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">smc_fit</span>,truth <span class="op">=</span> <span class="va">sim_params</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" width="700"></p>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_evolution.html">plot_evolution</a></span><span class="op">(</span><span class="va">smc_fit</span>,truth <span class="op">=</span> <span class="va">sim_params</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-12-2.png" class="r-plt" width="700"></p>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">adaptive_fit</span> <span class="op">=</span> <span class="fu"><a href="../reference/abc_adaptive.html">abc_adaptive</a></span><span class="op">(</span></span>
 <span>  obsdata <span class="op">=</span> <span class="va">obsdata</span>,</span>
 <span>  priors_list <span class="op">=</span> <span class="va">priors</span>,</span>
 <span>  sim_fn <span class="op">=</span> <span class="va">sim1_fn</span>,</span>
 <span>  scorer_fn <span class="op">=</span> <span class="va">scorer1_fn</span>,</span>
 <span>  n_sims <span class="op">=</span> <span class="fl">4000</span>,</span>
-<span>  acceptance_rate <span class="op">=</span> <span class="fl">0.5</span>,</span>
+<span>  acceptance_rate <span class="op">=</span> <span class="fl">0.2</span>,</span>
 <span>  <span class="co"># debug_errors = TRUE,</span></span>
 <span>  parallel <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  scoreweights <span class="op">=</span> <span class="va">scoreweights1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## ABC-Adaptive</span></span></code></pre>
-<pre><code><span><span class="co">## Warning in stats::qnorm(q, -0.200738155338439, 0.0612771729946573): NaNs</span></span>
+<pre><code><span><span class="co">## Warning in stats::qnorm(q, -0.203372935374894, 0.0701163450564314): NaNs</span></span>
 <span><span class="co">## produced</span></span></code></pre>
 <pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■                               </span>   0% | wave 1 ETA:  6m</span></span></code></pre>
 <pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■                               </span>   1% | wave 3 ETA:  5m</span></span></code></pre>
-<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   2% | wave 5 ETA:  5m</span></span></code></pre>
-<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   3% | wave 7 ETA:  5m</span></span></code></pre>
-<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   4% | wave 9 ETA:  5m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   3% | wave 6 ETA:  5m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   4% | wave 8 ETA:  5m</span></span></code></pre>
 <pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   5% | wave 10 ETA:  5m</span></span></code></pre>
 <pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■                             </span>   6% | wave 12 ETA:  5m</span></span></code></pre>
-<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■                             </span>   7% | wave 13 ETA:  5m</span></span></code></pre>
-<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■                            </span>   9% | wave 15 ETA:  5m</span></span></code></pre>
-<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■                            </span>  10% | wave 16 ETA:  5m</span></span></code></pre>
-<pre><code><span><span class="co">## Converged on wave: 17</span></span></code></pre>
-<div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
+<pre><code><span><span class="co">## Converged on wave: 13</span></span></code></pre>
+<div class="sourceCode" id="cb65"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">adaptive_fit</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## ABC adaptive fit: 17 waves - (converged)</span></span>
+<pre><code><span><span class="co">## ABC adaptive fit: 13 waves - (converged)</span></span>
 <span><span class="co">## Parameter estimates:</span></span>
 <span><span class="co">## <span style="color: #949494;"># A tibble: 8 × 4</span></span></span>
 <span><span class="co">## <span style="color: #949494;"># Groups:   param [8]</span></span></span>
-<span><span class="co">##   param      mean_sd       median_95_CrI             ESS</span></span>
-<span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span> R0         2.175 ± 0.632 2.057 [1.392 — 3.352]  <span style="text-decoration: underline;">21</span>201.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span> mean_gt    4.697 ± 0.991 4.441 [2.512 — 9.160]  <span style="text-decoration: underline;">21</span>201.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">3</span> mean_obs   6.347 ± 1.747 5.982 [2.220 — 10.732] <span style="text-decoration: underline;">21</span>201.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">4</span> mean_onset 8.216 ± 1.763 8.078 [3.413 — 11.654] <span style="text-decoration: underline;">21</span>201.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">5</span> r0         0.188 ± 0.042 0.185 [0.065 — 0.319]  <span style="text-decoration: underline;">21</span>201.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">6</span> sd_gt      2.966 ± 1.300 3.012 [0.412 — 6.540]  <span style="text-decoration: underline;">21</span>201.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">7</span> sd_obs     3.696 ± 1.671 3.576 [0.644 — 7.415]  <span style="text-decoration: underline;">21</span>201.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">8</span> sd_onset   4.563 ± 1.466 4.359 [1.380 — 7.589]  <span style="text-decoration: underline;">21</span>201.</span></span></code></pre>
-<div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
+<span><span class="co">##   param      mean_sd       median_95_CrI            ESS</span></span>
+<span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> R0         2.669 ± 0.713 2.541 [1.735 — 4.057]  <span style="text-decoration: underline;">4</span>731.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span> mean_gt    5.169 ± 1.215 4.922 [2.091 — 9.709]  <span style="text-decoration: underline;">4</span>731.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span> mean_obs   5.781 ± 1.015 5.507 [3.725 — 9.855]  <span style="text-decoration: underline;">4</span>731.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">4</span> mean_onset 7.531 ± 1.769 7.395 [2.159 — 11.314] <span style="text-decoration: underline;">4</span>731.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">5</span> r0         0.246 ± 0.032 0.247 [0.138 — 0.349]  <span style="text-decoration: underline;">4</span>731.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">6</span> sd_gt      3.835 ± 1.460 3.961 [0.559 — 7.052]  <span style="text-decoration: underline;">4</span>731.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">7</span> sd_obs     3.619 ± 1.027 3.396 [1.595 — 6.703]  <span style="text-decoration: underline;">4</span>731.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">8</span> sd_onset   4.031 ± 1.810 4.010 [0.517 — 7.536]  <span style="text-decoration: underline;">4</span>731.</span></span></code></pre>
+<div class="sourceCode" id="cb67"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">adaptive_fit</span>,truth <span class="op">=</span> <span class="va">sim_params</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-14-1.png" class="r-plt" width="700"></p>
-<div class="sourceCode" id="cb63"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb68"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_evolution.html">plot_evolution</a></span><span class="op">(</span><span class="va">adaptive_fit</span>,truth <span class="op">=</span> <span class="va">sim_params</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-14-2.png" class="r-plt" width="700"></p>
-<div class="sourceCode" id="cb64"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb69"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_correlations.html">plot_correlations</a></span><span class="op">(</span><span class="va">adaptive_fit</span>,truth <span class="op">=</span> <span class="va">sim_params</span><span class="op">)</span> <span class="op">&amp;</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span></span>
 <span>   axis.title.y <span class="op">=</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>angle<span class="op">=</span><span class="fl">70</span>,vjust<span class="op">=</span><span class="fl">0.1</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-14-3.png" class="r-plt" width="700"></p>
-<div class="sourceCode" id="cb65"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb70"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_convergence.html">plot_convergence</a></span><span class="op">(</span><span class="va">adaptive_fit</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-14-4.png" class="r-plt" width="700"></p>
-<div class="sourceCode" id="cb66"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb71"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_simulations.html">plot_simulations</a></span><span class="op">(</span><span class="va">obsdata</span>, <span class="va">adaptive_fit</span>, sim_fn <span class="op">=</span> <span class="va">sim1_fn</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-14-5.png" class="r-plt" width="700"></p>
-<div class="sourceCode" id="cb67"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb72"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">priors2</span> <span class="op">=</span> <span class="fu"><a href="../reference/priors.html">priors</a></span><span class="op">(</span></span>
 <span>  <span class="va">r0</span> <span class="op">~</span> <span class="fu">unif</span><span class="op">(</span><span class="op">-</span><span class="fl">0.1</span>, <span class="fl">0.7</span><span class="op">)</span>,</span>
 <span>  <span class="va">mean_onset</span> <span class="op">~</span> <span class="fu">lnorm2</span><span class="op">(</span><span class="fl">7</span>, <span class="fl">2</span><span class="op">)</span>,</span>
@@ -569,62 +583,62 @@ that they are convex:</p>
 <span><span class="co">## * mean_gt &gt; sd_gt</span></span>
 <span><span class="co">## Derived values:</span></span>
 <span><span class="co">## * R0 = (1 + r0 * sd_gt^2/mean_gt)^(mean_gt^2/sd_gt^2)</span></span></code></pre>
-<div class="sourceCode" id="cb69"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb74"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">adaptive_fit2</span> <span class="op">=</span> <span class="fu"><a href="../reference/abc_adaptive.html">abc_adaptive</a></span><span class="op">(</span></span>
 <span>  obsdata <span class="op">=</span> <span class="va">obsdata</span>,</span>
 <span>  priors_list <span class="op">=</span> <span class="va">priors2</span>,</span>
 <span>  sim_fn <span class="op">=</span> <span class="va">sim1_fn</span>,</span>
 <span>  scorer_fn <span class="op">=</span> <span class="va">scorer1_fn</span>,</span>
 <span>  n_sims <span class="op">=</span> <span class="fl">4000</span>,</span>
-<span>  acceptance_rate <span class="op">=</span> <span class="fl">0.5</span>,</span>
+<span>  acceptance_rate <span class="op">=</span> <span class="fl">0.2</span>,</span>
 <span>  <span class="co"># debug_errors = TRUE,</span></span>
 <span>  parallel <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  scoreweights <span class="op">=</span> <span class="va">scoreweights1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## ABC-Adaptive</span></span></code></pre>
-<pre><code><span><span class="co">## Warning in stats::qnorm(q, -0.200365571434741, 0.062236599369753): NaNs</span></span>
+<pre><code><span><span class="co">## Warning in stats::qnorm(q, -0.219098965642995, 0.0641085802091193): NaNs</span></span>
 <span><span class="co">## produced</span></span></code></pre>
 <pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■                               </span>   0% | wave 1 ETA:  6m</span></span></code></pre>
-<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   2% | wave 4 ETA:  5m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■                               </span>   1% | wave 3 ETA:  5m</span></span></code></pre>
 <pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   2% | wave 5 ETA:  5m</span></span></code></pre>
 <pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   3% | wave 7 ETA:  5m</span></span></code></pre>
-<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   5% | wave 9 ETA:  5m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   4% | wave 9 ETA:  5m</span></span></code></pre>
 <pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■                             </span>   6% | wave 11 ETA:  5m</span></span></code></pre>
-<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■                             </span>   7% | wave 12 ETA:  5m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■                             </span>   6% | wave 12 ETA:  5m</span></span></code></pre>
+<pre><code><span><span class="co">## Converged on wave: 14</span></span></code></pre>
 <pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■                             </span>   7% | wave 13 ETA:  5m</span></span></code></pre>
-<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■                            </span>   9% | wave 15 ETA:  5m</span></span></code></pre>
-<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■                            </span>  10% | wave 16 ETA:  5m</span></span></code></pre>
-<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■                            </span>  11% | wave 17 ETA:  4m</span></span></code></pre>
-<pre><code><span><span class="co">## Converged on wave: 18</span></span></code></pre>
-<div class="sourceCode" id="cb84"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb86"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">adaptive_fit2</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## ABC adaptive fit: 18 waves - (converged)</span></span>
+<pre><code><span><span class="co">## ABC adaptive fit: 14 waves - (converged)</span></span>
 <span><span class="co">## Parameter estimates:</span></span>
 <span><span class="co">## <span style="color: #949494;"># A tibble: 8 × 4</span></span></span>
 <span><span class="co">## <span style="color: #949494;"># Groups:   param [8]</span></span></span>
-<span><span class="co">##   param      mean_sd       median_95_CrI             ESS</span></span>
-<span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span> R0         2.164 ± 0.502 2.062 [1.475 — 3.203]  <span style="text-decoration: underline;">22</span>608.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span> mean_gt    4.604 ± 0.954 4.310 [2.665 — 8.954]  <span style="text-decoration: underline;">22</span>608.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">3</span> mean_obs   4.944 ± 0.795 4.877 [3.478 — 6.760]  <span style="text-decoration: underline;">22</span>608.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">4</span> mean_onset 7.283 ± 1.446 7.019 [4.758 — 10.912] <span style="text-decoration: underline;">22</span>608.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">5</span> r0         0.189 ± 0.037 0.186 [0.083 — 0.302]  <span style="text-decoration: underline;">22</span>608.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">6</span> sd_gt      2.719 ± 1.398 2.619 [0.307 — 6.566]  <span style="text-decoration: underline;">22</span>608.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">7</span> sd_obs     2.799 ± 0.704 2.796 [1.556 — 4.522]  <span style="text-decoration: underline;">22</span>608.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">8</span> sd_onset   4.788 ± 0.787 4.759 [3.372 — 6.552]  <span style="text-decoration: underline;">22</span>608.</span></span></code></pre>
-<div class="sourceCode" id="cb86"><pre class="downlit sourceCode r">
+<span><span class="co">##   param      mean_sd       median_95_CrI           ESS</span></span>
+<span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> R0         2.191 ± 0.292 2.159 [1.747 — 2.791] <span style="text-decoration: underline;">6</span>183.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span> mean_gt    4.448 ± 0.735 4.298 [2.464 — 7.941] <span style="text-decoration: underline;">6</span>183.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span> mean_obs   4.950 ± 0.344 4.928 [4.053 — 6.062] <span style="text-decoration: underline;">6</span>183.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">4</span> mean_onset 6.899 ± 1.180 6.649 [4.654 — 9.984] <span style="text-decoration: underline;">6</span>183.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">5</span> r0         0.213 ± 0.020 0.213 [0.145 — 0.286] <span style="text-decoration: underline;">6</span>183.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">6</span> sd_gt      3.058 ± 1.115 3.113 [0.583 — 6.404] <span style="text-decoration: underline;">6</span>183.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">7</span> sd_obs     2.908 ± 0.384 2.880 [2.009 — 4.113] <span style="text-decoration: underline;">6</span>183.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">8</span> sd_onset   4.702 ± 0.778 4.720 [3.258 — 6.500] <span style="text-decoration: underline;">6</span>183.</span></span></code></pre>
+<div class="sourceCode" id="cb88"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">adaptive_fit2</span>,truth <span class="op">=</span> <span class="va">sim_params</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-17-1.png" class="r-plt" width="700"></p>
-<div class="sourceCode" id="cb87"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb89"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_evolution.html">plot_evolution</a></span><span class="op">(</span><span class="va">adaptive_fit2</span>,truth <span class="op">=</span> <span class="va">sim_params</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-17-2.png" class="r-plt" width="700"></p>
-<div class="sourceCode" id="cb88"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_correlations.html">plot_correlations</a></span><span class="op">(</span><span class="va">adaptive_fit2</span>,truth <span class="op">=</span> <span class="va">sim_params</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb90"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_correlations.html">plot_correlations</a></span><span class="op">(</span><span class="va">adaptive_fit2</span>,truth <span class="op">=</span> <span class="va">sim_params</span><span class="op">)</span> <span class="op">&amp;</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span></span>
+<span>   axis.title.y <span class="op">=</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>angle<span class="op">=</span><span class="fl">45</span>,vjust<span class="op">=</span><span class="fl">0</span>, hjust<span class="op">=</span><span class="fl">1</span><span class="op">)</span>,</span>
+<span>   axis.title.x <span class="op">=</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>angle<span class="op">=</span><span class="fl">45</span>, hjust<span class="op">=</span><span class="fl">1</span><span class="op">)</span> <span class="co">#,vjust=1, hjust=0.5)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-17-3.png" class="r-plt" width="700"></p>
-<div class="sourceCode" id="cb89"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb91"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_convergence.html">plot_convergence</a></span><span class="op">(</span><span class="va">adaptive_fit2</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-17-4.png" class="r-plt" width="700"></p>
-<div class="sourceCode" id="cb90"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb92"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_simulations.html">plot_simulations</a></span><span class="op">(</span><span class="va">obsdata</span>, <span class="va">adaptive_fit2</span>, sim_fn <span class="op">=</span> <span class="va">sim1_fn</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-17-5.png" class="r-plt" width="700"></p>
 </div>

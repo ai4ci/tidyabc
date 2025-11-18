@@ -123,6 +123,51 @@ and identify the best matching \code{acceptance_rate} percent, as defined by the
 summary distance metric. A large number of simulations and a low acceptance
 rate are best here.
 }
+\details{
+Parameters \eqn{\theta^{(i)}} are sampled independently from the prior
+distribution \eqn{P(\theta)} for \eqn{i = 1, \dots, n_{\text{sims}}}.
+For each \eqn{\theta^{(i)}}, simulated data \eqn{D_s^{(i)} = M(\theta^{(i)})}
+is generated via the simulator function \code{sim_fn}, and a vector of summary
+statistics \eqn{S_s^{(i)} = \texttt{scorer\_fn}(D_s^{(i)})}
+is computed and compared to the observed summary statistics
+\eqn{S_o = \texttt{scorer\_fn}(D_o)}.
+
+A distance metric \eqn{d^{(i)} = d(S_s^{(i)}, S_o)} is computed. By default,
+this is the Euclidean distance:
+\deqn{
+  d^{(i)} = \left\| W \circ (S_s^{(i)} - S_o) \right\|_2,
+}
+where \eqn{W} is a vector of optional summary statistic weights
+(\code{scoreweights}), and \eqn{\circ} denotes element-wise multiplication.
+Other supported metrics include Manhattan (\eqn{\ell_1}) and Mahalanobis
+distance (using the empirical covariance from the first wave).
+
+The tolerance threshold \eqn{\epsilon} is set to the
+\eqn{\alpha = \texttt{acceptance\_rate}} quantile of the distances
+\eqn{\{d^{(i)}\}_{i=1}^{n_{\text{sims}}}}:
+\deqn{
+  \epsilon = \text{quantile}\big(\{d^{(i)}\}, \alpha\big).
+}
+
+Unnormalized ABC weights are then assigned using a kernel function
+\eqn{K_\epsilon(\cdot)}:
+\deqn{
+  \tilde{w}^{(i)} = K_\epsilon\big(d^{(i)}\big),
+}
+where \eqn{K_\epsilon(d)} is one of the kernels defined in \code{kernels.R}
+(e.g., Epanechnikov: \eqn{K_\epsilon(d) = \frac{3}{4\epsilon}
+(1 - d^2\!/\!\epsilon^2)\, \mathbb{I}(d \leq \epsilon)}).
+These weights are then transformed via a logistic ("expit") function and
+normalized to sum to one:
+\deqn{
+  w^{(i)} = \frac{\text{expit}(\log \tilde{w}^{(i)})}{
+    \sum_j \text{expit}(\log \tilde{w}^{(j)})}
+  = \frac{ \tilde{w}^{(i)} / (1 + \tilde{w}^{(i)}) }{
+    \sum_j \tilde{w}^{(j)} / (1 + \tilde{w}^{(j)}) }.
+}
+The resulting weighted sample \eqn{\{(\theta^{(i)}, w^{(i)})\}} approximates
+the ABC posterior distribution \eqn{P_\epsilon(\theta \mid D_o)}.
+}
 \examples{
 
 fit = abc_rejection(

@@ -30,5 +30,5 @@ a vector of probabilities, quantiles, densities or samples.
 
 ``` r
 mean(rlogitnorm2(10000,0.75,0.2))
-#> [1] 0.7470152
+#> [1] 0.7482138
 ```

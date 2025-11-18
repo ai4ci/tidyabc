@@ -1,8 +1,13 @@
-# Generate a function to calculate a root mean squared error
+# Generate a function to calculate a Root Mean Squared Error (RMSE)
 
 This function takes reference data in the form, for example of count
 data, and returns a crated function to calculate the mean squared error
-from simulated data to the observed data.
+from simulated data to the observed data. \$\$ \text{RMSE} =
+\sqrt{\frac{1}{N} \sum\_{i=1}^{N} (x_i - y_i)^2} \$\$ where \\x_i\\ are
+the simulated data points, \\y_i\\ are the observed data points, and
+\\N\\ is the number of data points. Both input vectors must be of the
+same length. Missing values (`NA`) are removed pairwise before
+calculation. Returns `NA` if the input vectors are not of equal length.
 
 ## Usage
 

@@ -11,7 +11,13 @@
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
 <link rel="icon" sizes="any" href="../favicon.ico">
 <link rel="manifest" href="../site.webmanifest">
-<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
+  window.MathJax = {
+    chtml: {
+      fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
+    }
+  };
+</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
@@ -25,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">tidyabc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9003</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,9 +47,9 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/abc-adaptive.html">ABC Adaptive</a></li>
     <li><a class="dropdown-item" href="../articles/abc-smc.html">ABC Sequential Monte-Carlo</a></li>
-    <li><a class="dropdown-item" href="../articles/s3-distributions.html">Tidy distribution functions</a></li>
-    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Tidy distribution functions</a></li>
-    <li><a class="dropdown-item" href="../articles/sim_example.html">Pegasus R0 / Generation time - EXERCISE</a></li>
+    <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distribution functions</a></li>
+    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Scoring and summarising functions</a></li>
+    <li><a class="dropdown-item" href="../articles/sim-example.html">Early outbreak and Generation time</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -52,6 +58,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/ai4ci/tidyabc/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -67,14 +74,16 @@
       <img src="../logo.svg" class="logo" alt=""><h1>ABC Sequential Monte-Carlo</h1>
             
       
-
+      <small class="dont-index">Source: <a href="https://github.com/ai4ci/tidyabc/blob/HEAD/vignettes/abc-smc.Rmd" class="external-link"><code>vignettes/abc-smc.Rmd</code></a></small>
       <div class="d-none name"><code>abc-smc.Rmd</code></div>
     </div>
 
     
     
+<!-- TODO: Update SMC ABC vignette -->
+<!-- Issue URL: https://github.com/ai4ci/tidyabc/issues/17 -->
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">tidyabc</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ai4ci.github.io/tidyabc">tidyabc</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Attaching package: 'tidyabc'</span></span>
 <span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
@@ -113,8 +122,8 @@
 <code class="sourceCode R"><span></span>
 <span><span class="va">test_scorer_fn</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">simdata</span>, <span class="va">obsdata</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>    data1 <span class="op">=</span> <span class="fu"><a href="../reference/calculate_wasserstein.html">calculate_wasserstein</a></span><span class="op">(</span><span class="va">obsdata</span><span class="op">$</span><span class="va">data1</span>, <span class="va">simdata</span><span class="op">$</span><span class="va">data1</span><span class="op">)</span>,</span>
-<span>    data2 <span class="op">=</span> <span class="fu"><a href="../reference/calculate_wasserstein.html">calculate_wasserstein</a></span><span class="op">(</span><span class="va">obsdata</span><span class="op">$</span><span class="va">data2</span>, <span class="va">simdata</span><span class="op">$</span><span class="va">data2</span><span class="op">)</span></span>
+<span>    data1 <span class="op">=</span> <span class="fu"><a href="../reference/calculate_wasserstein.html">calculate_wasserstein</a></span><span class="op">(</span><span class="va">simdata</span><span class="op">$</span><span class="va">data1</span>, <span class="va">obsdata</span><span class="op">$</span><span class="va">data1</span><span class="op">)</span>,</span>
+<span>    data2 <span class="op">=</span> <span class="fu"><a href="../reference/calculate_wasserstein.html">calculate_wasserstein</a></span><span class="op">(</span><span class="va">simdata</span><span class="op">$</span><span class="va">data2</span>, <span class="va">obsdata</span><span class="op">$</span><span class="va">data2</span><span class="op">)</span></span>
 <span>  <span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
@@ -177,24 +186,24 @@
 <span><span class="co">#&gt; ABC-SMC</span></span>
 <span><span class="co">#&gt; SMC waves:  <span style="color: #00BB00;">■                               </span>   0% | wave 1 ETA:  6m</span></span>
 <span><span class="co">#&gt; SMC waves:  <span style="color: #00BB00;">■                               </span>   1% | wave 2 ETA:  5m</span></span>
-<span><span class="co">#&gt; SMC waves:  <span style="color: #00BB00;">■                               </span>   2% | wave 5 ETA:  5m</span></span>
-<span><span class="co">#&gt; SMC waves:  <span style="color: #00BB00;">■■                              </span>   3% | wave 9 ETA:  5m</span></span>
-<span><span class="co">#&gt; SMC waves:  <span style="color: #00BB00;">■■                              </span>   4% | wave 13 ETA:  5m</span></span>
-<span><span class="co">#&gt; SMC waves:  <span style="color: #00BB00;">■■                              </span>   5% | wave 16 ETA:  5m</span></span>
-<span><span class="co">#&gt; Converged on wave: 20</span></span>
-<span><span class="co">#&gt; SMC waves:  <span style="color: #00BB00;">■■■                             </span>   5% | wave 19 ETA:  5m</span></span>
+<span><span class="co">#&gt; SMC waves:  <span style="color: #00BB00;">■■                              </span>   2% | wave 5 ETA:  5m</span></span>
+<span><span class="co">#&gt; SMC waves:  <span style="color: #00BB00;">■■                              </span>   3% | wave 8 ETA:  5m</span></span>
+<span><span class="co">#&gt; SMC waves:  <span style="color: #00BB00;">■■                              </span>   4% | wave 11 ETA:  5m</span></span>
+<span><span class="co">#&gt; SMC waves:  <span style="color: #00BB00;">■■                              </span>   4% | wave 14 ETA:  5m</span></span>
+<span><span class="co">#&gt; Converged on wave: 17</span></span>
+<span><span class="co">#&gt; SMC waves:  <span style="color: #00BB00;">■■■                             </span>   5% | wave 16 ETA:  5m</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">smc_fit</span><span class="op">)</span></span>
-<span><span class="co">#&gt; ABC SMC fit: 20 waves - (converged)</span></span>
+<span><span class="co">#&gt; ABC SMC fit: 17 waves - (converged)</span></span>
 <span><span class="co">#&gt; Parameter estimates:</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 4</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Groups:   param [4]</span></span></span>
 <span><span class="co">#&gt;   param      mean_sd       median_95_CrI           ESS</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> gamma_mean 5.970 ± 0.044 5.969 [5.857 — 6.085]  769.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> gamma_sd   1.981 ± 0.061 1.979 [1.832 — 2.150]  769.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> norm_mean  3.997 ± 0.169 3.996 [3.558 — 4.450]  769.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> norm_sd    2.020 ± 0.323 2.031 [1.218 — 2.753]  769.</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> gamma_mean 5.971 ± 0.049 5.969 [5.844 — 6.097]  797.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> gamma_sd   1.972 ± 0.073 1.970 [1.792 — 2.167]  797.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> norm_mean  3.991 ± 0.171 3.990 [3.553 — 4.417]  797.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> norm_sd    1.965 ± 0.399 1.989 [0.864 — 2.845]  797.</span></span></code></pre></div>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">smc_fit</span>, truth<span class="op">=</span><span class="va">truth</span><span class="op">)</span></span></code></pre></div>
 <p><img src="abc-smc_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" width="700"></p>

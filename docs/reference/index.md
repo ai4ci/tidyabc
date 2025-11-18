@@ -9,9 +9,9 @@
 - [`abc_smc()`](https://ai4ci.github.io/tidyabc/reference/abc_smc.md) :
   Perform ABC sequential Monte Carlo fitting
 - [`calculate_rmse()`](https://ai4ci.github.io/tidyabc/reference/calculate_rmse.md)
-  : Generate a function to calculate a root mean squared error
+  : Generate a function to calculate a Root Mean Squared Error (RMSE)
 - [`calculate_wasserstein()`](https://ai4ci.github.io/tidyabc/reference/calculate_wasserstein.md)
-  : Calculate a wasserstein distance
+  : Calculate a Wasserstein distance
 - [`default_termination_fn()`](https://ai4ci.github.io/tidyabc/reference/default_termination_fn.md)
   : Set up default convergence criteria for SMC and adaptive ABC
 - [`plot_convergence()`](https://ai4ci.github.io/tidyabc/reference/plot_convergence.md)
@@ -23,6 +23,8 @@
   adaptive ABC
 - [`plot_simulations()`](https://ai4ci.github.io/tidyabc/reference/plot_simulations.md)
   : Spaghetti plot of resampled posterior fits
+- [`posterior_distance_metrics()`](https://ai4ci.github.io/tidyabc/reference/posterior_distance_metrics.md)
+  : Generate a set of metrics from component scores
 - [`posterior_fit_empirical()`](https://ai4ci.github.io/tidyabc/reference/posterior_fit_empirical.md)
   : Fit empirical distribution to posterior samples for generating more
   waves
@@ -31,8 +33,13 @@
 - [`posterior_summarise()`](https://ai4ci.github.io/tidyabc/reference/posterior_summarise.md)
   : Calculate a basket of summaries from a weighted list of posterior
   samples
+- [`priors()`](https://ai4ci.github.io/tidyabc/reference/priors.md) :
+  Construct a set of priors
 - [`test_simulation()`](https://ai4ci.github.io/tidyabc/reference/test_simulation.md)
   : Run the simulation for one set of parameters
+- [`wasserstein_calculator()`](https://ai4ci.github.io/tidyabc/reference/wasserstein_calculator.md)
+  **\[experimental\]** : Generate a function to calculate a wasserstein
+  distance
 
 ## Empirical, mixture and truncated distributions
 
@@ -49,11 +56,15 @@
 - [`skew()`](https://ai4ci.github.io/tidyabc/reference/skew.md) :
   Calculate the skew of a set of data
 - [`transform()`](https://ai4ci.github.io/tidyabc/reference/transform.md)
-  : Generate a distribution from a truncation of another
+  : Generate a distribution from a link transform of another
 - [`truncate()`](https://ai4ci.github.io/tidyabc/reference/truncate.md)
   : Generate a distribution from a truncation of another
+- [`wmean()`](https://ai4ci.github.io/tidyabc/reference/wmean.md) :
+  Weighted mean
 - [`wquantile()`](https://ai4ci.github.io/tidyabc/reference/wquantile.md)
   : Quantile from weighted data with link function support
+- [`wsd()`](https://ai4ci.github.io/tidyabc/reference/wsd.md) : Weighted
+  standard deviation
 
 ## Reparameterised and non-standard distributions
 
@@ -121,6 +132,11 @@
   distribution
 - [`rcgamma()`](https://ai4ci.github.io/tidyabc/reference/rcgamma.md) :
   Sampling: gamma distribution constrained to have mean \> sd
+- [`rexpgrowth()`](https://ai4ci.github.io/tidyabc/reference/rexpgrowth.md)
+  : Randomly sample incident times in an exponentially growing process
+- [`rexpgrowthI0()`](https://ai4ci.github.io/tidyabc/reference/rexpgrowthI0.md)
+  : Randomly sample incident times in an exponentially growing process
+  with initial case load
 - [`rgamma2()`](https://ai4ci.github.io/tidyabc/reference/rgamma2.md) :
   The Gamma Distribution
 - [`rlnorm2()`](https://ai4ci.github.io/tidyabc/reference/rlnorm2.md) :
@@ -140,10 +156,27 @@
 
 ## S3 abc fit class
 
+- [`new_abc_fit()`](https://ai4ci.github.io/tidyabc/reference/abc_fit.md)
+  [`format(`*`<abc_fit>`*`)`](https://ai4ci.github.io/tidyabc/reference/abc_fit.md)
+  [`summary(`*`<abc_fit>`*`)`](https://ai4ci.github.io/tidyabc/reference/abc_fit.md)
+  [`tidy.abc_fit()`](https://ai4ci.github.io/tidyabc/reference/abc_fit.md)
+  [`print(`*`<abc_fit>`*`)`](https://ai4ci.github.io/tidyabc/reference/abc_fit.md)
+  [`plot(`*`<abc_fit>`*`)`](https://ai4ci.github.io/tidyabc/reference/abc_fit.md)
+  :
+
+  `abc_fit` S3 class
+
 ## S3 abc prior class
 
-- [`priors()`](https://ai4ci.github.io/tidyabc/reference/priors.md) :
-  Construct a set of priors
+- [`new_abc_prior()`](https://ai4ci.github.io/tidyabc/reference/abc_prior.md)
+  [`as.abc_prior()`](https://ai4ci.github.io/tidyabc/reference/abc_prior.md)
+  [`is.abc_prior()`](https://ai4ci.github.io/tidyabc/reference/abc_prior.md)
+  [`format(`*`<abc_prior>`*`)`](https://ai4ci.github.io/tidyabc/reference/abc_prior.md)
+  [`print(`*`<abc_prior>`*`)`](https://ai4ci.github.io/tidyabc/reference/abc_prior.md)
+  [`plot(`*`<abc_prior>`*`)`](https://ai4ci.github.io/tidyabc/reference/abc_prior.md)
+  :
+
+  `abc_prior` S3 class
 
 ## S3 distribution function class
 
@@ -252,16 +285,3 @@
   Map over multiple inputs returning a `link_fns_list`
 
 ## Others
-
-- [`rexpgrowth()`](https://ai4ci.github.io/tidyabc/reference/rexpgrowth.md)
-  : Randomly sample incident times in an exponentially growing process
-- [`rexpgrowthI0()`](https://ai4ci.github.io/tidyabc/reference/rexpgrowthI0.md)
-  : Randomly sample incident times in an exponentially growing process
-  with initial case load
-- [`wasserstein_calculator()`](https://ai4ci.github.io/tidyabc/reference/wasserstein_calculator.md)
-  **\[experimental\]** : Generate a function to calculate a wasserstein
-  distance
-- [`wmean()`](https://ai4ci.github.io/tidyabc/reference/wmean.md) :
-  Weighted mean
-- [`wsd()`](https://ai4ci.github.io/tidyabc/reference/wsd.md) : Weighted
-  standard deviation

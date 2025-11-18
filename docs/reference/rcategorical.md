@@ -36,11 +36,11 @@ prob = c("one"=0.1,"two"=0.2,"seven"=0.7)
 table(rcategorical(1000,prob))
 #> 
 #>   one seven   two 
-#>   103   701   196 
+#>    91   692   217 
 rcategorical(10,prob,factor=TRUE)
-#>  [1] seven seven seven seven one   seven seven two   two   seven
+#>  [1] seven seven seven seven seven seven seven seven seven two  
 #> Levels: one two seven
 rcategorical(10,rep(1,26),factor=letters)
-#>  [1] i z l s i t e k g w
+#>  [1] d b x j h p g a o n
 #> Levels: a b c d e f g h i j k l m n o p q r s t u v w x y z
 ```

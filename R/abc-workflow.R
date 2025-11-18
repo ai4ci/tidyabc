@@ -7,6 +7,50 @@
 #' summary distance metric. A large number of simulations and a low acceptance
 #' rate are best here.
 #'
+#' Parameters \eqn{\theta^{(i)}} are sampled independently from the prior
+#' distribution \eqn{P(\theta)} for \eqn{i = 1, \dots, n_{\text{sims}}}.
+#' For each \eqn{\theta^{(i)}}, simulated data \eqn{D_s^{(i)} = M(\theta^{(i)})}
+#' is generated via the simulator function `sim_fn`, and a vector of summary
+#' statistics \eqn{S_s^{(i)} = \texttt{scorer\_fn}(D_s^{(i)})}
+#' is computed and compared to the observed summary statistics
+#' \eqn{S_o = \texttt{scorer\_fn}(D_o)}.
+#'
+#' A distance metric \eqn{d^{(i)} = d(S_s^{(i)}, S_o)} is computed. By default,
+#' this is the Euclidean distance:
+#' \deqn{
+#'   d^{(i)} = \left\| W \circ (S_s^{(i)} - S_o) \right\|_2,
+#' }
+#' where \eqn{W} is a vector of optional summary statistic weights
+#' (`scoreweights`), and \eqn{\circ} denotes element-wise multiplication.
+#' Other supported metrics include Manhattan (\eqn{\ell_1}) and Mahalanobis
+#' distance (using the empirical covariance from the first wave).
+#'
+#' The tolerance threshold \eqn{\epsilon} is set to the
+#' \eqn{\alpha = \texttt{acceptance\_rate}} quantile of the distances
+#' \eqn{\{d^{(i)}\}_{i=1}^{n_{\text{sims}}}}:
+#' \deqn{
+#'   \epsilon = \text{quantile}\big(\{d^{(i)}\}, \alpha\big).
+#' }
+#'
+#' Unnormalized ABC weights are then assigned using a kernel function
+#' \eqn{K_\epsilon(\cdot)}:
+#' \deqn{
+#'   \tilde{w}^{(i)} = K_\epsilon\big(d^{(i)}\big),
+#' }
+#' where \eqn{K_\epsilon(d)} is one of the kernels defined in `kernels.R`
+#' (e.g., Epanechnikov: \eqn{K_\epsilon(d) = \frac{3}{4\epsilon}
+#' (1 - d^2\!/\!\epsilon^2)\, \mathbb{I}(d \leq \epsilon)}).
+#' These weights are then transformed via a logistic ("expit") function and
+#' normalized to sum to one:
+#' \deqn{
+#'   w^{(i)} = \frac{\text{expit}(\log \tilde{w}^{(i)})}{
+#'     \sum_j \text{expit}(\log \tilde{w}^{(j)})}
+#'   = \frac{ \tilde{w}^{(i)} / (1 + \tilde{w}^{(i)}) }{
+#'     \sum_j \tilde{w}^{(j)} / (1 + \tilde{w}^{(j)}) }.
+#' }
+#' The resulting weighted sample \eqn{\{(\theta^{(i)}, w^{(i)})\}} approximates
+#' the ABC posterior distribution \eqn{P_\epsilon(\theta \mid D_o)}.
+#'
 #' @inheritParams tidyabc_common
 #' @param ... must be empty
 #'
@@ -140,6 +184,58 @@ abc_rejection = function(
 #' are executed until a maximum is reached or the results converge sufficiently
 #' that the changes between waves are small. A relatively small number of
 #' simulations may be attempted with a high acceptance rate, over multiple waves.
+#'
+#' Performs the ABC Sequential Monte Carlo (SMC) algorithm.
+#' This iterative method refines parameter estimates across multiple waves.
+#'
+#' 1. **Initialization (Wave 1):**
+#'    Parameters \eqn{\theta^{(i)}} are sampled from the prior \eqn{P(\theta)}.
+#'    Simulations \eqn{D_s^{(i)} = M(\theta^{(i)})} are run, summaries \eqn{S_s^{(i)}}
+#'    are computed, and distances \eqn{d^{(i)} = d(S_s^{(i)}, S_o)} are calculated.
+#'    A tolerance threshold \eqn{\epsilon_1} is set as the
+#'    \eqn{\alpha = \texttt{acceptance\_rate}} quantile of these initial distances.
+#'    Unnormalized weights \eqn{\tilde{w}^{(i)}_1} are calculated using a kernel
+#'    \eqn{K_{\epsilon_1}(d^{(i)})}.
+#'
+#' 2. **Subsequent Waves (\eqn{t > 1}):**
+#'    - **Proposal Generation:** A particle \eqn{\theta^{(j)}_{t-1}} is selected
+#'      from the previous wave's accepted particles with probability proportional
+#'      to its weight \eqn{w^{(j)}_{t-1}}. The particle is then perturbed in a
+#'      transformed MVN space using a multivariate normal kernel with covariance
+#'      \eqn{\Sigma_t = \frac{\kappa_t^2}{d} \text{Cov}_{w_{t-1}}(\theta_{t-1})},
+#'      where \eqn{\text{Cov}_{w_{t-1}}} is the weighted covariance from wave \eqn{t-1},
+#'      \eqn{d} is the parameter dimension, and \eqn{\kappa_t} is the `kernel_t` parameter.
+#'      The new proposal \eqn{\theta^{(i)}_t} is generated as:
+#'      \deqn{
+#'        \theta^{(i)}_t = \theta^{(j)}_{t-1} + \zeta, \quad \zeta \sim \mathcal{N}(0, \Sigma_t)
+#'      }
+#'      This proposal is mapped back to the original parameter space using the
+#'      prior's copula transformation (from MVN space defined by prior CDFs).
+#'
+#'    - **Simulation and Weighting:** Simulations \eqn{D_s^{(i)} = M(\theta^{(i)}_t)}
+#'      are run for the new proposals. Distances \eqn{d^{(i)}_t} are computed.
+#'      The tolerance \eqn{\epsilon_t} is set as the \eqn{\alpha}-quantile of
+#'      distances from the *current* wave's simulations. The unnormalized weight
+#'      for particle \eqn{i} in wave \eqn{t} is calculated as:
+#'      \deqn{
+#'        \tilde{w}^{(i)}_t = \frac{P(\theta^{(i)}_t) K_{\epsilon_t}(d^{(i)}_t)}{q_t(\theta^{(i)}_t)}
+#'      }
+#'      where \eqn{P(\theta^{(i)}_t)} is the prior density, \eqn{K_{\epsilon_t}}
+#'      is the ABC kernel, and \eqn{q_t(\theta^{(i)}_t)} is the proposal density
+#'      from the previous wave's weighted particles (calculated using the
+#'      perturbation kernel). This proposal density is computed as a weighted sum:
+#'      \deqn{
+#'        q_t(\theta^{(i)}_t) = \sum_j w^{(j)}_{t-1} \phi(\theta^{(i)}_t; \theta^{(j)}_{t-1}, \Sigma_t)
+#'      }
+#'      where \eqn{\phi(\cdot; \mu, \Sigma)} is the PDF of a multivariate normal
+#'      with mean \eqn{\mu} and covariance \eqn{\Sigma}.
+#'
+#' 3. **Normalization:** Weights \eqn{w^{(i)}_t} are normalized to sum to one.
+#'    Particles with negligible weights are typically filtered out.
+#'
+#' 4. **Termination:** The process repeats until a maximum number of waves or
+#'    time is reached, or convergence criteria are met based on changes in
+#'    parameter estimates or effective sample size (ESS).
 #'
 #' @inheritParams tidyabc_common
 #' @param ... must be empty
@@ -364,6 +460,67 @@ abc_smc = function(
 #' reached or the results converge sufficiently that the changes between waves
 #' are small. A relatively small number of simulations may be attempted with a
 #' high acceptance rate, over multiple waves.
+#'
+#' Performs the ABC Adaptive algorithm.
+#' This iterative method refines parameter estimates across waves by fitting
+#' empirical proposal distributions to the weighted posterior samples from the
+#' previous wave. Unlike ABC-SMC, which uses a fixed perturbation kernel,
+#' `abc_adaptive` constructs a new proposal distribution \eqn{Q_t(\theta)} at
+#' each wave \eqn{t}.
+#'
+#' 1. **Initialization (Wave 1):**
+#'    Parameters \eqn{\theta^{(i)}} are sampled from the prior \eqn{P(\theta)}.
+#'    Simulations are run, summary statistics \eqn{S_s^{(i)}} are computed,
+#'    and distances \eqn{d^{(i)} = d(S_s^{(i)}, S_o)} are calculated.
+#'    A tolerance threshold \eqn{\epsilon_1} is set as the
+#'    \eqn{\alpha = \texttt{acceptance\_rate}} quantile of these distances.
+#'    Unnormalized weights \eqn{\tilde{w}^{(i)}_1} are calculated using a kernel
+#'    \eqn{K_{\epsilon_1}(d^{(i)})}.
+#'
+#' 2. **Subsequent Waves (\eqn{t > 1}):**
+#'    - **Proposal Generation:** An empirical joint proposal distribution
+#'      \eqn{Q_t(\theta)} is constructed from the weighted posterior sample
+#'      \eqn{\{(\theta^{(i)}_{t-1}, w^{(i)}_{t-1})\}} of the previous wave.
+#'      This is done by fitting marginal empirical distributions
+#'      \eqn{Q_{t,j}(\theta_j)} to each parameter \eqn{\theta_j}, using the
+#'      `empirical()` function with the prior \eqn{P_j(\theta_j)} as a link to
+#'      enforce support constraints. These marginals are assumed independent,
+#'      but their weighted correlation matrix \eqn{R_t} is retained as an
+#'      attribute and used to induce dependence in the MVN sampling space.
+#'      New proposals \eqn{\theta^{(i)}_t} are generated by:
+#'      \itemize{
+#'        \item Sampling a vector \eqn{Z \sim \mathcal{N}(0, R_t)} in a
+#'              correlated standard normal space.
+#'        \item Mapping each component \eqn{Z_j} to uniform space:
+#'              \eqn{U_j = \Phi(Z_j)}.
+#'        \item Mapping to the parameter space using the empirical quantile
+#'              functions: \eqn{\theta^{(i)}_{t,j} = Q_{t,j}^{-1}(U_j)}.
+#'      }
+#'
+#'    - **Simulation and Weighting:** Simulations are run for the new proposals.
+#'      Distances \eqn{d^{(i)}_t} are computed and the tolerance \eqn{\epsilon_t}
+#'      is set as the \eqn{\alpha}-quantile of the current wave's distances.
+#'      The unnormalized weight for particle \eqn{i} in wave \eqn{t} is calculated as:
+#'      \deqn{
+#'        \tilde{w}^{(i)}_t = \frac{P(\theta^{(i)}_t) K_{\epsilon_t}(d^{(i)}_t)}{Q_t(\theta^{(i)}_t)}
+#'      }
+#'      where \eqn{P(\theta^{(i)}_t) = \prod_j P_j(\theta^{(i)}_{t,j})} is the prior
+#'      density (assuming independence), \eqn{K_{\epsilon_t}} is the ABC kernel,
+#'      and \eqn{Q_t(\theta^{(i)}_t) = \prod_j Q_{t,j}(\theta^{(i)}_{t,j})} is the
+#'      empirical proposal density (also assuming independence for density
+#'      calculation, consistent with the marginal fitting). The correlation
+#'      structure is handled only in the sampling process, not in the density
+#'      evaluation, which is a common practical approximation.
+#'
+#' 3. **Normalization:** Weights \eqn{w^{(i)}_t} are normalized to sum to one.
+#'    The algorithm includes a recovery mechanism: if the Effective Sample Size
+#'    (ESS) falls below a threshold (e.g., 200), the acceptance rate is
+#'    increased (i.e., \eqn{\epsilon_t} is made larger) to accept more particles
+#'    and improve the ESS.
+#'
+#' 4. **Termination:** The process repeats until a maximum time is reached or
+#'    convergence criteria based on parameter stability and credible interval
+#'    contraction are met.
 #'
 #' @inheritParams tidyabc_common
 #' @inheritParams empirical
@@ -787,6 +944,31 @@ test_simulation = function(
 #' function helps provide diagnostics for calibrating the `scoreweights`
 #' parameter.
 #'
+#' Given a list of component scores \eqn{S_s^{(i)} = (s_1^{(i)}, \dots, s_m^{(i)})}
+#' from \eqn{n} simulations and observed scores \eqn{S_o = (s_1^{(o)}, \dots, s_m^{(o)})},
+#' this function calculates:
+#'
+#' - The mean \eqn{\mu_j} and standard deviation \eqn{\sigma_j} of each score component \eqn{j}:
+#'   \deqn{
+#'     \mu_j = \frac{1}{n}\sum_{i=1}^n s_j^{(i)}, \quad
+#'     \sigma_j = \sqrt{\frac{1}{n-1}\sum_{i=1}^n (s_j^{(i)} - \mu_j)^2}
+#'   }
+#'
+#' - The covariance matrix \eqn{\Sigma} of the score components.
+#'
+#' - The root mean squared difference (RMSD) between simulated and observed scores for each component:
+#'   \deqn{
+#'     \text{RMSD}_j = \sqrt{\frac{1}{n}\sum_{i=1}^n (s_j^{(i)} - s_j^{(o)})^2}
+#'   }
+#'
+#' - A recommended vector of `scoreweights` \eqn{w_j}, calculated as the ratio of the component's
+#'   standard deviation to its RMSD, normalized to sum to 1:
+#'   \deqn{
+#'     w_j = \frac{\sigma_j / \text{RMSD}_j}{\sum_{k=1}^m (\sigma_k / \text{RMSD}_k)}
+#'   }
+#'   These weights help balance the influence of different summary statistics in
+#'   the overall distance metric, especially when using Euclidean distance.
+#'
 #' @inheritParams  tidyabc_common
 #' @param keep_data mainly for internal use this flag gives you the component
 #'  scores as a matrix
@@ -872,7 +1054,7 @@ posterior_distance_metrics = function(
     )
   mad = apply(abs(deltascores), MARGIN = 2, mean)
   rmsd = sqrt(apply(deltascores^2, MARGIN = 2, mean))
-  scoreweights = metrics$sds / metrics$rmsd # 1 / rmsd / sum(1 / rmsd)
+  scoreweights = sds / rmsd # 1 / rmsd / sum(1 / rmsd)
   scoreweights = scoreweights / sum(scoreweights)
 
   return(list(
@@ -1035,7 +1217,37 @@ posterior_summarise = function(
 #' distribution which will retain the bounds of the prior, and is effectively a
 #' spline based transform of the prior distribution, based on the density of
 #' data in prior space. This gives a clean density when data is close to a
-#' prior distribution limit and work better than a standard density for
+#' prior distribution limit and work better than a standard density.
+#'
+#' This takes weighted posterior samples \eqn{\{(\theta^{(i)}, w^{(i)})\}}
+#' for each parameter \eqn{\theta_j} and constructs an empirical distribution
+#' function \eqn{Q_j(\theta_j)} that approximates the posterior marginal for
+#' that parameter.
+#'
+#' For each parameter \eqn{\theta_j}, the empirical distribution \eqn{Q_j} is
+#' fitted using the `empirical()` function. The fitting is performed on the
+#' weighted samples \eqn{(\theta_{j}^{(i)}, w^{(i)})}. A key feature is the use
+#' of a link function \eqn{h_j(\cdot)} during the fitting process. This link
+#' function is typically taken from the original prior distribution \eqn{P_j(\theta_j)}
+#' (i.e., \eqn{h_j = P_j}). This ensures that the fitted empirical distribution
+#' \eqn{Q_j} respects the support constraints defined by the prior (e.g., positive
+#' values for a log-normal prior). The fitting effectively occurs in the transformed
+#' space defined by the link: \eqn{h_j(\theta_j^{(i)})}.
+#'
+#' The resulting empirical distribution \eqn{Q_j} is a `dist_fns` object that
+#' includes the support constraints from the original prior. The set of all fitted
+#' marginal distributions \eqn{\{Q_j\}} forms the new proposal list for the next
+#' wave.
+#'
+#' Additionally, the weighted covariance matrix \eqn{R} of the samples in the
+#' MVN space (defined by the prior copula) is calculated:
+#' \deqn{
+#'   R = \text{Cov}_{w}(\Phi^{-1}(P_1(\theta_1)), \dots, \Phi^{-1}(P_d(\theta_d)))
+#' }
+#' where \eqn{\Phi^{-1}} is the quantile function of the standard normal.
+#' This covariance matrix is stored as an attribute (`"cor"`) of the returned
+#' proposal list and is used to induce correlation structure when sampling
+#' new proposals from the empirical distributions in subsequent waves.
 #'
 #' @inheritParams tidyabc_common
 #'

@@ -1,4 +1,4 @@
-# Tidy distribution functions
+# Statistical distribution functions
 
 ## S3 distribution wrappers
 

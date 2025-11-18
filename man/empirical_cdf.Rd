@@ -49,6 +49,33 @@ increasing spline fit to CDF in transformed X and logit Y space. The end
 points are linearly interpolated in this space to the \code{tail_p}th quantile.
 The function can fit data provided as \verb{x, P(X<=x)} pairs.
 
+Constructs an empirical distribution from CDF points \eqn{(x_i, p_i)} by fitting
+monotonic splines in a transformed quantile–quantile (Q–Q) space.
+The input \eqn{x} is first mapped to a standardized probability scale via a
+link-dependent transformation \eqn{q_x = T(x)}. The resulting pairs
+\eqn{(q_x, p)} are then used to build two monotonic interpolation functions:
+\deqn{
+  p = F_{\text{cdf}}(q_x), \quad q_x = F_{\text{qf}}(p)
+}
+where \eqn{F_{\text{cdf}}} and \eqn{F_{\text{qf}}} are constructed as follows:
+\itemize{
+\item If \code{smooth = FALSE}, both are piecewise linear interpolants
+(via \code{stats::approx}).
+\item If \code{smooth = TRUE}, both are strictly monotonic cubic splines
+fitted using the \code{"monoH.FC"} method from \code{stats::splinefun},
+converted to polynomial spline form (\code{polySpline}). Monotonicity is
+enforced by requiring \eqn{q_x} and \eqn{p} to be strictly increasing after
+tie-breaking perturbations.
+}
+Tail extrapolation is applied by linearly extending the first and last
+segments in Q–Q space to the points \eqn{(0,0)} and \eqn{(1,1)} if not already
+included. The final distribution functions are:
+\deqn{
+  P(X \leq x) = F_{\text{cdf}}(T(x)), \quad
+  Q(p) = T^{-1}(F_{\text{qf}}(p))
+}
+where \eqn{T} and \eqn{T^{-1}} are derived from the \code{link} argument.
+
 This function imputes tails of distributions. Given perfect data as samples
 or as quantiles it should recover the tail
 }
