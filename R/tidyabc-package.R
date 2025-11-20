@@ -71,9 +71,9 @@ NULL
 #'   typically inferred from the data size. Small numbers tend to work better if
 #'   we expect the distribution to be unimodal.
 #' @param bw for Adaptive ABC data distributions are smoothed before modelling
-#'   the CDF. Over smoothing can reduce convergence, under-smoothing may result
-#'   in noisy posterior estimates. This is in units of the ESS and defaults to
-#'   0.1.
+#'   the CDF. Over smoothing can reduce convergence rate, under-smoothing may result
+#'   in noisy posterior estimates, and appearance of local modes.
+#'   This is a proportion of the ESS and defaults to 0.1.
 #' @param max_time the maximum time in seconds to spend in ABC waves before admitting
 #'   defeat. This time may not be all used if the algorithm converges.
 #' @param allow_continue if SMC or adaptive algorithms have not converged after
@@ -102,6 +102,19 @@ NULL
 #'   next round. All kernels except `gaussian` have a hard cut-off outside of
 #'   which the probability of acceptance of a particle is zero. Use of
 #'   `gaussian` kernels can result in poor convergence.
+#' @param widen_by change the dispersion of proposal distribution in ABC
+#'   adaptive, preserving the median. This is akin to a nonlinear,
+#'   heteroscedastic random walk in the quantile space, and can help address
+#'   over-fitting or local modes in the ABC adaptive waves. `widen_by` is an odds
+#'   ratio and describes how much further from the median any given part of the
+#'   distribution is after transformation. E.g. if the median of a distribution
+#'   is zero, and the `widen_by` is 2 then the 0.75 quantile will move to the
+#'   position of the 0.9 quantile. The distribution will stay within the
+#'   support of the prior. This is by default 1.05 which allows for some
+#'   additional variability in proposals.
+#' @param use_proposal_correlation When calculating the weight of a particle the
+#'   proposal correlation structure is available, to help determine how unusual
+#'   or otherwise a particle is.
 #' @name tidyabc_common
 #' @keywords internal
 #' @concept workflow

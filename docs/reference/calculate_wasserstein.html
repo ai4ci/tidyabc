@@ -15,7 +15,7 @@ Wasserstein distance."><meta property="og:image" content="https://ai4ci.github.i
 
     <a class="navbar-brand me-2" href="../index.html">tidyabc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9003</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,7 +30,7 @@ Wasserstein distance."><meta property="og:image" content="https://ai4ci.github.i
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/abc-adaptive.html">ABC Adaptive</a></li>
     <li><a class="dropdown-item" href="../articles/abc-smc.html">ABC Sequential Monte-Carlo</a></li>
     <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distribution functions</a></li>
-    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Scoring and summarising functions</a></li>
+    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Simulation, scoring and convergence functions</a></li>
     <li><a class="dropdown-item" href="../articles/sim-example.html">Early outbreak and Generation time</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -127,50 +127,71 @@ times with random sampling, and the final distance is the average of the results
 <span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">expect_equal</span>(<span class="fu">calculate_wasserstein</span>(<span class="dv">10</span><span class="sc">:</span><span class="dv">0</span>, <span class="dv">0</span><span class="sc">:</span><span class="dv">10</span>), <span class="dv">0</span>)</span>
 <span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a></span>
 <span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="co"># normalised so that all mass at mean = 1</span></span>
-<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">expect_equal</span>(<span class="fu">calculate_wasserstein</span>(<span class="fu">rep</span>(<span class="dv">5</span>, <span class="dv">11</span>), <span class="dv">0</span><span class="sc">:</span><span class="dv">10</span>), <span class="dv">1</span>)</span>
-<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a></span>
-<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a><span class="co"># smaller sample recycled and normalises to same value</span></span>
-<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">expect_equal</span>(<span class="fu">calculate_wasserstein</span>(<span class="fu">rep</span>(<span class="dv">5</span>, <span class="dv">5</span>), <span class="dv">0</span><span class="sc">:</span><span class="dv">10</span>), <span class="dv">1</span>)</span>
-<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a></span>
-<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a><span class="co"># should be ((0+1+0+1+0+0+0+1+0+1+0) / 11) / ((5+4+3+2+1+0+1+2+3+4+5) / 11) = 0.1333...</span></span>
-<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
-<span id="cb1-18"><a href="#cb1-18" tabindex="-1"></a>  <span class="fu">calculate_wasserstein</span>(</span>
-<span id="cb1-19"><a href="#cb1-19" tabindex="-1"></a>    <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">8</span>, <span class="dv">8</span>, <span class="dv">10</span>, <span class="dv">10</span>),</span>
-<span id="cb1-20"><a href="#cb1-20" tabindex="-1"></a>    <span class="dv">0</span><span class="sc">:</span><span class="dv">10</span></span>
-<span id="cb1-21"><a href="#cb1-21" tabindex="-1"></a> ),</span>
-<span id="cb1-22"><a href="#cb1-22" tabindex="-1"></a>  <span class="fl">0.133333333333333</span></span>
-<span id="cb1-23"><a href="#cb1-23" tabindex="-1"></a>)</span>
-<span id="cb1-24"><a href="#cb1-24" tabindex="-1"></a></span>
-<span id="cb1-25"><a href="#cb1-25" tabindex="-1"></a>withr<span class="sc">::</span><span class="fu">with_seed</span>(<span class="dv">100</span>, {</span>
-<span id="cb1-26"><a href="#cb1-26" tabindex="-1"></a>   ref <span class="ot">=</span> <span class="fu">rnorm</span>(<span class="dv">1000</span>)</span>
-<span id="cb1-27"><a href="#cb1-27" tabindex="-1"></a>   cmp1 <span class="ot">=</span> <span class="fu">rnorm</span>(<span class="dv">1000</span>)</span>
-<span id="cb1-28"><a href="#cb1-28" tabindex="-1"></a>   cmp2 <span class="ot">=</span> <span class="fu">rnorm</span>(<span class="dv">1000</span>, <span class="at">sd=</span><span class="dv">2</span>)</span>
-<span id="cb1-29"><a href="#cb1-29" tabindex="-1"></a>   cmp3 <span class="ot">=</span> <span class="fu">rnorm</span>(<span class="dv">100</span>)</span>
-<span id="cb1-30"><a href="#cb1-30" tabindex="-1"></a>})</span>
-<span id="cb1-31"><a href="#cb1-31" tabindex="-1"></a></span>
-<span id="cb1-32"><a href="#cb1-32" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">expect_equal</span>(<span class="fu">calculate_wasserstein</span>(cmp1,ref), <span class="fl">0.0576417503974498</span>)</span>
-<span id="cb1-33"><a href="#cb1-33" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">expect_equal</span>(<span class="fu">calculate_wasserstein</span>(cmp2,ref), <span class="fl">1.04950621760385</span>)</span>
-<span id="cb1-34"><a href="#cb1-34" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">expect_equal</span>(<span class="fu">calculate_wasserstein</span>(cmp3,ref), <span class="fl">0.212977231452674</span>)</span>
-<span id="cb1-35"><a href="#cb1-35" tabindex="-1"></a></span>
-<span id="cb1-36"><a href="#cb1-36" tabindex="-1"></a><span class="fu">calculate_wasserstein</span>(cmp1,ref,<span class="at">bootstraps=</span><span class="dv">10</span>)</span>
-<span id="cb1-37"><a href="#cb1-37" tabindex="-1"></a></span>
-<span id="cb1-38"><a href="#cb1-38" tabindex="-1"></a>gen <span class="ot">=</span> <span class="cf">function</span>(n, <span class="at">mean=</span><span class="dv">0</span>, <span class="at">sd=</span><span class="dv">1</span>) {</span>
-<span id="cb1-39"><a href="#cb1-39" tabindex="-1"></a>  <span class="fu">sample</span>(<span class="fu">pnorm</span>(<span class="fu">seq</span>(<span class="sc">-</span><span class="dv">1</span>,<span class="dv">1</span>,<span class="at">length.out =</span> n <span class="sc">-</span> n</span>
-<span id="cb1-40"><a href="#cb1-40" tabindex="-1"></a><span class="er">}</span></span>
-<span id="cb1-41"><a href="#cb1-41" tabindex="-1"></a></span>
-<span id="cb1-42"><a href="#cb1-42" tabindex="-1"></a><span class="co"># there should be approximately zero</span></span>
-<span id="cb1-43"><a href="#cb1-43" tabindex="-1"></a><span class="fu">calculate_wasserstein</span>(<span class="fu">gen</span>(<span class="dv">1000</span>), <span class="fu">gen</span>(<span class="dv">1000</span>))</span>
-<span id="cb1-44"><a href="#cb1-44" tabindex="-1"></a><span class="fu">calculate_wasserstein</span>(<span class="fu">gen</span>(<span class="dv">1000</span>), <span class="fu">gen</span>(<span class="dv">100</span>))</span>
-<span id="cb1-45"><a href="#cb1-45" tabindex="-1"></a><span class="fu">calculate_wasserstein</span>(<span class="fu">gen</span>(<span class="dv">100</span>), <span class="fu">gen</span>(<span class="dv">1000</span>))</span>
-<span id="cb1-46"><a href="#cb1-46" tabindex="-1"></a><span class="fu">calculate_wasserstein</span>(<span class="fu">gen</span>(<span class="dv">200</span>), <span class="fu">gen</span>(<span class="dv">1000</span>))</span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a>ref <span class="ot">=</span> <span class="fu">mean</span>(<span class="fu">abs</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">10-5</span>))<span class="sc">/</span><span class="fu">sd</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">10</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">expect_equal</span>(<span class="fu">calculate_wasserstein</span>(<span class="fu">rep</span>(<span class="dv">5</span>, <span class="dv">11</span>), <span class="dv">0</span><span class="sc">:</span><span class="dv">10</span>), ref)</span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a><span class="co"># smaller sample recycled and normalises to same value</span></span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">expect_equal</span>(<span class="fu">calculate_wasserstein</span>(<span class="fu">rep</span>(<span class="dv">5</span>, <span class="dv">5</span>), <span class="dv">0</span><span class="sc">:</span><span class="dv">10</span>), ref)</span>
+<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a><span class="co"># should be ((0+1+0+1+0+0+0+1+0+1+0) / 11) / ((5+4+3+2+1+0+1+2+3+4+5) / 11) = 0.1333...</span></span>
+<span id="cb1-18"><a href="#cb1-18" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
+<span id="cb1-19"><a href="#cb1-19" tabindex="-1"></a>  <span class="fu">calculate_wasserstein</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">8</span>, <span class="dv">8</span>, <span class="dv">10</span>, <span class="dv">10</span>), <span class="dv">0</span><span class="sc">:</span><span class="dv">10</span>),</span>
+<span id="cb1-20"><a href="#cb1-20" tabindex="-1"></a>  <span class="fl">0.109640488937369</span></span>
+<span id="cb1-21"><a href="#cb1-21" tabindex="-1"></a>)</span>
+<span id="cb1-22"><a href="#cb1-22" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" tabindex="-1"></a>withr<span class="sc">::</span><span class="fu">with_seed</span>(<span class="dv">100</span>, {</span>
+<span id="cb1-24"><a href="#cb1-24" tabindex="-1"></a>   ref <span class="ot">=</span> <span class="fu">rnorm</span>(<span class="dv">1000</span>)</span>
+<span id="cb1-25"><a href="#cb1-25" tabindex="-1"></a>   cmp1 <span class="ot">=</span> <span class="fu">rnorm</span>(<span class="dv">1000</span>)</span>
+<span id="cb1-26"><a href="#cb1-26" tabindex="-1"></a>   cmp2 <span class="ot">=</span> <span class="fu">rnorm</span>(<span class="dv">1000</span>, <span class="at">sd=</span><span class="dv">2</span>)</span>
+<span id="cb1-27"><a href="#cb1-27" tabindex="-1"></a>   cmp3 <span class="ot">=</span> <span class="fu">rnorm</span>(<span class="dv">100</span>)</span>
+<span id="cb1-28"><a href="#cb1-28" tabindex="-1"></a>})</span>
+<span id="cb1-29"><a href="#cb1-29" tabindex="-1"></a></span>
+<span id="cb1-30"><a href="#cb1-30" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
+<span id="cb1-31"><a href="#cb1-31" tabindex="-1"></a>  <span class="fu">calculate_wasserstein</span>(cmp1, ref),</span>
+<span id="cb1-32"><a href="#cb1-32" tabindex="-1"></a>  <span class="fl">0.0458673541615467</span></span>
+<span id="cb1-33"><a href="#cb1-33" tabindex="-1"></a>)</span>
+<span id="cb1-34"><a href="#cb1-34" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
+<span id="cb1-35"><a href="#cb1-35" tabindex="-1"></a>  <span class="fu">calculate_wasserstein</span>(cmp2, ref),</span>
+<span id="cb1-36"><a href="#cb1-36" tabindex="-1"></a>  <span class="fl">0.835125114099775</span></span>
+<span id="cb1-37"><a href="#cb1-37" tabindex="-1"></a>)</span>
+<span id="cb1-38"><a href="#cb1-38" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
+<span id="cb1-39"><a href="#cb1-39" tabindex="-1"></a>  <span class="fu">calculate_wasserstein</span>(cmp3, ref),</span>
+<span id="cb1-40"><a href="#cb1-40" tabindex="-1"></a>  <span class="fl">0.180171816429487</span></span>
+<span id="cb1-41"><a href="#cb1-41" tabindex="-1"></a>)</span>
+<span id="cb1-42"><a href="#cb1-42" tabindex="-1"></a></span>
+<span id="cb1-43"><a href="#cb1-43" tabindex="-1"></a>tmp <span class="ot">=</span> withr<span class="sc">::</span><span class="fu">with_seed</span>(<span class="dv">100</span>, {</span>
+<span id="cb1-44"><a href="#cb1-44" tabindex="-1"></a> <span class="fu">calculate_wasserstein</span>(cmp1,ref,<span class="at">bootstraps=</span><span class="dv">10</span>)</span>
+<span id="cb1-45"><a href="#cb1-45" tabindex="-1"></a>})</span>
+<span id="cb1-46"><a href="#cb1-46" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">expect_equal</span>(tmp, <span class="fl">0.0678606864134826</span>)</span>
 <span id="cb1-47"><a href="#cb1-47" tabindex="-1"></a></span>
-<span id="cb1-48"><a href="#cb1-48" tabindex="-1"></a><span class="co"># these should be approximately equal:</span></span>
-<span id="cb1-49"><a href="#cb1-49" tabindex="-1"></a><span class="fu">calculate_wasserstein</span>(<span class="fu">gen</span>(<span class="dv">100</span>,<span class="fl">0.1</span>), <span class="fu">gen</span>(<span class="dv">1000</span>))</span>
-<span id="cb1-50"><a href="#cb1-50" tabindex="-1"></a><span class="fu">calculate_wasserstein</span>(<span class="fu">gen</span>(<span class="dv">200</span>,<span class="fl">0.1</span>), <span class="fu">gen</span>(<span class="dv">1000</span>))</span>
-<span id="cb1-51"><a href="#cb1-51" tabindex="-1"></a><span class="fu">calculate_wasserstein</span>(<span class="fu">gen</span>(<span class="dv">1000</span>,<span class="fl">0.1</span>), <span class="fu">gen</span>(<span class="dv">1000</span>))</span>
-<span id="cb1-52"><a href="#cb1-52" tabindex="-1"></a><span class="fu">calculate_wasserstein</span>(<span class="fu">gen</span>(<span class="dv">1000</span>, <span class="fl">0.1</span>), <span class="fu">gen</span>(<span class="dv">200</span>))</span>
-<span id="cb1-53"><a href="#cb1-53" tabindex="-1"></a><span class="fu">calculate_wasserstein</span>(<span class="fu">gen</span>(<span class="dv">1000</span>, <span class="fl">0.1</span>), <span class="fu">gen</span>(<span class="dv">100</span>))</span>
-<span id="cb1-54"><a href="#cb1-54" tabindex="-1"></a></span></code></pre><p></p></div>
+<span id="cb1-48"><a href="#cb1-48" tabindex="-1"></a></span>
+<span id="cb1-49"><a href="#cb1-49" tabindex="-1"></a>gen <span class="ot">=</span> <span class="cf">function</span>(n, <span class="at">mean=</span><span class="dv">0</span>, <span class="at">sd=</span><span class="dv">1</span>) {</span>
+<span id="cb1-50"><a href="#cb1-50" tabindex="-1"></a>  <span class="fu">sample</span>(<span class="fu">pnorm</span>(<span class="fu">seq</span>(<span class="sc">-</span><span class="dv">1</span>,<span class="dv">1</span>,<span class="at">length.out =</span> n <span class="sc">-</span> n</span>
+<span id="cb1-51"><a href="#cb1-51" tabindex="-1"></a><span class="er">}</span></span>
+<span id="cb1-52"><a href="#cb1-52" tabindex="-1"></a></span>
+<span id="cb1-53"><a href="#cb1-53" tabindex="-1"></a><span class="co"># there should be approximately zero</span></span>
+<span id="cb1-54"><a href="#cb1-54" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">expect_equal</span>(<span class="fu">calculate_wasserstein</span>(<span class="fu">gen</span>(<span class="dv">1000</span>), <span class="fu">gen</span>(<span class="dv">1000</span>)), <span class="dv">0</span>)</span>
+<span id="cb1-55"><a href="#cb1-55" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">expect_equal</span>(<span class="fu">calculate_wasserstein</span>(<span class="fu">gen</span>(<span class="dv">1000</span>), <span class="fu">gen</span>(<span class="dv">100</span>)), <span class="dv">0</span>)</span>
+<span id="cb1-56"><a href="#cb1-56" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
+<span id="cb1-57"><a href="#cb1-57" tabindex="-1"></a>  <span class="fu">calculate_wasserstein</span>(<span class="fu">gen</span>(<span class="dv">100</span>), <span class="fu">gen</span>(<span class="dv">1000</span>)),</span>
+<span id="cb1-58"><a href="#cb1-58" tabindex="-1"></a>  <span class="dv">0</span>,<span class="at">tolerance =</span> <span class="fl">0.01</span></span>
+<span id="cb1-59"><a href="#cb1-59" tabindex="-1"></a>)</span>
+<span id="cb1-60"><a href="#cb1-60" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
+<span id="cb1-61"><a href="#cb1-61" tabindex="-1"></a>  <span class="fu">calculate_wasserstein</span>(<span class="fu">gen</span>(<span class="dv">200</span>), <span class="fu">gen</span>(<span class="dv">1000</span>)),</span>
+<span id="cb1-62"><a href="#cb1-62" tabindex="-1"></a>  <span class="dv">0</span>,<span class="at">tolerance =</span> <span class="fl">0.01</span></span>
+<span id="cb1-63"><a href="#cb1-63" tabindex="-1"></a>)</span>
+<span id="cb1-64"><a href="#cb1-64" tabindex="-1"></a></span>
+<span id="cb1-65"><a href="#cb1-65" tabindex="-1"></a><span class="co"># these should be approximately equal:</span></span>
+<span id="cb1-66"><a href="#cb1-66" tabindex="-1"></a><span class="at">tmp2 =</span> <span class="fu">max</span>(<span class="fu">abs</span>(<span class="fu">diff</span>(<span class="fu">c</span>(</span>
+<span id="cb1-67"><a href="#cb1-67" tabindex="-1"></a><span class="fu">calculate_wasserstein</span>(<span class="fu">gen</span>(<span class="dv">100</span>,<span class="fl">0.1</span>), <span class="fu">gen</span>(<span class="dv">1000</span>)),</span>
+<span id="cb1-68"><a href="#cb1-68" tabindex="-1"></a><span class="fu">calculate_wasserstein</span>(<span class="fu">gen</span>(<span class="dv">200</span>,<span class="fl">0.1</span>), <span class="fu">gen</span>(<span class="dv">1000</span>)),</span>
+<span id="cb1-69"><a href="#cb1-69" tabindex="-1"></a><span class="fu">calculate_wasserstein</span>(<span class="fu">gen</span>(<span class="dv">1000</span>,<span class="fl">0.1</span>), <span class="fu">gen</span>(<span class="dv">1000</span>)),</span>
+<span id="cb1-70"><a href="#cb1-70" tabindex="-1"></a><span class="fu">calculate_wasserstein</span>(<span class="fu">gen</span>(<span class="dv">1000</span>, <span class="fl">0.1</span>), <span class="fu">gen</span>(<span class="dv">200</span>)),</span>
+<span id="cb1-71"><a href="#cb1-71" tabindex="-1"></a><span class="fu">calculate_wasserstein</span>(<span class="fu">gen</span>(<span class="dv">1000</span>, <span class="fl">0.1</span>), <span class="fu">gen</span>(<span class="dv">100</span>))</span>
+<span id="cb1-72"><a href="#cb1-72" tabindex="-1"></a>))))</span>
+<span id="cb1-73"><a href="#cb1-73" tabindex="-1"></a></span>
+<span id="cb1-74"><a href="#cb1-74" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">expect_equal</span>(tmp2, <span class="dv">0</span>, <span class="at">tolerance =</span> <span class="fl">0.01</span>)</span>
+<span id="cb1-75"><a href="#cb1-75" tabindex="-1"></a></span></code></pre><p></p></div>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

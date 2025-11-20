@@ -43,8 +43,9 @@ fit = example_smc_fit()
 # fitting and is here only for example
 last_wave_metrics = utils::tail(fit$waves,1)
 converged = check(
-  last_wave_metrics$summary[[1]],
-  last_wave_metrics$per_param[[1]]
+  wave = 0,
+  summary = last_wave_metrics$summary[[1]],
+  per_param = last_wave_metrics$per_param[[1]]
 )
 
 if (isTRUE(converged)) print("Converged (permissive definition)")

@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Scoring and summarising functions • tidyabc</title>
+<title>Simulation, scoring and convergence functions • tidyabc</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -21,7 +21,7 @@
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Scoring and summarising functions">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Simulation, scoring and convergence functions">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">tidyabc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9003</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,7 +48,7 @@
 <li><a class="dropdown-item" href="../articles/abc-adaptive.html">ABC Adaptive</a></li>
     <li><a class="dropdown-item" href="../articles/abc-smc.html">ABC Sequential Monte-Carlo</a></li>
     <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distribution functions</a></li>
-    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Scoring and summarising functions</a></li>
+    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Simulation, scoring and convergence functions</a></li>
     <li><a class="dropdown-item" href="../articles/sim-example.html">Early outbreak and Generation time</a></li>
   </ul>
 </li>
@@ -71,7 +71,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.svg" class="logo" alt=""><h1>Scoring and summarising functions</h1>
+      <img src="../logo.svg" class="logo" alt=""><h1>Simulation, scoring and convergence functions</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/ai4ci/tidyabc/blob/HEAD/vignettes/scorer-functions.Rmd" class="external-link"><code>vignettes/scorer-functions.Rmd</code></a></small>
@@ -80,21 +80,490 @@
 
     
     
-<!-- TODO: Update scorer function vignette -->
-<!-- Issue URL: https://github.com/ai4ci/tidyabc/issues/19 -->
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ai4ci.github.io/tidyabc">tidyabc</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Attaching package: 'tidyabc'</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     transform, truncate</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Attaching package: 'dplyr'</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:stats':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     filter, lag</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
-<h2 id="comparing-observation-versus-simulated-data">Comparing observation versus simulated data<a class="anchor" aria-label="anchor" href="#comparing-observation-versus-simulated-data"></a>
+<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<ul>
-<li>how to specify a wasserstein etc.</li>
-</ul>
+<p>This vignette provides a detailed guide on writing the core
+user-defined functions required for Approximate Bayesian Computation
+(ABC) using <code>tidyabc</code>: the simulation function
+(<code>sim_fn</code>), the scoring function (<code>scorer_fn</code>),
+and the convergence function (<code>converged_fn</code>). Understanding
+the precise input and output structure of these functions is crucial for
+correctly implementing an ABC workflow.</p>
+<hr>
 </div>
 <div class="section level2">
-<h2 id="summary-metrics">Summary metrics<a class="anchor" aria-label="anchor" href="#summary-metrics"></a>
+<h2 id="writing-the-simulation-function-sim_fn">1. Writing the Simulation Function (<code>sim_fn</code>)<a class="anchor" aria-label="anchor" href="#writing-the-simulation-function-sim_fn"></a>
 </h2>
+<p>The simulation function (<code>sim_fn</code>) defines your generative
+model. It takes parameter values as input and returns simulated
+data.</p>
+<div class="section level3">
+<h3 id="inputs">Inputs<a class="anchor" aria-label="anchor" href="#inputs"></a>
+</h3>
 <ul>
-<li>how to go about doing an absolute difference of the mean</li>
+<li>
+<strong>Named Arguments</strong>: The <code>sim_fn</code> must
+accept named arguments corresponding to the parameters defined in your
+<code>priors_list</code>. For example, if you have
+<code>priors(norm_mean ~ unif(0, 10),norm_sd ~ unif(0, 10))</code>, your
+<code>sim_fn</code> must accept <code>norm_mean</code> and
+<code>norm_sd</code> as arguments.</li>
+<li>
+<strong><code>...</code> (Optional)</strong>: While not strictly
+required by the <code>abc_*</code> functions themselves, it’s good
+practice to allow for <code>...</code> in the function definition if you
+anticipate passing extra arguments during debugging or testing.</li>
 </ul>
+</div>
+<div class="section level3">
+<h3 id="output">Output<a class="anchor" aria-label="anchor" href="#output"></a>
+</h3>
+<ul>
+<li>
+<strong>List</strong>: The function must return a
+<strong>list</strong> containing the simulated data. The structure of
+this list is entirely up to your model. It could be a list of vectors, a
+list of data frames, or any other R object that represents the output of
+your simulation model.</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
+</h3>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Example sim_fn matching the parameters from priors defined later</span></span>
+<span><span class="va">example_sim_fn</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">norm_mean</span>, <span class="va">norm_sd</span>, <span class="va">gamma_mean</span>, <span class="va">gamma_sd</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="co"># Simulate data based on parameters</span></span>
+<span>  <span class="va">A</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="va">norm_mean</span>, <span class="va">norm_sd</span><span class="op">)</span></span>
+<span>  <span class="va">B</span> <span class="op">=</span> <span class="fu"><a href="../reference/rgamma2.html">rgamma2</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="va">gamma_mean</span>, <span class="va">gamma_sd</span><span class="op">)</span> <span class="co"># Using a custom dist from tidyabc</span></span>
+<span>  <span class="va">C</span> <span class="op">=</span> <span class="fu"><a href="../reference/rgamma2.html">rgamma2</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="va">gamma_mean</span>, <span class="va">gamma_sd</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># Return a list containing the simulated outputs</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>      data1 <span class="op">=</span> <span class="va">A</span> <span class="op">+</span> <span class="va">B</span> <span class="op">-</span> <span class="va">C</span>,  <span class="co"># Example composite output</span></span>
+<span>      data2 <span class="op">=</span> <span class="va">B</span> <span class="op">*</span> <span class="va">C</span>       <span class="co"># Example composite output</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<hr>
+</div>
+</div>
+<div class="section level2">
+<h2 id="writing-the-scoring-function-scorer_fn">2. Writing the Scoring Function (<code>scorer_fn</code>)<a class="anchor" aria-label="anchor" href="#writing-the-scoring-function-scorer_fn"></a>
+</h2>
+<p>The scoring function (<code>scorer_fn</code>) compares simulated data
+to observed data, producing a set of summary statistics (distances or
+other metrics) that quantify the “closeness” of the simulation to the
+observation.</p>
+<div class="section level3">
+<h3 id="inputs-1">Inputs<a class="anchor" aria-label="anchor" href="#inputs-1"></a>
+</h3>
+<ul>
+<li>
+<strong><code>simdata</code></strong>: This is the output list from
+your <code>sim_fn</code>.</li>
+<li>
+<strong><code>obsdata</code></strong>: This is the observed data
+provided to the <code>abc_*</code> function, which should be in the same
+format as the <code>simdata</code> list.</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="output-1">Output<a class="anchor" aria-label="anchor" href="#output-1"></a>
+</h3>
+<ul>
+<li>
+<strong>List</strong>: The function must return a
+<strong>list</strong>. Each element of this list corresponds to a
+<em>component</em> of the overall summary statistic used for comparison.
+Commonly, these components are distances (e.g., Wasserstein, RMSE)
+between corresponding parts of <code>simdata</code> and
+<code>obsdata</code>, but they could also be other metrics like summary
+moments (mean, variance).</li>
+<li>
+<strong>Naming</strong>: The names of the list elements returned by
+<code>scorer_fn</code> are crucial. They must be consistent and
+identifiable, as they are used for weighting (<code>scoreweights</code>)
+and internal processing.</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="combining-scorer-outputs-and-comparison-to-observed-scores">Combining Scorer Outputs and Comparison to Observed Scores<a class="anchor" aria-label="anchor" href="#combining-scorer-outputs-and-comparison-to-observed-scores"></a>
+</h3>
+<ol style="list-style-type: decimal">
+<li>
+<strong>Execution</strong>: The <code>scorer_fn</code> is called
+repeatedly within the ABC workflow, once for each simulation
+(<code>simdata</code>) against the fixed <code>obsdata</code>.</li>
+<li>
+<strong>Component Scores</strong>: The output of
+<code>scorer_fn(simdata, obsdata)</code> is a list of <em>component
+scores</em> (e.g.,
+<code>list(data1 = dist1, data2 = dist2)</code>).</li>
+<li>
+<strong>Combining Components</strong>: The ABC algorithm combines
+these component scores into a single <em>summary distance</em> for each
+simulation. The method is specified by the <code>distance_method</code>
+argument in <code>abc_*</code> functions:
+<ul>
+<li>
+<strong><code>"euclidean"</code> (default)</strong>: Calculates the
+weighted Euclidean distance:<br><span class="math display">\[
+d_{summary} = \sqrt{\sum_i (w_i \cdot s_i)^2}
+\]</span> where <span class="math inline">\(s_i\)</span> is the <span class="math inline">\(i\)</span>-th component score (e.g.,
+<code>dist1</code>, <code>dist2</code>) and <span class="math inline">\(w_i\)</span> is the corresponding weight from the
+<code>scoreweights</code> vector.</li>
+<li>
+<strong><code>"manhattan"</code></strong>: Calculates the weighted
+Manhattan distance:<br><span class="math display">\[
+d_{summary} = \sum_i w_i \cdot |s_i|
+\]</span>
+</li>
+<li>
+<strong><code>"mahalanobis"</code></strong>: Calculates the
+Mahalanobis distance using the covariance matrix of the component scores
+from the first wave, incorporating weights.</li>
+</ul>
+</li>
+<li>
+<strong><code>obsscores</code></strong>: This argument allows you to
+provide pre-calculated component scores for the <code>obsdata</code>
+itself (e.g., <code>list(data1 = 0, data2 = 0)</code> if comparing
+against <code>obsdata</code> using
+<code>scorer_fn(obsdata, obsdata)</code> yields zeros). This is optional
+and often inferred internally if <code>scorer_fn</code> is run on
+<code>obsdata</code> itself initially.</li>
+<li>
+<strong>Tolerance and Kernels</strong>: The final <span class="math inline">\(d_{summary}\)</span> is compared against a
+tolerance threshold (<code>epsilon</code>) using a kernel function
+(defined by the <code>kernel</code> argument) to calculate the ABC
+weights for each simulation.</li>
+</ol>
+</div>
+<div class="section level3">
+<h3 id="example-1">Example<a class="anchor" aria-label="anchor" href="#example-1"></a>
+</h3>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Example scorer_fn matching the simdata structure from example_sim_fn</span></span>
+<span><span class="va">example_scorer_fn</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">simdata</span>, <span class="va">obsdata</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="co"># Compare corresponding elements of simdata and obsdata</span></span>
+<span>  <span class="co"># Using calculate_wasserstein from tidyabc as an example distance</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    data1 <span class="op">=</span> <span class="fu"><a href="../reference/calculate_wasserstein.html">calculate_wasserstein</a></span><span class="op">(</span><span class="va">simdata</span><span class="op">$</span><span class="va">data1</span>, <span class="va">obsdata</span><span class="op">$</span><span class="va">data1</span><span class="op">)</span>,</span>
+<span>    data2 <span class="op">=</span> <span class="fu"><a href="../reference/calculate_wasserstein.html">calculate_wasserstein</a></span><span class="op">(</span><span class="va">simdata</span><span class="op">$</span><span class="va">data2</span>, <span class="va">obsdata</span><span class="op">$</span><span class="va">data2</span><span class="op">)</span></span>
+<span>  <span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="co"># Output: list(data1 = &lt;dist_val1&gt;, data2 = &lt;dist_val2&gt;)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="score-weights-scoreweights">Score Weights (<code>scoreweights</code>)<a class="anchor" aria-label="anchor" href="#score-weights-scoreweights"></a>
+</h3>
+<p>The <code>scoreweights</code> argument allows you to assign relative
+importance to each component score returned by
+<code>scorer_fn</code>.</p>
+<ul>
+<li>
+<strong>Type</strong>: A named numeric vector, where names
+correspond to the names of the list elements returned by
+<code>scorer_fn</code>.</li>
+<li>
+<strong>Purpose</strong>: If <code>data1</code> and
+<code>data2</code> have different scales or importance, you can use
+weights to balance their contribution to the summary distance. For
+instance, <code>c(data1 = 1, data2 = 2)</code> means
+<code>data2</code>’s distance contributes twice as much as
+<code>data1</code>’s distance to the final <span class="math inline">\(d_{summary}\)</span> (before applying the square
+root for Euclidean).</li>
+<li>
+<strong>Automatic Calculation</strong>: The
+<code><a href="../reference/posterior_distance_metrics.html">posterior_distance_metrics()</a></code> function can analyze results
+from a trial run (e.g., <code>abc_rejection</code>) and suggest suitable
+<code>scoreweights</code> based on the scale of the summary
+statistics.</li>
+</ul>
+</div>
+</div>
+<div class="section level2">
+<h2 id="debugging-and-parallelisation">3. Debugging and Parallelisation<a class="anchor" aria-label="anchor" href="#debugging-and-parallelisation"></a>
+</h2>
+<p>It is a good idea to run your simulation with some test parameters
+first. Similarly testing the scoring function is correctly working is a
+good idea. An end to end test harness is supplied in
+<code><a href="../reference/test_simulation.html">test_simulation()</a></code> that will run your simulation and scorer
+for a fixed set of parameters. It can be configured to drop to an
+interactive debugging browser if it encounters an error.</p>
+<p>Although testing against one set of parameters will catch major
+problems edge cases often arise during the main ABC. Each of the ABC
+functions can also drop the user to a debugging browser if an issue is
+detected. This is not compatible with parallelisation though so best to
+run a small set of simulations using
+e.g. <code><a href="../reference/abc_rejection.html">abc_rejection()</a></code>.</p>
+<p>For parallel execution the simulation and scorer functions must be
+completely self contained, and make no reference to global environment
+variables, or unqualified references to package functions. Global
+references will in general be automatically detected, and you will be
+alerted and your functions will be rewritten with common package names
+qualified so that they are self contained.</p>
+<p>If you need to use globals <code><a href="https://rdrr.io/pkg/carrier/man/crate.html" class="external-link">carrier::crate</a></code>ing your
+simulation function will achieve the same thing.</p>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="the-convergence-function-converged_fn">4. The Convergence Function (<code>converged_fn</code>)<a class="anchor" aria-label="anchor" href="#the-convergence-function-converged_fn"></a>
+</h2>
+<p>The convergence function (<code>converged_fn</code>) determines when
+the iterative ABC-SMC or ABC-Adaptive algorithm should stop. It
+evaluates the change in the posterior approximation between waves.</p>
+<div class="section level3">
+<h3 id="inputs-to-converged_fn">Inputs to <code>converged_fn</code><a class="anchor" aria-label="anchor" href="#inputs-to-converged_fn"></a>
+</h3>
+<p>The <code>converged_fn</code> is called internally by
+<code>abc_smc</code> and <code>abc_adaptive</code> at the end of each
+wave. It receives three arguments:</p>
+<ul>
+<li>
+<strong><code>wave</code></strong>: The wave number as an
+integer</li>
+<li>
+<strong><code>summary</code></strong>: A <strong>single-row data
+frame</strong> containing summary metrics aggregated across <em>all
+parameters</em> for the <em>current wave</em>. Common columns include:
+<ul>
+<li>
+<code>abs_distance</code>: The absolute tolerance threshold
+(<code>epsilon</code>) for the current wave.</li>
+<li>
+<code>abs_distance_redn</code>: The absolute reduction in
+<code>epsilon</code> compared to the previous wave
+(<code>epsilon_{prev} - epsilon_{current}</code>).</li>
+<li>
+<code>rel_distance_redn</code>: The relative reduction in
+<code>epsilon</code> compared to the previous wave
+(<code>(epsilon_{prev} - epsilon_{current}) / epsilon_{prev}</code>).</li>
+<li>
+<code>ESS</code>: The Effective Sample Size of the current wave’s
+particle set.</li>
+<li>Other aggregated metrics might be present depending on the
+algorithm’s implementation.</li>
+</ul>
+</li>
+<li>
+<strong><code>per_param</code></strong>: A <strong>single-row data
+frame</strong> containing metrics calculated <em>for each individual
+parameter</em> in the current wave, compared to the previous wave.
+Common columns include:
+<ul>
+<li>
+<code>param</code>: The name of the parameter (e.g.,
+“norm_mean”).</li>
+<li>
+<code>IQR_95_redn</code>: The reduction in the 95% credible interval
+(IQR) range (<code>q0.975 - q0.025</code>) for this parameter compared
+to the previous wave (<code>IQR_{prev} - IQR_{current}</code>).</li>
+<li>
+<code>abs_variance_redn</code>: The absolute reduction in the
+posterior variance for this parameter compared to the previous wave
+(<code>var_{prev} - var_{current}</code>).</li>
+<li>
+<code>rel_mean_change</code>: The relative change in the posterior
+mean for this parameter compared to the previous wave
+(<code>|mean_{current} - mean_{prev}| / |mean_{prev}|</code>).</li>
+<li>This data frame has one row for each parameter being estimated.</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="output-of-converged_fn">Output of <code>converged_fn</code><a class="anchor" aria-label="anchor" href="#output-of-converged_fn"></a>
+</h3>
+<ul>
+<li>
+<strong>Logical</strong>: The function must return a single
+<code>TRUE</code> or <code>FALSE</code>.
+<ul>
+<li>
+<code>TRUE</code>: Signals that the algorithm has converged, and the
+iterative process stops.</li>
+<li>
+<code>FALSE</code>: Signals that the algorithm should continue to
+the next wave.</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="the-default_termination_fn">The <code>default_termination_fn</code><a class="anchor" aria-label="anchor" href="#the-default_termination_fn"></a>
+</h3>
+<p><code>tidyabc</code> provides a <code><a href="../reference/default_termination_fn.html">default_termination_fn()</a></code>
+which implements a common convergence strategy:</p>
+<ul>
+<li>It checks if the <code>rel_mean_change</code> for <em>all</em>
+parameters is below a specified <code>stability</code> threshold.</li>
+<li>
+<em>AND</em> it checks if the <code>IQR_95_redn</code> for
+<em>all</em> parameters is below a specified <code>confidence</code>
+threshold.</li>
+<li>If both conditions are met, it returns <code>TRUE</code>, indicating
+convergence.</li>
+</ul>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Example of using default_termination_fn with custom thresholds</span></span>
+<span><span class="va">default_converged_fn</span> <span class="op">=</span> <span class="fu"><a href="../reference/default_termination_fn.html">default_termination_fn</a></span><span class="op">(</span>stability <span class="op">=</span> <span class="fl">0.01</span>, confidence <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span>
+<span><span class="co"># This means: converge if mean changes are &lt; 1% and 95% CI shrinks by &lt; 0.1 units for all params.</span></span>
+<span></span>
+<span><span class="co"># If you have 2 parameters `norm_mean` and `norm_sd` you can specify different</span></span>
+<span><span class="co"># convergence criteria by nameing the stability and confidence inputs:</span></span>
+<span></span>
+<span><span class="va">default_converged_fn2</span> <span class="op">=</span> <span class="fu"><a href="../reference/default_termination_fn.html">default_termination_fn</a></span><span class="op">(</span></span>
+<span>  stability <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>norm_mean <span class="op">=</span> <span class="fl">0.01</span>, norm_sd <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span>,</span>
+<span>  confidence <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>norm_mean <span class="op">=</span> <span class="fl">0.01</span>, norm_sd <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># this would accept more variation in the `norm_sd` estimate compared to that</span></span>
+<span><span class="co"># of the `norm_mean`</span></span></code></pre></div>
+<hr>
+</div>
+</div>
+<div class="section level2">
+<h2 id="writing-a-custom-convergence-function">5. Writing a Custom Convergence Function<a class="anchor" aria-label="anchor" href="#writing-a-custom-convergence-function"></a>
+</h2>
+<p>Writing a custom convergence function allows you to tailor the
+stopping criteria to your specific needs.</p>
+<div class="section level3">
+<h3 id="structure">Structure<a class="anchor" aria-label="anchor" href="#structure"></a>
+</h3>
+<p>A custom convergence function must adhere to the input signature:
+<code>function(wave, summary, per_param)</code>. It processes the data
+frames provided and returns a single <code>TRUE</code> or
+<code>FALSE</code>.</p>
+</div>
+<div class="section level3">
+<h3 id="example-convergence-based-on-ess-and-distance-reduction">Example: Convergence Based on ESS and Distance Reduction<a class="anchor" aria-label="anchor" href="#example-convergence-based-on-ess-and-distance-reduction"></a>
+</h3>
+<p>This example defines convergence as achieving a high Effective Sample
+Size (ESS) <em>and</em> a minimal reduction in the absolute distance
+threshold.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Define a custom convergence function</span></span>
+<span><span class="va">custom_converged_fn</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">wave</span>, <span class="va">summary</span>, <span class="va">per_param</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="co"># Extract values from the summary data frame (it's a single row)</span></span>
+<span>  <span class="va">current_ess</span> <span class="op">=</span> <span class="va">summary</span><span class="op">$</span><span class="va">ESS</span></span>
+<span>  <span class="va">abs_dist_redn</span> <span class="op">=</span> <span class="va">summary</span><span class="op">$</span><span class="va">abs_distance_redn</span> <span class="co"># Absolute reduction in epsilon</span></span>
+<span></span>
+<span>  <span class="co"># Define criteria</span></span>
+<span>  <span class="va">min_ess_threshold</span> <span class="op">=</span> <span class="fl">500</span></span>
+<span>  <span class="va">max_dist_reduction_threshold</span> <span class="op">=</span> <span class="fl">0.001</span> <span class="co"># Stop if epsilon isn't reducing much</span></span>
+<span></span>
+<span>  <span class="co"># Check conditions</span></span>
+<span>  <span class="va">ess_condition</span> <span class="op">=</span> <span class="va">current_ess</span> <span class="op">&gt;=</span> <span class="va">min_ess_threshold</span></span>
+<span>  <span class="va">dist_condition</span> <span class="op">=</span> <span class="va">abs_dist_redn</span> <span class="op">&lt;=</span> <span class="va">max_dist_reduction_threshold</span></span>
+<span></span>
+<span>  <span class="co"># Return TRUE only if BOTH conditions are met</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">ess_condition</span> <span class="op">&amp;&amp;</span> <span class="va">dist_condition</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Example usage (conceptual - requires obsdata, priors, etc. defined)</span></span>
+<span><span class="co"># smc_result = abc_smc(</span></span>
+<span><span class="co">#   obsdata = test_obsdata,</span></span>
+<span><span class="co">#   priors_list = test_priors,</span></span>
+<span><span class="co">#   sim_fn = example_sim_fn,</span></span>
+<span><span class="co">#   scorer_fn = example_scorer_fn,</span></span>
+<span><span class="co">#   n_sims = 1000,</span></span>
+<span><span class="co">#   acceptance_rate = 0.5,</span></span>
+<span><span class="co">#   converged_fn = custom_converged_fn # Use the custom function</span></span>
+<span><span class="co"># )</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="example-convergence-based-on-parameter-variance">Example: Convergence Based on Parameter Variance<a class="anchor" aria-label="anchor" href="#example-convergence-based-on-parameter-variance"></a>
+</h3>
+<p>This example focuses on the stability of parameter uncertainty,
+converging when the absolute variance reduction for <em>all</em>
+parameters is small.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Define a custom convergence function based on variance reduction</span></span>
+<span><span class="va">custom_converged_fn_variance</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">wave</span>, <span class="va">summary</span>, <span class="va">per_param</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="co"># Extract the 'abs_variance_redn' column from the per_param data frame</span></span>
+<span>  <span class="va">abs_variance_reductions</span> <span class="op">=</span> <span class="va">per_param</span><span class="op">$</span><span class="va">abs_variance_redn</span></span>
+<span></span>
+<span>  <span class="co"># Define a threshold for variance reduction</span></span>
+<span>  <span class="va">variance_reduction_threshold</span> <span class="op">=</span> <span class="fl">0.0001</span></span>
+<span></span>
+<span>  <span class="co"># Check if ALL absolute variance reductions are below the threshold</span></span>
+<span>  <span class="va">all_stable</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">abs_variance_reductions</span> <span class="op">&lt;</span> <span class="va">variance_reduction_threshold</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">all_stable</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Example usage (conceptual)</span></span>
+<span><span class="co"># smc_result = abc_smc(</span></span>
+<span><span class="co">#   obsdata = test_obsdata,</span></span>
+<span><span class="co">#   priors_list = test_priors,</span></span>
+<span><span class="co">#   sim_fn = example_sim_fn,</span></span>
+<span><span class="co">#   scorer_fn = example_scorer_fn,</span></span>
+<span><span class="co">#   n_sims = 1000,</span></span>
+<span><span class="co">#   acceptance_rate = 0.5,</span></span>
+<span><span class="co">#   converged_fn = custom_converged_fn_variance</span></span>
+<span><span class="co"># )</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="key-considerations-for-custom-functions">Key Considerations for Custom Functions<a class="anchor" aria-label="anchor" href="#key-considerations-for-custom-functions"></a>
+</h3>
+<ul>
+<li>
+<strong>Data Frame Access</strong>: Remember that
+<code>summary</code> and <code>per_param</code> are data frames. Access
+columns using <code>$</code> (e.g., <code>summary$ESS</code>,
+<code>per_param$rel_mean_change</code>).</li>
+<li>
+<strong>Aggregation</strong>: The <code>per_param</code> data frame
+has one row per parameter. Use functions like <code><a href="https://rdrr.io/r/base/all.html" class="external-link">all()</a></code>,
+<code><a href="https://rdrr.io/r/base/any.html" class="external-link">any()</a></code>, or <code><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max()</a></code> on the relevant column to
+combine information across parameters for a single logical output.</li>
+<li>
+<strong>Robustness</strong>: Consider edge cases, like what happens
+in the very first wave if previous values are not available (though the
+algorithm typically handles initialization).</li>
+<li>
+<strong>Monitoring</strong>: Convergence criteria are crucial for
+computational efficiency and result quality. Choose metrics that reflect
+the stability you require for your specific inference problem.</li>
+<li>
+<strong><code><a href="https://rdrr.io/r/base/browser.html" class="external-link">browser()</a></code></strong>: You can get a better feel
+for the statistics available by running an interactive browser from
+within a convergence function while testing. —</li>
+</ul>
+</div>
+</div>
+<div class="section level2">
+<h2 id="conclusion">Conclusion<a class="anchor" aria-label="anchor" href="#conclusion"></a>
+</h2>
+<p>Understanding the precise structure and purpose of
+<code>sim_fn</code>, <code>scorer_fn</code>, and
+<code>converged_fn</code> is important for effectively using
+<code>tidyabc</code>. The simulation function generates data, the
+scoring function quantifies similarity, and the convergence function
+determines when the iterative process halts. By carefully specifying
+these functions, you can tailor the ABC workflow to your model and
+inference goals.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

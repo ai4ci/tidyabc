@@ -4,7 +4,7 @@
 \alias{knit_print.link_fns}
 \title{Print a \code{link_fns} S3 object in an Rd document}
 \usage{
-\method{knit_print}{link_fns}(x, ...)
+knit_print.link_fns(x, ...)
 }
 \arguments{
 \item{x}{a \code{link_fns} S3 object}

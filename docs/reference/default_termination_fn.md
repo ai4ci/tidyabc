@@ -47,17 +47,19 @@ check = default_termination_fn(0.05, 1.0)
 
 fit = example_smc_fit()
 #> ABC-SMC
-#> SMC waves:  ■■■■■■■■■                         25% | wave 2 ETA:  4s
-#> SMC waves:  ■■■■■■■■■■■■■■■■■                 52% | wave 4 ETA:  2s
-#> Converged on wave: 8
-#> SMC waves:  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■      89% | wave 7 ETA:  1s
+#> SMC waves:  ■■■■■■■■■                         28% | wave 2 ETA:  4s
+#> SMC waves:  ■■■■■■■■■■■■■■■■■■                55% | wave 3 ETA:  2s
+#> SMC waves:  ■■■■■■■■■■■■■■■■■■■■■             68% | wave 4 ETA:  2s
+#> SMC waves:  ■■■■■■■■■■■■■■■■■■■■■■■■■         81% | wave 5 ETA:  1s
+#> SMC waves:  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■     94% | wave 6 ETA:  0s
 
 # This is performed as an integral part of the SMC and adaptive
 # fitting and is here only for example
 last_wave_metrics = utils::tail(fit$waves,1)
 converged = check(
-  last_wave_metrics$summary[[1]],
-  last_wave_metrics$per_param[[1]]
+  wave = 0,
+  summary = last_wave_metrics$summary[[1]],
+  per_param = last_wave_metrics$per_param[[1]]
 )
 
 if (isTRUE(converged)) print("Converged (permissive definition)")

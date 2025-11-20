@@ -27,7 +27,7 @@ simulations may be attempted with a high acceptance rate, over multiple waves.">
 
     <a class="navbar-brand me-2" href="../index.html">tidyabc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9003</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,7 +42,7 @@ simulations may be attempted with a high acceptance rate, over multiple waves.">
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/abc-adaptive.html">ABC Adaptive</a></li>
     <li><a class="dropdown-item" href="../articles/abc-smc.html">ABC Sequential Monte-Carlo</a></li>
     <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distribution functions</a></li>
-    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Scoring and summarising functions</a></li>
+    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Simulation, scoring and convergence functions</a></li>
     <li><a class="dropdown-item" href="../articles/sim-example.html">Early outbreak and Generation time</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -289,21 +289,22 @@ parameter estimates or effective sample size (ESS).</p></li>
 <span class="r-in"><span>  allow_continue <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ABC-SMC</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> SMC waves:  <span style="color: #00BB00;">■■■■■■■                         </span>  20% | wave 1 ETA:  4s</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■              </span>  56% | wave 4 ETA:  2s</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Converged on wave: 8</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■■■■■■■   </span>  94% | wave 7 ETA:  0s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■                      </span>  29% | wave 2 ETA:  4s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■                 </span>  47% | wave 3 ETA:  3s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■            </span>  62% | wave 4 ETA:  2s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■■        </span>  77% | wave 5 ETA:  1s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■■■■■■    </span>  90% | wave 6 ETA:  0s</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ABC SMC fit: 8 waves - (converged)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ABC SMC fit: 7 waves - (not yet converged)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Parameter estimates:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 4</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Groups:   param [3]</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   param mean_sd       median_95_CrI           ESS</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mean  4.978 ± 0.034 4.979 [4.876 — 5.072]  248.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> sd1   1.983 ± 0.067 1.982 [1.805 — 2.164]  248.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> sd2   0.989 ± 0.044 0.989 [0.878 — 1.106]  248.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mean  4.977 ± 0.034 4.976 [4.893 — 5.060]  267.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> sd1   1.980 ± 0.093 1.975 [1.754 — 2.248]  267.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> sd2   0.992 ± 0.042 0.990 [0.888 — 1.102]  267.</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

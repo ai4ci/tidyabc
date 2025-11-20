@@ -189,7 +189,7 @@ the resulting `empirical_data` fit is re-interpolated using
       plot(e6)
       testthat::expect_equal(
         format(e6),
-        "empirical; Median (IQR) 6.56 [5.23 — 7.42]"
+        "empirical; Median (IQR) 6.57 [5.2 — 7.43]"
       )
     })
 

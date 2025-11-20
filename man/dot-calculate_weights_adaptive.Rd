@@ -9,7 +9,8 @@
   priors_list,
   epsilon,
   proposal_list,
-  kernel
+  kernel,
+  use_proposal_correlation
 )
 }
 \arguments{
@@ -37,6 +38,10 @@ simulation and associated parameters should be rejected or held for the
 next round. All kernels except \code{gaussian} have a hard cut-off outside of
 which the probability of acceptance of a particle is zero. Use of
 \code{gaussian} kernels can result in poor convergence.}
+
+\item{use_proposal_correlation}{When calculating the weight of a particle the
+proposal correlation structure is available, to help determine how unusual
+or otherwise a particle is.}
 }
 \value{
 the \code{sim_df} with an \code{abc_weight} column

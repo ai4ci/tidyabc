@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">tidyabc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9003</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -28,7 +28,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/abc-adaptive.html">ABC Adaptive</a></li>
     <li><a class="dropdown-item" href="../articles/abc-smc.html">ABC Sequential Monte-Carlo</a></li>
     <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distribution functions</a></li>
-    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Scoring and summarising functions</a></li>
+    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Simulation, scoring and convergence functions</a></li>
     <li><a class="dropdown-item" href="../articles/sim-example.html">Early outbreak and Generation time</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -99,14 +99,14 @@ RHS of the formulae will resolve to a boolean value.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Columns: 9</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Groups: param [3]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ param     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "mean"<span style="color: #949494;">, </span>"sd1"<span style="color: #949494;">, </span>"sd2"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $ mean      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 4.964376<span style="color: #949494;">, </span>2.123894<span style="color: #949494;">, </span>1.139277</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $ sd        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 0.1292487<span style="color: #949494;">, </span>0.2332786<span style="color: #949494;">, </span>0.1733625</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ mean      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 4.978633<span style="color: #949494;">, </span>2.034361<span style="color: #949494;">, </span>1.002120</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ sd        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 0.02031865<span style="color: #949494;">, </span>0.04537941<span style="color: #949494;">, </span>0.02803447</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ quantiles <span style="color: #949494; font-style: italic;">&lt;list&gt;</span> [&lt;tbl_df[9 x 2]&gt;]<span style="color: #949494;">, </span>[&lt;tbl_df[9 x 2]&gt;]<span style="color: #949494;">, </span>[&lt;tbl_df[9 x 2]&gt;]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $ q.0.025   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 4.7174323<span style="color: #949494;">, </span>1.5218539<span style="color: #949494;">, </span>0.7531816</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $ q.0.5     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 4.957561<span style="color: #949494;">, </span>2.077933<span style="color: #949494;">, </span>1.133596</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $ q.0.975   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 5.260754<span style="color: #949494;">, </span>2.904667<span style="color: #949494;">, </span>1.531218</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $ density   <span style="color: #949494; font-style: italic;">&lt;distfn[]&gt;</span> [mean; Median (IQR) 4.96 [4.85 — 5.07]]<span style="color: #949494;">, </span>[sd1; Median (IQR) …</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $ ESS       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 1518.651<span style="color: #949494;">, </span>1518.651<span style="color: #949494;">, </span>1518.651</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ q.0.025   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 4.9165642<span style="color: #949494;">, </span>1.8542974<span style="color: #949494;">, </span>0.8985403</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ q.0.5     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 4.981765<span style="color: #949494;">, </span>2.029963<span style="color: #949494;">, </span>0.999772</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ q.0.975   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 5.041471<span style="color: #949494;">, </span>2.174031<span style="color: #949494;">, </span>1.076823</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ density   <span style="color: #949494; font-style: italic;">&lt;distfn[]&gt;</span> [mean; Median (IQR) 4.98 [4.97 — 4.99]]<span style="color: #949494;">, </span>[sd1; Median (IQR) …</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ ESS       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 348.9641<span style="color: #949494;">, </span>348.9641<span style="color: #949494;">, </span>348.9641</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

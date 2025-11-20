@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">tidyabc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9003</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -28,7 +28,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/abc-adaptive.html">ABC Adaptive</a></li>
     <li><a class="dropdown-item" href="../articles/abc-smc.html">ABC Sequential Monte-Carlo</a></li>
     <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distribution functions</a></li>
-    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Scoring and summarising functions</a></li>
+    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Simulation, scoring and convergence functions</a></li>
     <li><a class="dropdown-item" href="../articles/sim-example.html">Early outbreak and Generation time</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -87,12 +87,12 @@ of <code>prob</code> or from a character vector in <code>factor</code>.</p>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu">rcategorical</span><span class="op">(</span><span class="fl">1000</span>,<span class="va">prob</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   one seven   two </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    91   692   217 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   105   689   206 </span>
 <span class="r-in"><span><span class="fu">rcategorical</span><span class="op">(</span><span class="fl">10</span>,<span class="va">prob</span>,factor<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] seven seven seven seven seven seven seven seven seven two  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] seven seven two   two   seven seven seven two   seven seven</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Levels: one two seven</span>
 <span class="r-in"><span><span class="fu">rcategorical</span><span class="op">(</span><span class="fl">10</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">26</span><span class="op">)</span>,factor<span class="op">=</span><span class="va">letters</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] d b x j h p g a o n</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] c z f x b o q k c s</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Levels: a b c d e f g h i j k l m n o p q r s t u v w x y z</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

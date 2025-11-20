@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">tidyabc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9003</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,7 +48,7 @@
 <li><a class="dropdown-item" href="../articles/abc-adaptive.html">ABC Adaptive</a></li>
     <li><a class="dropdown-item" href="../articles/abc-smc.html">ABC Sequential Monte-Carlo</a></li>
     <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distribution functions</a></li>
-    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Scoring and summarising functions</a></li>
+    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Simulation, scoring and convergence functions</a></li>
     <li><a class="dropdown-item" href="../articles/sim-example.html">Early outbreak and Generation time</a></li>
   </ul>
 </li>
@@ -82,6 +82,37 @@
     
 <!-- TODO: Update adaptive ABC vignette -->
 <!-- Issue URL: https://github.com/ai4ci/tidyabc/issues/16 -->
+<div class="section level2">
+<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h2>
+<p>This vignette demonstrates the <strong>Approximate Bayesian
+Computation Adaptive</strong> algorithm using <code>tidyabc</code>. Like
+ABC-SMC, ABC-Adaptive is an iterative method that refines the parameter
+estimates across multiple waves. However, it differs fundamentally in
+how it generates proposals for the next wave.</p>
+<p>Instead of using a fixed perturbation kernel around previous
+particles (as in SMC), ABC-Adaptive fits <strong>empirical proposal
+distributions</strong> to the weighted posterior sample from the
+<em>previous</em> wave. New particles for the next wave are then sampled
+directly from these fitted distributions. This approach aims to better
+capture the shape of the current posterior approximation and can
+sometimes lead to faster convergence or more efficient exploration,
+particularly when the posterior shape deviates significantly from a
+normal distribution.</p>
+<p>This example uses the same model, priors, and observed data as
+defined in the “Getting started” and “ABC Sequential Monte-Carlo”
+vignettes.</p>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="step-1-define-the-model-data-and-priors-recap">Step 1: Define the Model, Data, and Priors (Recap)<a class="anchor" aria-label="anchor" href="#step-1-define-the-model-data-and-priors-recap"></a>
+</h2>
+<p>We reuse the simulation function (<code>test_simulation_fn</code>),
+scoring function (<code>test_scorer_fn</code>), priors
+(<code>test_priors</code>), and observed data
+(<code>test_obsdata</code>) from the previous vignettes. We also run a
+small trial fit to calculate the <code>scoreweights</code> as
+recommended for SMC.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># example simulation</span></span>
@@ -100,17 +131,15 @@
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span>  </span>
-<span><span class="op">}</span></span></code></pre></div>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
+<span><span class="op">}</span></span>
+<span></span>
 <span><span class="va">test_scorer_fn</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">simdata</span>, <span class="va">obsdata</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    data1 <span class="op">=</span> <span class="fu"><a href="../reference/calculate_wasserstein.html">calculate_wasserstein</a></span><span class="op">(</span><span class="va">simdata</span><span class="op">$</span><span class="va">data1</span>, <span class="va">obsdata</span><span class="op">$</span><span class="va">data1</span><span class="op">)</span>,</span>
 <span>    data2 <span class="op">=</span> <span class="fu"><a href="../reference/calculate_wasserstein.html">calculate_wasserstein</a></span><span class="op">(</span><span class="va">simdata</span><span class="op">$</span><span class="va">data2</span>, <span class="va">obsdata</span><span class="op">$</span><span class="va">data2</span><span class="op">)</span></span>
 <span>  <span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
+<span><span class="op">}</span></span>
+<span></span>
 <span><span class="va">tmp</span> <span class="op">=</span> <span class="fu"><a href="../reference/test_simulation.html">test_simulation</a></span><span class="op">(</span></span>
 <span>  <span class="va">test_simulation_fn</span>,</span>
 <span>  <span class="va">test_scorer_fn</span>,</span>
@@ -119,21 +148,9 @@
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">truth</span> <span class="op">=</span> <span class="va">tmp</span><span class="op">$</span><span class="va">truth</span></span>
-<span><span class="va">test_obsdata</span> <span class="op">=</span> <span class="va">tmp</span><span class="op">$</span><span class="va">obsdata</span></span></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">ggplot</span><span class="op">(</span></span>
-<span>  <span class="fu">tibble</span><span class="op">(</span>data1 <span class="op">=</span> <span class="va">test_obsdata</span><span class="op">$</span><span class="va">data1</span><span class="op">)</span>, <span class="fu">aes</span><span class="op">(</span>x<span class="op">=</span><span class="va">data1</span><span class="op">)</span><span class="op">)</span><span class="op">+</span></span>
-<span>  <span class="fu">geom_histogram</span><span class="op">(</span>,binwidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">+</span></span>
-<span>  <span class="fu">xlab</span><span class="op">(</span><span class="st">"A + B - C"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="abc-adaptive_files/figure-html/unnamed-chunk-4-1.png" class="r-plt" width="700"></p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="fu">ggplot</span><span class="op">(</span><span class="fu">tibble</span><span class="op">(</span>data2 <span class="op">=</span> <span class="va">test_obsdata</span><span class="op">$</span><span class="va">data2</span><span class="op">)</span>, <span class="fu">aes</span><span class="op">(</span>x<span class="op">=</span><span class="va">data2</span><span class="op">)</span><span class="op">)</span><span class="op">+</span></span>
-<span>  <span class="fu">geom_histogram</span><span class="op">(</span>,binwidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">+</span></span>
-<span>  <span class="fu">xlab</span><span class="op">(</span><span class="st">"B x C"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="abc-adaptive_files/figure-html/unnamed-chunk-4-2.png" class="r-plt" width="700"></p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">test_priors</span> <span class="op">=</span> <span class="fu"><a href="../reference/priors.html">priors</a></span><span class="op">(</span></span>
+<span><span class="va">test_obsdata</span> <span class="op">=</span> <span class="va">tmp</span><span class="op">$</span><span class="va">obsdata</span></span>
+<span></span>
+<span><span class="va">test_priors</span> <span class="op">=</span> <span class="fu"><a href="../reference/priors.html">priors</a></span><span class="op">(</span></span>
 <span>  <span class="va">norm_mean</span> <span class="op">~</span> <span class="fu">unif</span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span><span class="op">)</span>,</span>
 <span>  <span class="va">norm_sd</span> <span class="op">~</span> <span class="fu">unif</span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span><span class="op">)</span>,</span>
 <span>  <span class="va">gamma_mean</span> <span class="op">~</span> <span class="fu">unif</span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span><span class="op">)</span>,</span>
@@ -149,50 +166,213 @@
 <span><span class="co">#&gt; * gamma_mean: unif(min = 0, max = 10)</span></span>
 <span><span class="co">#&gt; * gamma_sd: unif(min = 0, max = 10)</span></span>
 <span><span class="co">#&gt; Constraints:</span></span>
-<span><span class="co">#&gt; * gamma_mean &gt; gamma_sd</span></span></code></pre></div>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt; * gamma_mean &gt; gamma_sd</span></span>
+<span></span>
+<span><span class="fu">ggplot</span><span class="op">(</span></span>
+<span>  <span class="fu">tibble</span><span class="op">(</span>data1 <span class="op">=</span> <span class="va">test_obsdata</span><span class="op">$</span><span class="va">data1</span><span class="op">)</span>, <span class="fu">aes</span><span class="op">(</span>x<span class="op">=</span><span class="va">data1</span><span class="op">)</span><span class="op">)</span><span class="op">+</span></span>
+<span>  <span class="fu">geom_histogram</span><span class="op">(</span>bins<span class="op">=</span><span class="fl">50</span>, fill<span class="op">=</span><span class="st">"steelblue"</span>, color<span class="op">=</span><span class="st">"white"</span><span class="op">)</span><span class="op">+</span></span>
+<span>  <span class="fu">xlab</span><span class="op">(</span><span class="st">"A + B - C"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="abc-adaptive_files/figure-html/unnamed-chunk-1-1.png" class="r-plt" width="700"></p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="va">adaptive_fit</span> <span class="op">=</span> <span class="fu"><a href="../reference/abc_adaptive.html">abc_adaptive</a></span><span class="op">(</span></span>
+<span><span class="fu">ggplot</span><span class="op">(</span><span class="fu">tibble</span><span class="op">(</span>data2 <span class="op">=</span> <span class="va">test_obsdata</span><span class="op">$</span><span class="va">data2</span><span class="op">)</span>, <span class="fu">aes</span><span class="op">(</span>x<span class="op">=</span><span class="va">data2</span><span class="op">)</span><span class="op">)</span><span class="op">+</span></span>
+<span>  <span class="fu">geom_histogram</span><span class="op">(</span>bins<span class="op">=</span><span class="fl">50</span>, fill<span class="op">=</span><span class="st">"coral"</span>, color<span class="op">=</span><span class="st">"white"</span><span class="op">)</span><span class="op">+</span></span>
+<span>  <span class="fu">xlab</span><span class="op">(</span><span class="st">"B × C"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="abc-adaptive_files/figure-html/unnamed-chunk-1-2.png" class="r-plt" width="700"></p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="va">trial_fit</span> <span class="op">=</span> <span class="fu"><a href="../reference/abc_rejection.html">abc_rejection</a></span><span class="op">(</span></span>
 <span>  obsdata <span class="op">=</span> <span class="va">test_obsdata</span>,</span>
 <span>  priors_list <span class="op">=</span> <span class="va">test_priors</span>,</span>
 <span>  sim_fn <span class="op">=</span> <span class="va">test_simulation_fn</span>,</span>
 <span>  scorer_fn <span class="op">=</span> <span class="va">test_scorer_fn</span>,</span>
-<span>  n_sims <span class="op">=</span> <span class="fl">1000</span>,</span>
-<span>  acceptance_rate <span class="op">=</span> <span class="fl">0.5</span>,</span>
-<span>  parallel<span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  bw<span class="op">=</span><span class="fl">0.05</span></span>
+<span>  n_sims <span class="op">=</span> <span class="fl">1000</span>, <span class="co"># A smaller number for the trial run</span></span>
+<span>  acceptance_rate <span class="op">=</span> <span class="fl">0.5</span> <span class="co"># A high acceptance rate for the trial to get diverse samples</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; ABC rejection, 1 wave.</span></span>
+<span></span>
+<span><span class="co"># Calculate metrics, including recommended score weights</span></span>
+<span><span class="va">metrics</span> <span class="op">=</span> <span class="fu"><a href="../reference/posterior_distance_metrics.html">posterior_distance_metrics</a></span><span class="op">(</span><span class="va">trial_fit</span><span class="op">)</span></span>
+<span><span class="va">test_scorewt</span> <span class="op">=</span> <span class="va">metrics</span><span class="op">$</span><span class="va">scoreweights</span> <span class="co"># Extract the recommended weights</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="step-2-run-abc-adaptive">Step 2: Run ABC-Adaptive<a class="anchor" aria-label="anchor" href="#step-2-run-abc-adaptive"></a>
+</h2>
+<p>Now we execute the ABC-Adaptive algorithm. The key difference lies in
+how new proposals are generated between waves.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">adaptive_fit</span> <span class="op">=</span> <span class="fu"><a href="../reference/abc_adaptive.html">abc_adaptive</a></span><span class="op">(</span></span>
+<span>  obsdata <span class="op">=</span> <span class="va">test_obsdata</span>,</span>
+<span>  priors_list <span class="op">=</span> <span class="va">test_priors</span>,</span>
+<span>  sim_fn <span class="op">=</span> <span class="va">test_simulation_fn</span>,</span>
+<span>  scorer_fn <span class="op">=</span> <span class="va">test_scorer_fn</span>,</span>
+<span>  n_sims <span class="op">=</span> <span class="fl">1000</span>,              </span>
+<span>  <span class="co"># Number of simulations per wave</span></span>
+<span>  acceptance_rate <span class="op">=</span> <span class="fl">0.5</span>,      </span>
+<span>  <span class="co"># Proportion of particles accepted each wave</span></span>
+<span>  scoreweights <span class="op">=</span> <span class="va">test_scorewt</span>, </span>
+<span>  <span class="co"># Use the weights calculated from the trial fit</span></span>
+<span>  parallel <span class="op">=</span> <span class="cn">FALSE</span>,           </span>
+<span>  <span class="co"># Disable parallel processing for vignette</span></span>
+<span>  knots <span class="op">=</span> <span class="fl">7</span>,                 </span>
+<span>  <span class="co"># Number of knots for fitting the empirical CDF (controls smoothness/complexity)</span></span>
+<span>  bw <span class="op">=</span> <span class="fl">0.1</span>,                  </span>
+<span>  <span class="co"># Bandwidth for the kernel used in empirical fitting (controls smoothness)</span></span>
+<span>  widen_by <span class="op">=</span> <span class="fl">1</span>               </span>
+<span>  <span class="co"># Factor to widen the proposal distribution if ESS is too low (default is 1, no widening)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; ABC-Adaptive</span></span>
-<span><span class="co">#&gt; Adaptive waves:  <span style="color: #00BB00;">■                               </span>   0% | wave 2 ETA:  6m</span></span>
-<span><span class="co">#&gt; Adaptive waves:  <span style="color: #00BB00;">■                               </span>   2% | wave 6 ETA:  5m</span></span>
-<span><span class="co">#&gt; Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   3% | wave 10 ETA:  5m</span></span>
-<span><span class="co">#&gt; Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   4% | wave 14 ETA:  5m</span></span>
-<span><span class="co">#&gt; Converged on wave: 15</span></span>
+<span><span class="co">#&gt; Adaptive waves:  <span style="color: #00BB00;">■                               </span>   1% | wave 2 ETA:  5m</span></span>
+<span><span class="co">#&gt; Adaptive waves:  <span style="color: #00BB00;">■                               </span>   1% | wave 5 ETA:  5m</span></span>
+<span><span class="co">#&gt; Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   2% | wave 9 ETA:  5m</span></span>
+<span><span class="co">#&gt; Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   3% | wave 13 ETA:  5m</span></span>
+<span><span class="co">#&gt; Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   4% | wave 16 ETA:  5m</span></span>
+<span><span class="co">#&gt; Converged on wave: 17</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">adaptive_fit</span><span class="op">)</span></span>
-<span><span class="co">#&gt; ABC adaptive fit: 15 waves - (converged)</span></span>
+<span><span class="co">#&gt; ABC adaptive fit: 17 waves - (converged)</span></span>
 <span><span class="co">#&gt; Parameter estimates:</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 4</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Groups:   param [4]</span></span></span>
 <span><span class="co">#&gt;   param      mean_sd       median_95_CrI           ESS</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> gamma_mean 5.971 ± 0.064 5.974 [5.777 — 6.144] <span style="text-decoration: underline;">1</span>798.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> gamma_sd   1.956 ± 0.103 1.954 [1.680 — 2.249] <span style="text-decoration: underline;">1</span>798.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> norm_mean  3.987 ± 0.159 3.985 [3.535 — 4.420] <span style="text-decoration: underline;">1</span>798.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> norm_sd    2.139 ± 0.353 2.182 [0.879 — 2.845] <span style="text-decoration: underline;">1</span>798.</span></span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">adaptive_fit</span>, truth<span class="op">=</span><span class="va">truth</span><span class="op">)</span></span></code></pre></div>
-<p><img src="abc-adaptive_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" width="700"></p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> gamma_mean 5.963 ± 0.073 5.962 [5.760 — 6.174] <span style="text-decoration: underline;">3</span>014.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> gamma_sd   1.952 ± 0.115 1.956 [1.642 — 2.290] <span style="text-decoration: underline;">3</span>014.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> norm_mean  3.982 ± 0.172 3.980 [3.461 — 4.548] <span style="text-decoration: underline;">3</span>014.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> norm_sd    2.074 ± 0.417 2.124 [0.628 — 3.034] <span style="text-decoration: underline;">3</span>014.</span></span></code></pre></div>
+<ul>
+<li><p><strong><code>n_sims</code>, <code>acceptance_rate</code>,
+<code>scoreweights</code></strong>: These function similarly to
+SMC.</p></li>
+<li><p><strong><code>knots</code></strong>: This parameter controls the
+complexity of the empirical distribution fitted to each parameter’s
+posterior sample in each wave. A higher number of knots allows the
+fitted distribution to capture more detail and potentially sharper
+features, but requires more data (simulations) to estimate reliably and
+is computationally more expensive. A lower number provides a smoother,
+more regularized fit. The default (often around 20-30) is often a good
+starting point, but 7 is used here for illustration.</p></li>
+<li><p><strong><code>bw</code> (bandwidth)</strong>: This parameter
+affects the smoothing kernel used during the empirical CDF fitting
+(within the <code>empirical_data</code> or <code>empirical_cdf</code>
+functions). A smaller <code>bw</code> leads to a less smooth,
+potentially more detailed fit (closer to the sample histogram), while a
+larger <code>bw</code> produces a smoother, more regularized fit. It
+influences the trade-off between fitting the sample closely and avoiding
+overfitting.</p></li>
+<li><p><strong><code>widen_by</code></strong>: ABC-Adaptive includes a
+mechanism to prevent particle degeneracy (where the Effective Sample
+Size, ESS, drops too low). If the ESS falls below a threshold (e.g.,
+200), the algorithm increases the acceptance rate (loosens the tolerance
+<code>epsilon</code>) and applies the <strong><code><a href="../reference/widen.html">widen()</a></code>
+function</strong> to the empirical proposal distribution fitted from the
+previous wave’s particles. The <code>widen_by</code> parameter controls
+the <strong><code>scale</code> factor</strong> passed to the
+<code><a href="../reference/widen.html">widen()</a></code> function, determining how much the dispersion of
+the proposal distribution is increased. A value of 1 (the default) means
+no widening is applied via the <code><a href="../reference/widen.html">widen()</a></code> function; the
+adjustment happens only through the acceptance rate. Values greater than
+1 will actively increase the spread of the proposal distribution based
+on the logit-space scaling transformation described previously
+(specifically,
+<code>expit((logit(qx) - logit(qmedian)) * scale + logit(qmedian))</code>
+where <code>scale = widen_by</code>).</p></li>
+<li><p>The <code>summary</code> output shows the final posterior
+statistics aggregated across all waves.</p></li>
+</ul>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="step-3-visualize-the-results">Step 3: Visualize the Results<a class="anchor" aria-label="anchor" href="#step-3-visualize-the-results"></a>
+</h2>
+<p>The standard posterior plot shows the marginal distributions for each
+parameter.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">adaptive_fit</span>, truth <span class="op">=</span> <span class="va">truth</span><span class="op">)</span></span></code></pre></div>
+<p><img src="abc-adaptive_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" width="700"></p>
+<p>Compared to the SMC fit (using the same model and data), you might
+observe differences in the shape of the posterior densities. Because the
+empirical fitting process often respects the bounds of the prior
+(especially when the prior is used as a link function, as mentioned in
+the <code>posterior_fit_empirical</code> documentation), the resulting
+posteriors can appear “sharper” or more constrained near the prior
+boundaries, especially if the true posterior is close to these limits.
+This is in contrast to SMC, where the Gaussian perturbation kernel can
+sometimes produce smoother, more Gaussian-like tails.</p>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="step-4-diagnose-convergence">Step 4: Diagnose Convergence<a class="anchor" aria-label="anchor" href="#step-4-diagnose-convergence"></a>
+</h2>
+<p>The <code><a href="../reference/plot_convergence.html">plot_convergence()</a></code> function is equally important for
+the Adaptive algorithm.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_convergence.html">plot_convergence</a></span><span class="op">(</span><span class="va">adaptive_fit</span><span class="op">)</span></span></code></pre></div>
-<p><img src="abc-adaptive_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" width="700"></p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_evolution.html">plot_evolution</a></span><span class="op">(</span><span class="va">adaptive_fit</span>,<span class="va">truth</span><span class="op">)</span></span></code></pre></div>
-<p><img src="abc-adaptive_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" width="700"></p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<p><img src="abc-adaptive_files/figure-html/unnamed-chunk-4-1.png" class="r-plt" width="700"></p>
+<p>This plot displays the same metrics as for SMC across waves: 1.
+<strong><code>abs_distance</code></strong>: The tolerance
+<code>epsilon</code> should decrease over waves, ideally converging
+towards a stable value. 2. <strong><code>ESS</code> (Effective Sample
+Size)</strong>: Unlike SMC, the ESS in Adaptive might show a different
+pattern. It often rises as the proposal distribution adapts to the
+posterior, but it might not plateau as distinctly. The lack of a clear
+plateau <em>doesn’t necessarily indicate non-convergence</em>; it might
+suggest that the algorithm <em>could</em> continue to converge faster if
+run for more waves, as the proposals become increasingly efficient. The
+absence of a plateau can be due to the direct adaptation of the proposal
+distribution shape. 3. <strong><code>IQR_95_redn</code> (95% CI
+Reduction)</strong>: This should generally decline, indicating shrinking
+uncertainty in parameter estimates. 4.
+<strong><code>rel_mean_change</code> (Relative Mean Change)</strong>:
+This should also decline, indicating stabilizing central estimates.</p>
+<p>The Adaptive method often converges in fewer waves than SMC for the
+given example, as seen in the faster stabilization of distance metrics
+and parameter changes. The ESS behaviour, lacking a clear plateau,
+reflects the different proposal mechanism.</p>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="step-5-visualize-parameter-evolution">Step 5: Visualize Parameter Evolution<a class="anchor" aria-label="anchor" href="#step-5-visualize-parameter-evolution"></a>
+</h2>
+<p>The <code><a href="../reference/plot_evolution.html">plot_evolution()</a></code> function shows how the estimated
+parameter distributions change over the waves.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_evolution.html">plot_evolution</a></span><span class="op">(</span><span class="va">adaptive_fit</span>, <span class="va">truth</span><span class="op">)</span></span></code></pre></div>
+<p><img src="abc-adaptive_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" width="700"></p>
+<p>This plot visualizes how the empirical proposal distributions adapt
+and refine the posterior approximation wave by wave, potentially showing
+sharper features emerging compared to SMC, especially near prior
+boundaries.</p>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="step-6-check-parameter-correlations">Step 6: Check Parameter Correlations<a class="anchor" aria-label="anchor" href="#step-6-check-parameter-correlations"></a>
+</h2>
+<p>Finally, <code><a href="../reference/plot_correlations.html">plot_correlations()</a></code> helps understand the
+relationships between parameters in the final posterior sample.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_correlations.html">plot_correlations</a></span><span class="op">(</span><span class="va">adaptive_fit</span><span class="op">$</span><span class="va">posteriors</span>, <span class="va">truth</span><span class="op">)</span></span></code></pre></div>
-<p><img src="abc-adaptive_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" width="700"></p>
-  </main>
+<p><img src="abc-adaptive_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" width="700"></p>
+<p>This heatmap shows the correlation coefficients between pairs of
+parameters based on the final set of weighted particles, similar to the
+SMC output. The uniform shape of the priors is more apparent in the
+adaptive fit.</p>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="conclusion">Conclusion<a class="anchor" aria-label="anchor" href="#conclusion"></a>
+</h2>
+<p>ABC-Adaptive offers an alternative iterative approach to ABC
+inference by directly modelling the posterior distribution from the
+previous wave’s particles to generate new proposals. This can lead to
+different convergence characteristics and posterior shapes compared to
+SMC, particularly when dealing with posteriors constrained by prior
+bounds. Understanding the <code>knots</code> and <code>bw</code>
+parameters is key to controlling the fidelity and smoothness of the
+empirical distribution fits used internally.</p>
+</div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 

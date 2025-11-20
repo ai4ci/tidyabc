@@ -124,8 +124,8 @@ to build a quantile function and using that.
 ``` r
 # unweighted:
 wquantile(p = c(0.25,0.5,0.75), x = stats::rnorm(1000))
-#>        25%        50%        75% 
-#> -0.6395344  0.0484240  0.6580429 
+#>         25%         50%         75% 
+#> -0.67042909 -0.04040481  0.63219351 
 
 # weighted:
 wquantile(p = c(0.25,0.5,0.75), x = seq(-2,2,0.1), w = stats::dnorm(seq(-2,2,0.1)))

@@ -21,7 +21,7 @@ prior distribution limit and work better than a standard density.'><meta propert
 
     <a class="navbar-brand me-2" href="../index.html">tidyabc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9003</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,7 +36,7 @@ prior distribution limit and work better than a standard density.'><meta propert
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/abc-adaptive.html">ABC Adaptive</a></li>
     <li><a class="dropdown-item" href="../articles/abc-smc.html">ABC Sequential Monte-Carlo</a></li>
     <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distribution functions</a></li>
-    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Scoring and summarising functions</a></li>
+    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Simulation, scoring and convergence functions</a></li>
     <li><a class="dropdown-item" href="../articles/sim-example.html">Early outbreak and Generation time</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -65,7 +65,13 @@ prior distribution limit and work better than a standard density.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">posterior_fit_empirical</span><span class="op">(</span><span class="va">posteriors_df</span>, <span class="va">priors_list</span>, knots <span class="op">=</span> <span class="cn">NULL</span>, bw <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">posterior_fit_empirical</span><span class="op">(</span></span>
+<span>  <span class="va">posteriors_df</span>,</span>
+<span>  <span class="va">priors_list</span>,</span>
+<span>  knots <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  bw <span class="op">=</span> <span class="fl">0.1</span>,</span>
+<span>  widen_by <span class="op">=</span> <span class="fl">1</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -95,9 +101,22 @@ we expect the distribution to be unimodal.</p></dd>
 
 <dt id="arg-bw">bw<a class="anchor" aria-label="anchor" href="#arg-bw"></a></dt>
 <dd><p>for Adaptive ABC data distributions are smoothed before modelling
-the CDF. Over smoothing can reduce convergence, under-smoothing may result
-in noisy posterior estimates. This is in units of the ESS and defaults to
-0.1.</p></dd>
+the CDF. Over smoothing can reduce convergence rate, under-smoothing may result
+in noisy posterior estimates, and appearance of local modes.
+This is a proportion of the ESS and defaults to 0.1.</p></dd>
+
+
+<dt id="arg-widen-by">widen_by<a class="anchor" aria-label="anchor" href="#arg-widen-by"></a></dt>
+<dd><p>change the dispersion of proposal distribution in ABC
+adaptive, preserving the median. This is akin to a nonlinear,
+heteroscedastic random walk in the quantile space, and can help address
+over-fitting or local modes in the ABC adaptive waves. <code>widen_by</code> is an odds
+ratio and describes how much further from the median any given part of the
+distribution is after transformation. E.g. if the median of a distribution
+is zero, and the <code>widen_by</code> is 2 then the 0.75 quantile will move to the
+position of the 0.9 quantile. The distribution will stay within the
+support of the prior. This is by default 1.05 which allows for some
+additional variability in proposals.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -143,9 +162,9 @@ new proposals from the empirical distributions in subsequent waves.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">proposals</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Parameters: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> * mean: posterior [4.98 ± 0.03]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> * sd1: posterior [1.99 ± 0.07]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> * sd2: posterior [0.99 ± 0.03]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> * mean: posterior [4.98 ± 0.04]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> * sd1: posterior [2.00 ± 0.09]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> * sd2: posterior [1.00 ± 0.04]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Constraints:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> * mean &gt; sd2</span>
 <span class="r-in"><span></span></span>

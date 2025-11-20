@@ -12,7 +12,8 @@ proposal probability distribution.
   priors_list,
   epsilon,
   proposal_list,
-  kernel
+  kernel,
+  use_proposal_correlation
 )
 ```
 
@@ -52,6 +53,12 @@ proposal probability distribution.
   for the next round. All kernels except `gaussian` have a hard cut-off
   outside of which the probability of acceptance of a particle is zero.
   Use of `gaussian` kernels can result in poor convergence.
+
+- use_proposal_correlation:
+
+  When calculating the weight of a particle the proposal correlation
+  structure is available, to help determine how unusual or otherwise a
+  particle is.
 
 ## Value
 

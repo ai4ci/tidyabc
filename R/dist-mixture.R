@@ -18,6 +18,7 @@
 #' @param steps the number of points that the mixture distribution is
 #'   evaluated at to construct the empirical mixture
 #' @param tail_p the support fo the tail of the distribution
+#' @param name a name for the mixture
 #' @inheritDotParams empirical_cdf smooth
 #'
 #' @returns a `dist_fn` of the mixture distribution
@@ -39,7 +40,14 @@
 #'   "mixture; Median (IQR) 0.289 [-0.886 — 1.31]"
 #' )
 #'
-mixture = function(dists, weights = 1, steps = 200, tail_p = 0.0001, ...) {
+mixture = function(
+  dists,
+  weights = 1,
+  steps = 200,
+  tail_p = 0.0001,
+  ...,
+  name = "mixture"
+) {
   stopifnot(
     is.dist_fns_list(dists)
   )
@@ -66,6 +74,7 @@ mixture = function(dists, weights = 1, steps = 200, tail_p = 0.0001, ...) {
   )
 
   xeval = unique(knots_df$x)
+  xeval = xeval[is.finite(xeval)]
   xeval = seq(min(xeval), max(xeval), length.out = steps)
 
   combined = dplyr::bind_rows(lapply(seq_along(dists), function(i) {
@@ -83,7 +92,7 @@ mixture = function(dists, weights = 1, steps = 200, tail_p = 0.0001, ...) {
   out = empirical_cdf(
     combined$x,
     combined$p,
-    name = "mixture",
+    name = name,
     ...
   )
   return(out)

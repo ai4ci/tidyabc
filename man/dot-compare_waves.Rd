@@ -4,7 +4,7 @@
 \alias{.compare_waves}
 \title{Generate comparison metrics for two sequential waves}
 \usage{
-.compare_waves(sim_df, prev_sim_df = NULL, priors_list)
+.compare_waves(sim_df, prev_sim_df = NULL, priors_list, wave)
 }
 \arguments{
 \item{sim_df}{the output of a wave of simulation including a

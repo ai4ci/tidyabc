@@ -21,7 +21,7 @@ dropping then continuing simulation may get better estimates of confidence."><me
 
     <a class="navbar-brand me-2" href="../index.html">tidyabc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9003</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,7 +36,7 @@ dropping then continuing simulation may get better estimates of confidence."><me
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/abc-adaptive.html">ABC Adaptive</a></li>
     <li><a class="dropdown-item" href="../articles/abc-smc.html">ABC Sequential Monte-Carlo</a></li>
     <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distribution functions</a></li>
-    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Scoring and summarising functions</a></li>
+    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Simulation, scoring and convergence functions</a></li>
     <li><a class="dropdown-item" href="../articles/sim-example.html">Early outbreak and Generation time</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -104,17 +104,19 @@ alternatively a named vector can be used to set parameter specific cutoffs.</p><
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">fit</span> <span class="op">=</span> <span class="fu"><a href="example_fns.html">example_smc_fit</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ABC-SMC</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> SMC waves:  <span style="color: #00BB00;">■■■■■■■■■                       </span>  25% | wave 2 ETA:  4s</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■               </span>  52% | wave 4 ETA:  2s</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Converged on wave: 8</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■■■■■■    </span>  89% | wave 7 ETA:  1s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> SMC waves:  <span style="color: #00BB00;">■■■■■■■■■                       </span>  28% | wave 2 ETA:  4s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■              </span>  55% | wave 3 ETA:  2s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■           </span>  68% | wave 4 ETA:  2s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■■■       </span>  81% | wave 5 ETA:  1s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> SMC waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■■■■■■■   </span>  94% | wave 6 ETA:  0s</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># This is performed as an integral part of the SMC and adaptive</span></span></span>
 <span class="r-in"><span><span class="co"># fitting and is here only for example</span></span></span>
 <span class="r-in"><span><span class="va">last_wave_metrics</span> <span class="op">=</span> <span class="fu">utils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">waves</span>,<span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">converged</span> <span class="op">=</span> <span class="fu">check</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="va">last_wave_metrics</span><span class="op">$</span><span class="va">summary</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>,</span></span>
-<span class="r-in"><span>  <span class="va">last_wave_metrics</span><span class="op">$</span><span class="va">per_param</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span></span>
+<span class="r-in"><span>  wave <span class="op">=</span> <span class="fl">0</span>,</span></span>
+<span class="r-in"><span>  summary <span class="op">=</span> <span class="va">last_wave_metrics</span><span class="op">$</span><span class="va">summary</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>,</span></span>
+<span class="r-in"><span>  per_param <span class="op">=</span> <span class="va">last_wave_metrics</span><span class="op">$</span><span class="va">per_param</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Logic.html" class="external-link">isTRUE</a></span><span class="op">(</span><span class="va">converged</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="st">"Converged (permissive definition)"</span><span class="op">)</span></span></span>

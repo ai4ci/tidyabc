@@ -47,7 +47,7 @@ test_that("empirical unit test", {
     plot(e6)
     testthat::expect_equal(
       format(e6),
-      "empirical; Median (IQR) 6.56 [5.23 — 7.42]"
+      "empirical; Median (IQR) 6.57 [5.2 — 7.43]"
     )
   })
   
@@ -158,7 +158,7 @@ test_that(".interpolate unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(622, 1, 622+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(684, 1, 684+1, 1))
   )
 })
 
@@ -202,7 +202,7 @@ test_that(".monotonicpolyspline unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(650, 1, 650+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(712, 1, 712+1, 1))
   )
 })
 
@@ -235,13 +235,14 @@ test_that("empirical_data unit test", {
     x = seq(-10, 10, length.out = 1000),
     w = dnorm(seq(-10, 10, length.out = 1000))
   )
+  plot(e7) + ggplot2::geom_function(fun = dnorm)
   testthat::expect_equal(e7$p(-5:5), pnorm(-5:5), tolerance = 0.01)
 
   # generates a failure if the overall test is failing with a link to the 
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(802, 1, 802+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(864, 1, 864+1, 1))
   )
 })
 
@@ -289,7 +290,7 @@ test_that("wquantile unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(1359, 1, 1359+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(1425, 1, 1425+1, 1))
   )
 })
 
@@ -342,7 +343,7 @@ test_that(".fit_lm_1d unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(1487, 1, 1487+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(1575, 1, 1575+1, 1))
   )
 })
 

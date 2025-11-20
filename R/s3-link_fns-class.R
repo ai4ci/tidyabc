@@ -122,10 +122,13 @@ new_link_fns = function(
 }
 
 .numderivfn = function(fn) {
-  return(function(x) {
-    eps = sqrt(.Machine$double.eps)
-    return((fn(x + eps) - fn(x - eps)) / (2 * eps))
-  })
+  return(carrier::crate(
+    function(x) {
+      eps = sqrt(.Machine$double.eps)
+      return((fn(x + eps) - fn(x - eps)) / (2 * eps))
+    },
+    fn = fn
+  ))
 }
 
 #' Format a `link_fns` S3 object
@@ -246,6 +249,8 @@ as.link_fns.family = function(x, ...) {
 #' @param ... ignored
 #' @unit
 #' tmp = as.link_fns(c(0,10))
+#' tmp2 = as.link_fns(tidyabc::rgamma2(1000,5,4))
+#' tmp = as.link_fns(c(0,10))
 as.link_fns.numeric = function(x, ..., na.rm = TRUE) {
   if (na.rm) {
     x = x[!is.na(x)]
@@ -255,7 +260,7 @@ as.link_fns.numeric = function(x, ..., na.rm = TRUE) {
       "support must be given as a non missing numeric vector of at least length 2."
     )
   }
-  if (identical(x, c(0, 1)) || (all(x >= 0) && all(x <= 1))) {
+  if (identical(x, c(0, 1))) {
     return(as.link_fns("logit"))
   }
   if (identical(x, c(0, Inf))) {
@@ -276,14 +281,37 @@ as.link_fns.numeric = function(x, ..., na.rm = TRUE) {
         name = "uniform"
       ))
     } else {
-      mu = mean(x)
-      sigma = stats::sd(x)
-      return(new_link_fns(
-        support = c(-Inf, Inf),
-        trans = rlang::inject(~ (.x - !!mu) / !!sigma),
-        inv = rlang::inject(~ (.x * !!sigma) + !!mu),
-        name = "z"
-      ))
+      if (all(x > 0 & x < 1)) {
+        # logit z transform
+        mu = mean(.logit(x))
+        sigma = stats::sd(.logit(x))
+        return(new_link_fns(
+          support = c(0, 1),
+          trans = rlang::inject(~ (stats::qlogis(.x) - !!mu) / !!sigma),
+          inv = rlang::inject(~ 1 / (1 + exp(-((.x * !!sigma) + !!mu)))),
+          name = "logit-z"
+        ))
+      } else if (all(x > 0) && skew(x) > 1) {
+        # log z transform
+        mu = mean(log(x))
+        sigma = stats::sd(log(x))
+        return(new_link_fns(
+          support = c(0, Inf),
+          trans = rlang::inject(~ (log(.x) - !!mu) / !!sigma),
+          inv = rlang::inject(~ exp((.x * !!sigma) + !!mu)),
+          name = "log-z"
+        ))
+      } else {
+        # plain z transform
+        mu = mean(x)
+        sigma = stats::sd(x)
+        return(new_link_fns(
+          support = c(-Inf, Inf),
+          trans = rlang::inject(~ (.x - !!mu) / !!sigma),
+          inv = rlang::inject(~ (.x * !!sigma) + !!mu),
+          name = "z"
+        ))
+      }
     }
   }
   stop("Undefined support: ", range(x))

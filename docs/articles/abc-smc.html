@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">tidyabc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9003</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,7 +48,7 @@
 <li><a class="dropdown-item" href="../articles/abc-adaptive.html">ABC Adaptive</a></li>
     <li><a class="dropdown-item" href="../articles/abc-smc.html">ABC Sequential Monte-Carlo</a></li>
     <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distribution functions</a></li>
-    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Scoring and summarising functions</a></li>
+    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Simulation, scoring and convergence functions</a></li>
     <li><a class="dropdown-item" href="../articles/sim-example.html">Early outbreak and Generation time</a></li>
   </ul>
 </li>
@@ -80,8 +80,6 @@
 
     
     
-<!-- TODO: Update SMC ABC vignette -->
-<!-- Issue URL: https://github.com/ai4ci/tidyabc/issues/17 -->
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ai4ci.github.io/tidyabc">tidyabc</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -98,7 +96,53 @@
 <span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/get_theme.html" class="external-link">set_theme</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<div class="section level2">
+<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h2>
+<p>This vignette demonstrates the <strong>Approximate Bayesian
+Computation Sequential Monte Carlo (ABC-SMC)</strong> algorithm using
+<code>tidyabc</code>. ABC-SMC is an iterative refinement method that
+improves upon basic rejection sampling by using information from
+previous “waves” to guide the search for plausible parameters. This
+typically requires far fewer simulations than rejection sampling to
+achieve a similar posterior approximation, making it more efficient for
+complex models.</p>
+<p>This example builds upon the model defined in the “Getting started”
+vignette, using the same simulation function
+(<code>test_simulation_fn</code>), scoring function
+(<code>test_scorer_fn</code>), priors (<code>test_priors</code>), and
+observed data (<code>test_obsdata</code>).</p>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="step-1-define-the-model-and-data-recap">Step 1: Define the Model and Data (Recap)<a class="anchor" aria-label="anchor" href="#step-1-define-the-model-and-data-recap"></a>
+</h2>
+<p>We reuse the same model and data from the “Getting started”
+vignette:</p>
+<ul>
+<li>
+<strong>Simulation Function
+(<code>test_simulation_fn</code>)</strong>: Generates synthetic data
+<code>data1</code> and <code>data2</code> based on four parameters
+(<code>norm_mean</code>, <code>norm_sd</code>, <code>gamma_mean</code>,
+<code>gamma_sd</code>).</li>
+<li>
+<strong>Scoring Function (<code>test_scorer_fn</code>)</strong>:
+Calculates the Wasserstein distance between simulated and observed data
+for <code>data1</code> and <code>data2</code>.</li>
+<li>
+<strong>Priors (<code>test_priors</code>)</strong>: Uniform
+distributions for each parameter, with a constraint
+<code>gamma_mean &gt; gamma_sd</code>.</li>
+<li>
+<strong>Observed Data (<code>test_obsdata</code>)</strong>:
+Generated using <code>norm_mean = 4</code>, <code>norm_sd = 2</code>,
+<code>gamma_mean = 6</code>, <code>gamma_sd = 2</code>.</li>
+</ul>
+<hr>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># example simulation</span></span>
@@ -117,9 +161,9 @@
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span>  </span>
-<span><span class="op">}</span></span></code></pre></div>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span></span>
 <span><span class="va">test_scorer_fn</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">simdata</span>, <span class="va">obsdata</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    data1 <span class="op">=</span> <span class="fu"><a href="../reference/calculate_wasserstein.html">calculate_wasserstein</a></span><span class="op">(</span><span class="va">simdata</span><span class="op">$</span><span class="va">data1</span>, <span class="va">obsdata</span><span class="op">$</span><span class="va">data1</span><span class="op">)</span>,</span>
@@ -127,9 +171,6 @@
 <span>  <span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="va">test_scorewt</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>data1 <span class="op">=</span> <span class="fl">1</span>,data2 <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
 <span><span class="va">tmp</span> <span class="op">=</span> <span class="fu"><a href="../reference/test_simulation.html">test_simulation</a></span><span class="op">(</span></span>
 <span>  <span class="va">test_simulation_fn</span>,</span>
 <span>  <span class="va">test_scorer_fn</span>,</span>
@@ -138,22 +179,11 @@
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">truth</span> <span class="op">=</span> <span class="va">tmp</span><span class="op">$</span><span class="va">truth</span></span>
-<span><span class="va">test_obsdata</span> <span class="op">=</span> <span class="va">tmp</span><span class="op">$</span><span class="va">obsdata</span></span></code></pre></div>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>data1 <span class="op">=</span> <span class="va">test_obsdata</span><span class="op">$</span><span class="va">data1</span><span class="op">)</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">data1</span><span class="op">)</span><span class="op">)</span><span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html" class="external-link">geom_histogram</a></span><span class="op">(</span>,binwidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">"A + B - C"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="abc-smc_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" width="700"></p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>data2 <span class="op">=</span> <span class="va">test_obsdata</span><span class="op">$</span><span class="va">data2</span><span class="op">)</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">data2</span><span class="op">)</span><span class="op">)</span><span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html" class="external-link">geom_histogram</a></span><span class="op">(</span>,binwidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">"B x C"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="abc-smc_files/figure-html/unnamed-chunk-5-2.png" class="r-plt" width="700"></p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">test_priors</span> <span class="op">=</span> <span class="fu"><a href="../reference/priors.html">priors</a></span><span class="op">(</span></span>
+<span><span class="va">test_obsdata</span> <span class="op">=</span> <span class="va">tmp</span><span class="op">$</span><span class="va">obsdata</span></span>
+<span></span>
+<span></span>
+<span></span>
+<span><span class="va">test_priors</span> <span class="op">=</span> <span class="fu"><a href="../reference/priors.html">priors</a></span><span class="op">(</span></span>
 <span>  <span class="va">norm_mean</span> <span class="op">~</span> <span class="fu">unif</span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span><span class="op">)</span>,</span>
 <span>  <span class="va">norm_sd</span> <span class="op">~</span> <span class="fu">unif</span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span><span class="op">)</span>,</span>
 <span>  <span class="va">gamma_mean</span> <span class="op">~</span> <span class="fu">unif</span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span><span class="op">)</span>,</span>
@@ -162,61 +192,257 @@
 <span>  <span class="op">~</span> <span class="va">gamma_mean</span> <span class="op">&gt;</span> <span class="va">gamma_sd</span> </span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">test_priors</span></span>
-<span><span class="co">#&gt; Parameters: </span></span>
-<span><span class="co">#&gt; * norm_mean: unif(min = 0, max = 10)</span></span>
-<span><span class="co">#&gt; * norm_sd: unif(min = 0, max = 10)</span></span>
-<span><span class="co">#&gt; * gamma_mean: unif(min = 0, max = 10)</span></span>
-<span><span class="co">#&gt; * gamma_sd: unif(min = 0, max = 10)</span></span>
-<span><span class="co">#&gt; Constraints:</span></span>
-<span><span class="co">#&gt; * gamma_mean &gt; gamma_sd</span></span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>data1 <span class="op">=</span> <span class="va">test_obsdata</span><span class="op">$</span><span class="va">data1</span><span class="op">)</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">data1</span><span class="op">)</span><span class="op">)</span><span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html" class="external-link">geom_histogram</a></span><span class="op">(</span>bins<span class="op">=</span><span class="fl">50</span>, fill<span class="op">=</span><span class="st">"steelblue"</span>, color<span class="op">=</span><span class="st">"white"</span><span class="op">)</span><span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">"A + B - C"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="abc-smc_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" width="700"></p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="va">smc_fit</span> <span class="op">=</span> <span class="fu"><a href="../reference/abc_smc.html">abc_smc</a></span><span class="op">(</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>data2 <span class="op">=</span> <span class="va">test_obsdata</span><span class="op">$</span><span class="va">data2</span><span class="op">)</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">data2</span><span class="op">)</span><span class="op">)</span><span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html" class="external-link">geom_histogram</a></span><span class="op">(</span>bins<span class="op">=</span><span class="fl">50</span>, fill<span class="op">=</span><span class="st">"coral"</span>, color<span class="op">=</span><span class="st">"white"</span><span class="op">)</span><span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">"B × C"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="abc-smc_files/figure-html/unnamed-chunk-2-2.png" class="r-plt" width="700"></p>
+</div>
+<div class="section level2">
+<h2 id="step-2-inform-scoring-weights-optional-but-recommended">Step 2: Inform Scoring Weights (Optional but Recommended)<a class="anchor" aria-label="anchor" href="#step-2-inform-scoring-weights-optional-but-recommended"></a>
+</h2>
+<p>Before running SMC, it’s often beneficial to run a small
+<strong>trial rejection</strong> ABC fit to gather information about the
+scale and variability of the summary statistics. This helps in setting
+appropriate weights (<code>scoreweights</code>) for combining the
+distances from different summary statistics, ensuring they contribute
+meaningfully to the overall distance metric.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">trial_fit</span> <span class="op">=</span> <span class="fu"><a href="../reference/abc_rejection.html">abc_rejection</a></span><span class="op">(</span></span>
 <span>  obsdata <span class="op">=</span> <span class="va">test_obsdata</span>,</span>
 <span>  priors_list <span class="op">=</span> <span class="va">test_priors</span>,</span>
 <span>  sim_fn <span class="op">=</span> <span class="va">test_simulation_fn</span>,</span>
 <span>  scorer_fn <span class="op">=</span> <span class="va">test_scorer_fn</span>,</span>
-<span>  n_sims <span class="op">=</span> <span class="fl">1000</span>,</span>
-<span>  acceptance_rate <span class="op">=</span> <span class="fl">0.5</span>,</span>
-<span>  distance_method <span class="op">=</span> <span class="st">"euclidean"</span>,</span>
-<span>  parallel<span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  scoreweights <span class="op">=</span> <span class="va">test_scorewt</span></span>
+<span>  n_sims <span class="op">=</span> <span class="fl">1000</span>, <span class="co"># A smaller number for the trial run</span></span>
+<span>  acceptance_rate <span class="op">=</span> <span class="fl">0.5</span> <span class="co"># A high acceptance rate for the trial to get diverse samples</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; ABC rejection, 1 wave.</span></span>
+<span></span>
+<span><span class="co"># Calculate metrics, including recommended score weights</span></span>
+<span><span class="va">metrics</span> <span class="op">=</span> <span class="fu"><a href="../reference/posterior_distance_metrics.html">posterior_distance_metrics</a></span><span class="op">(</span><span class="va">trial_fit</span><span class="op">)</span></span>
+<span><span class="va">test_scorewt</span> <span class="op">=</span> <span class="va">metrics</span><span class="op">$</span><span class="va">scoreweights</span> <span class="co"># Extract the recommended weights</span></span>
+<span></span>
+<span><span class="co"># Print the metrics to see the recommended weights and other diagnostics</span></span>
+<span><span class="va">metrics</span></span>
+<span><span class="co">#&gt; $obsscores</span></span>
+<span><span class="co">#&gt; data1 data2 </span></span>
+<span><span class="co">#&gt;     0     0 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $simscores</span></span>
+<span><span class="co">#&gt; NULL</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $deltascores</span></span>
+<span><span class="co">#&gt; NULL</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $means</span></span>
+<span><span class="co">#&gt;    data1    data2 </span></span>
+<span><span class="co">#&gt; 1.026414 1.062120 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $sds</span></span>
+<span><span class="co">#&gt;     data1     data2 </span></span>
+<span><span class="co">#&gt; 0.4017519 0.4418882 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $mad</span></span>
+<span><span class="co">#&gt;    data1    data2 </span></span>
+<span><span class="co">#&gt; 1.026414 1.062120 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $rmsd</span></span>
+<span><span class="co">#&gt;    data1    data2 </span></span>
+<span><span class="co">#&gt; 1.102093 1.150206 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $cov</span></span>
+<span><span class="co">#&gt;             data1       data2</span></span>
+<span><span class="co">#&gt; data1  0.16140459 -0.04607047</span></span>
+<span><span class="co">#&gt; data2 -0.04607047  0.19526519</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $scoreweights</span></span>
+<span><span class="co">#&gt;   data1   data2 </span></span>
+<span><span class="co">#&gt; 0.48688 0.51312</span></span></code></pre></div>
+<p>The <code><a href="../reference/posterior_distance_metrics.html">posterior_distance_metrics()</a></code> function analyzes the
+distances from the trial fit. The <code>scoreweights</code> it
+calculates (often based on the standard deviation of each summary
+statistic divided by its root mean squared deviation from the observed
+value) help balance the influence of <code>data1</code> and
+<code>data2</code> in the Euclidean distance calculation, especially if
+they are on different scales. Using these weights in the SMC fit can
+improve convergence and accuracy.</p>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="step-3-run-abc-smc">Step 3: Run ABC-SMC<a class="anchor" aria-label="anchor" href="#step-3-run-abc-smc"></a>
+</h2>
+<p>Now we execute the ABC-SMC algorithm. Unlike rejection sampling, SMC
+iteratively refines the parameter estimates.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">smc_fit</span> <span class="op">=</span> <span class="fu"><a href="../reference/abc_smc.html">abc_smc</a></span><span class="op">(</span></span>
+<span>  obsdata <span class="op">=</span> <span class="va">test_obsdata</span>,</span>
+<span>  priors_list <span class="op">=</span> <span class="va">test_priors</span>,</span>
+<span>  sim_fn <span class="op">=</span> <span class="va">test_simulation_fn</span>,</span>
+<span>  scorer_fn <span class="op">=</span> <span class="va">test_scorer_fn</span>,</span>
+<span>  n_sims <span class="op">=</span> <span class="fl">1000</span>,              <span class="co"># Number of simulations per wave</span></span>
+<span>  acceptance_rate <span class="op">=</span> <span class="fl">0.5</span>,      <span class="co"># Proportion of particles accepted each wave (affects epsilon decay)</span></span>
+<span>  distance_method <span class="op">=</span> <span class="st">"euclidean"</span>, <span class="co"># How to combine summary statistic distances</span></span>
+<span>  parallel <span class="op">=</span> <span class="cn">FALSE</span>,           <span class="co"># Disable parallel processing for vignette</span></span>
+<span>  scoreweights <span class="op">=</span> <span class="va">test_scorewt</span> <span class="co"># Use the weights calculated from the trial fit</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; ABC-SMC</span></span>
-<span><span class="co">#&gt; SMC waves:  <span style="color: #00BB00;">■                               </span>   0% | wave 1 ETA:  6m</span></span>
-<span><span class="co">#&gt; SMC waves:  <span style="color: #00BB00;">■                               </span>   1% | wave 2 ETA:  5m</span></span>
-<span><span class="co">#&gt; SMC waves:  <span style="color: #00BB00;">■■                              </span>   2% | wave 5 ETA:  5m</span></span>
-<span><span class="co">#&gt; SMC waves:  <span style="color: #00BB00;">■■                              </span>   3% | wave 8 ETA:  5m</span></span>
-<span><span class="co">#&gt; SMC waves:  <span style="color: #00BB00;">■■                              </span>   4% | wave 11 ETA:  5m</span></span>
+<span><span class="co">#&gt; SMC waves:  <span style="color: #00BB00;">■                               </span>   0% | wave 1 ETA:  5m</span></span>
+<span><span class="co">#&gt; SMC waves:  <span style="color: #00BB00;">■                               </span>   1% | wave 4 ETA:  5m</span></span>
+<span><span class="co">#&gt; SMC waves:  <span style="color: #00BB00;">■■                              </span>   2% | wave 7 ETA:  5m</span></span>
+<span><span class="co">#&gt; SMC waves:  <span style="color: #00BB00;">■■                              </span>   3% | wave 11 ETA:  5m</span></span>
 <span><span class="co">#&gt; SMC waves:  <span style="color: #00BB00;">■■                              </span>   4% | wave 14 ETA:  5m</span></span>
-<span><span class="co">#&gt; Converged on wave: 17</span></span>
-<span><span class="co">#&gt; SMC waves:  <span style="color: #00BB00;">■■■                             </span>   5% | wave 16 ETA:  5m</span></span>
+<span><span class="co">#&gt; Converged on wave: 18</span></span>
+<span><span class="co">#&gt; SMC waves:  <span style="color: #00BB00;">■■■                             </span>   5% | wave 17 ETA:  5m</span></span>
 <span></span>
+<span><span class="co"># Print a summary of the SMC results</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">smc_fit</span><span class="op">)</span></span>
-<span><span class="co">#&gt; ABC SMC fit: 17 waves - (converged)</span></span>
+<span><span class="co">#&gt; ABC SMC fit: 18 waves - (converged)</span></span>
 <span><span class="co">#&gt; Parameter estimates:</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 4</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Groups:   param [4]</span></span></span>
 <span><span class="co">#&gt;   param      mean_sd       median_95_CrI           ESS</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> gamma_mean 5.971 ± 0.049 5.969 [5.844 — 6.097]  797.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> gamma_sd   1.972 ± 0.073 1.970 [1.792 — 2.167]  797.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> norm_mean  3.991 ± 0.171 3.990 [3.553 — 4.417]  797.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> norm_sd    1.965 ± 0.399 1.989 [0.864 — 2.845]  797.</span></span></code></pre></div>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">smc_fit</span>, truth<span class="op">=</span><span class="va">truth</span><span class="op">)</span></span></code></pre></div>
-<p><img src="abc-smc_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" width="700"></p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> gamma_mean 5.969 ± 0.056 5.967 [5.818 — 6.102]  790.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> gamma_sd   1.978 ± 0.085 1.977 [1.756 — 2.210]  790.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> norm_mean  3.993 ± 0.133 3.993 [3.656 — 4.333]  790.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> norm_sd    1.993 ± 0.309 2.007 [1.211 — 2.769]  790.</span></span></code></pre></div>
+<ul>
+<li>
+<strong><code>n_sims</code></strong>: The number of simulations
+performed in <em>each</em> wave.</li>
+<li>
+<strong><code>acceptance_rate</code></strong>: This value (e.g.,
+0.5) determines how the tolerance threshold (epsilon) decreases. After
+each wave, epsilon is set to the quantile of distances corresponding to
+this rate among the <em>current wave’s</em> simulations. A rate of 0.5
+means epsilon becomes the median distance of the wave.</li>
+<li>
+<strong><code>scoreweights</code></strong>: The weights calculated
+earlier are used here.</li>
+<li>The <code>summary</code> output shows the final posterior statistics
+(median, IQR, ESS) aggregated across all waves, similar to the rejection
+sampling output but reflecting the sequential refinement.</li>
+</ul>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="step-4-visualize-the-results">Step 4: Visualize the Results<a class="anchor" aria-label="anchor" href="#step-4-visualize-the-results"></a>
+</h2>
+<p><code>tidyabc</code> provides several plots to understand the SMC
+fit. The first is similar to the rejection sampling plot, showing the
+final posterior.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">smc_fit</span>, truth <span class="op">=</span> <span class="va">truth</span><span class="op">)</span></span></code></pre></div>
+<p><img src="abc-smc_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" width="700"></p>
+<p>This plot shows the marginal posterior densities for each parameter
+estimated after the final SMC wave, compared to the true values
+(<code>truth</code>). It should ideally show good agreement, similar to
+the rejection sampling result but potentially with higher effective
+sample size (ESS) for the same total number of simulations.</p>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="step-5-diagnose-convergence">Step 5: Diagnose Convergence<a class="anchor" aria-label="anchor" href="#step-5-diagnose-convergence"></a>
+</h2>
+<p>The <code><a href="../reference/plot_convergence.html">plot_convergence()</a></code> function is crucial for SMC,
+showing how the fit improved over the sequence of waves.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_convergence.html">plot_convergence</a></span><span class="op">(</span><span class="va">smc_fit</span><span class="op">)</span></span></code></pre></div>
-<p><img src="abc-smc_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" width="700"></p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_evolution.html">plot_evolution</a></span><span class="op">(</span><span class="va">smc_fit</span>,<span class="va">truth</span><span class="op">)</span></span></code></pre></div>
-<p><img src="abc-smc_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" width="700"></p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<p><img src="abc-smc_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" width="700"></p>
+<p>This multi-panel plot shows key metrics tracked across waves (wave
+number on the x-axis):</p>
+<ol style="list-style-type: decimal">
+<li>
+<strong><code>abs_distance</code></strong>: The absolute value of
+the tolerance threshold (epsilon) for each wave. This represents the
+“closeness” required for a simulation to be accepted in that wave. In
+SMC, epsilon typically decreases rapidly (often exponentially) as the
+algorithm focuses on regions of higher posterior density. The plot
+should show a clear downward trend, eventually plateauing as the
+algorithm converges or reaches the resolution limit of the model/data
+noise.</li>
+<li>
+<strong><code>ESS</code> (Effective Sample Size)</strong>: The ESS
+of the particle set at each wave. A higher ESS indicates a more diverse
+and informative posterior sample. The ESS often starts low (as the first
+wave might accept many particles) and then increases as the proposal
+distribution (based on previous particles) becomes more efficient at
+finding high-probability regions. It typically plateaus when the
+algorithm converges. The plot should show an increasing trend, ideally
+reaching a stable, high value.</li>
+<li>
+<strong><code>IQR_95_redn</code> (95% CI Reduction)</strong>: The
+reduction in the 95% credible interval (IQR) range for each parameter
+compared to the previous wave. This indicates how much the uncertainty
+in each parameter estimate is decreasing per wave. It should generally
+show a declining trend (often roughly linear on this log scale
+initially), approaching zero as the parameter estimates stabilize.</li>
+<li>
+<strong><code>rel_mean_change</code> (Relative Mean
+Change)</strong>: The relative change in the posterior mean of each
+parameter from one wave to the next
+(<code>|mean_t - mean_{t-1}| / |mean_{t-1}|</code>). This tracks the
+stability of the central parameter estimates. It should also show a
+declining trend (often roughly linear), approaching zero as the
+estimates stabilise.</li>
+</ol>
+<p>For a successful SMC run, you expect epsilon to drop significantly,
+ESS to rise and plateau, and both <code>IQR_95_redn</code> and
+<code>rel_mean_change</code> to trend towards zero.</p>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="step-6-visualize-parameter-evolution">Step 6: Visualize Parameter Evolution<a class="anchor" aria-label="anchor" href="#step-6-visualize-parameter-evolution"></a>
+</h2>
+<p>The <code><a href="../reference/plot_evolution.html">plot_evolution()</a></code> function shows how the estimated
+parameter distributions change over the waves.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_evolution.html">plot_evolution</a></span><span class="op">(</span><span class="va">smc_fit</span>, <span class="va">truth</span><span class="op">)</span></span></code></pre></div>
+<p><img src="abc-smc_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" width="700"></p>
+<p>This plot displays the posterior density estimates for each
+parameter, faceted by wave number. It allows you to visualize how the
+algorithm progressively narrows down the plausible parameter space from
+the initial prior distributions towards the final posterior, centred
+around the <code>truth</code>.</p>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="step-7-check-parameter-correlations">Step 7: Check Parameter Correlations<a class="anchor" aria-label="anchor" href="#step-7-check-parameter-correlations"></a>
+</h2>
+<p>Finally, <code><a href="../reference/plot_correlations.html">plot_correlations()</a></code> helps understand the
+relationships between parameters in the final posterior sample.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_correlations.html">plot_correlations</a></span><span class="op">(</span><span class="va">smc_fit</span><span class="op">$</span><span class="va">posteriors</span>, <span class="va">truth</span><span class="op">)</span></span></code></pre></div>
-<p><img src="abc-smc_files/figure-html/unnamed-chunk-11-1.png" class="r-plt" width="700"></p>
-  </main>
+<p><img src="abc-smc_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" width="700"></p>
+<p>This heatmap shows the correlation coefficients between pairs of
+parameters based on the final set of weighted particles. Correlations
+can indicate dependencies learned by the model or potential
+identifiability issues. Comparing the correlation structure to the
+<code>truth</code> values (if applicable) can provide further
+insight.</p>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="conclusion">Conclusion<a class="anchor" aria-label="anchor" href="#conclusion"></a>
+</h2>
+<p>ABC-SMC provides an efficient way to perform Bayesian inference for
+models where the likelihood is intractable. By iteratively refining the
+parameter proposals based on previous results, it can achieve good
+posterior approximations with significantly fewer simulations than basic
+rejection sampling. Diagnosing convergence using
+<code><a href="../reference/plot_convergence.html">plot_convergence()</a></code> is important to ensure the algorithm has
+run for enough waves to stabilize the estimates.</p>
+</div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 

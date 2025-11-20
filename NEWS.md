@@ -25,7 +25,7 @@
   + modern support for parallel simulation execution using `furrr`
   + posterior visualisation and resampling
   + convergence statistics and visualisation
-* statistic functions wrappers `dist_fns` S3 class
+* Statistic functions wrapper `dist_fns` S3 class
   + support for distributions as dataframe column
   + empirical, transformed and mixture distributions in unified framework
   + distribution plotting

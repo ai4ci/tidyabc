@@ -24,7 +24,9 @@ abc_adaptive(
   debug_errors = FALSE,
   kernel = "epanechnikov",
   bw = 0.1,
-  scoreweights = NULL
+  widen_by = 1.05,
+  scoreweights = NULL,
+  use_proposal_correlation = TRUE
 )
 }
 \arguments{
@@ -111,9 +113,20 @@ which the probability of acceptance of a particle is zero. Use of
 \code{gaussian} kernels can result in poor convergence.}
 
 \item{bw}{for Adaptive ABC data distributions are smoothed before modelling
-the CDF. Over smoothing can reduce convergence, under-smoothing may result
-in noisy posterior estimates. This is in units of the ESS and defaults to
-0.1.}
+the CDF. Over smoothing can reduce convergence rate, under-smoothing may result
+in noisy posterior estimates, and appearance of local modes.
+This is a proportion of the ESS and defaults to 0.1.}
+
+\item{widen_by}{change the dispersion of proposal distribution in ABC
+adaptive, preserving the median. This is akin to a nonlinear,
+heteroscedastic random walk in the quantile space, and can help address
+over-fitting or local modes in the ABC adaptive waves. \code{widen_by} is an odds
+ratio and describes how much further from the median any given part of the
+distribution is after transformation. E.g. if the median of a distribution
+is zero, and the \code{widen_by} is 2 then the 0.75 quantile will move to the
+position of the 0.9 quantile. The distribution will stay within the
+support of the prior. This is by default 1.05 which allows for some
+additional variability in proposals.}
 
 \item{scoreweights}{A named vector with names matching output of \code{scorer_fn}
 that defines the importance of this component of the scoring in the overall
@@ -123,6 +136,10 @@ distance methods these weights multiply the output of \code{scorer_fn} directly.
 For the other 2 distance methods some degree of normalisation is done first
 on the first wave scores to make different components have approximately the
 same relevance to the overall score.}
+
+\item{use_proposal_correlation}{When calculating the weight of a particle the
+proposal correlation structure is available, to help determine how unusual
+or otherwise a particle is.}
 }
 \value{
 an S3 object of class \code{abc_fit} this contains the following:
@@ -195,8 +212,8 @@ density (assuming independence), \eqn{K_{\epsilon_t}} is the ABC kernel,
 and \eqn{Q_t(\theta^{(i)}_t) = \prod_j Q_{t,j}(\theta^{(i)}_{t,j})} is the
 empirical proposal density (also assuming independence for density
 calculation, consistent with the marginal fitting). The correlation
-structure is handled only in the sampling process, not in the density
-evaluation, which is a common practical approximation.
+structure is handled in the sampling process, and optionally in the density
+evaluation.
 }
 \item \strong{Normalization:} Weights \eqn{w^{(i)}_t} are normalized to sum to one.
 The algorithm includes a recovery mechanism: if the Effective Sample Size

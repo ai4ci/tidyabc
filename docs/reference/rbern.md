@@ -28,5 +28,5 @@ a vector of logical values of size `n`
 table(rbern(100, 0.25))
 #> 
 #> FALSE  TRUE 
-#>    80    20 
+#>    82    18 
 ```

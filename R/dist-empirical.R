@@ -112,7 +112,7 @@
 #'   plot(e6)
 #'   testthat::expect_equal(
 #'     format(e6),
-#'     "empirical; Median (IQR) 6.56 [5.23 — 7.42]"
+#'     "empirical; Median (IQR) 6.57 [5.2 — 7.43]"
 #'   )
 #' })
 #'
@@ -460,6 +460,12 @@ empirical_cdf = function(
   # This is in line with the idea of the input being a CDF and the P(X<=x)
 
   # inputs have been sorted at this point, so qx is increasing or flat.
+  # Sometimes qx may saturate at 1 or zero:
+
+  sat = (qx == 1 & duplicated(qx)) | (qx == 0 & duplicated(qx, fromLast = TRUE))
+  qx = qx[!sat]
+  qy = qy[!sat]
+
   # qx must be unique (otherwise we have a infinite PDF at the point)
   while (anyDuplicated(qx)) {
     qx[duplicated(qx)] = qx[duplicated(qx)] + sqrt(sqrt(.Machine$double.eps))
@@ -472,7 +478,7 @@ empirical_cdf = function(
 
   # qx was sorted so is increasing
   # in a CDF qy must be strictly flat or increasing.
-  invalid = qy < cummax(qy)
+  invalid = qy < cummax(qy) | qy < 0 | qy > 1 | qx < 0 | qx > 1
   if (any(invalid)) {
     warning("CDF was not stricly increasing. Ignoring invalid points.")
   }
@@ -515,46 +521,102 @@ empirical_cdf = function(
     qy = c(qy, qy1, 1)
   }
 
+  minx = support[1]
+  maxx = support[2]
+  qx_from_qy = qy_from_qx = qfn = NULL
+
   if (isFALSE(smooth)) {
-    qy_from_qx = carrier::crate(function(qx2) {
-      stats::approx(
-        x = !!qx,
-        y = !!qy,
-        xout = qx2,
-        yleft = 0,
-        yright = 1
-      )$y
-    })
-    qx_from_qy = carrier::crate(function(qy2) {
-      stats::approx(
-        x = !!qy,
-        y = !!qx,
-        xout = qy2,
-        yleft = 0,
-        yright = 1
-      )$y
-    })
+    out = .super_crate(
+      qx_from_x = qx_from_x,
+      x_from_qx = x_from_qx,
+      qx = qx,
+      qy = qy,
+      minx = minx,
+      maxx = maxx,
+      .fns = list(
+        qy_from_qx = function(qx2) {
+          stats::approx(
+            x = qx,
+            y = qy,
+            xout = qx2,
+            yleft = 0,
+            yright = 1
+          )$y
+        },
+        qx_from_qy = function(qy2) {
+          stats::approx(
+            x = qy,
+            y = qx,
+            xout = qy2,
+            yleft = 0,
+            yright = 1
+          )$y
+        },
+        pfn = function(q) {
+          ifelse(
+            q <= minx,
+            0,
+            ifelse(q >= maxx, 1, qy_from_qx(qx_from_x(q)))
+          )
+        },
+        qfn = function(p) {
+          ifelse(p < 0 | p > 1, NaN, x_from_qx(qx_from_qy(p)))
+        },
+        rfn = function(n) {
+          qfn(stats::runif(n))
+        }
+      )
+    )
   } else {
     qy_from_qx_spl = .monotonicpolyspline(x = qx, y = qy) # cdf zy from zx
     # qx_from_qy_spl = splines::backSpline(qy_from_qx_spl) # quantile fn zx from zy
     qx_from_qy_spl = .monotonicpolyspline(x = qy, y = qx) # quantile fn zx from zy
 
-    qy_from_qx = carrier::crate(function(qx2) {
-      tmp = rep(NA, length(qx2))
-      non.na = which(!is.na(qx2))
-      tmp[non.na] = stats::predict(!!qy_from_qx_spl, qx2[non.na])$y
-      tmp[tmp < 0] = 0
-      tmp[tmp > 1] = 1
-      return(tmp)
-    })
-    qx_from_qy = carrier::crate(function(qy2) {
-      tmp = rep(NA, length(qy2))
-      non.na = which(!is.na(qy2))
-      tmp[non.na] = stats::predict(!!qx_from_qy_spl, qy2[non.na])$y
-      tmp[tmp < 0] = 0
-      tmp[tmp > 1] = 1
-      return(tmp)
-    })
+    out = .super_crate(
+      # splines:
+      qy_from_qx_spl = qy_from_qx_spl,
+      qx_from_qy_spl = qx_from_qy_spl,
+      # x links:
+      qx_from_x = qx_from_x,
+      x_from_qx = x_from_qx,
+      # spline data
+      qx = qx,
+      qy = qy,
+      # x limits
+      minx = minx,
+      maxx = maxx,
+      .fns = list(
+        qy_from_qx = function(qx2) {
+          tmp = rep(NA, length(qx2))
+          non.na = which(!is.na(qx2))
+          tmp[non.na] = stats::predict(qy_from_qx_spl, qx2[non.na])$y
+          tmp[tmp < 0] = 0
+          tmp[tmp > 1] = 1
+          return(tmp)
+        },
+        qx_from_qy = function(qy2) {
+          tmp = rep(NA, length(qy2))
+          non.na = which(!is.na(qy2))
+          tmp[non.na] = stats::predict(qx_from_qy_spl, qy2[non.na])$y
+          tmp[tmp < 0] = 0
+          tmp[tmp > 1] = 1
+          return(tmp)
+        },
+        pfn = function(q) {
+          ifelse(
+            q <= minx,
+            0,
+            ifelse(q >= maxx, 1, qy_from_qx(qx_from_x(q)))
+          )
+        },
+        qfn = function(p) {
+          ifelse(p < 0 | p > 1, NaN, x_from_qx(qx_from_qy(p)))
+        },
+        rfn = function(n) {
+          qfn(stats::runif(n))
+        }
+      )
+    )
 
     # TODO: Analytical density for empirical CDF
     # Issue URL: https://github.com/ai4ci/tidyabc/issues/3
@@ -568,44 +630,44 @@ empirical_cdf = function(
     # we wouldneed to incorporate this into the crate also.
   }
 
-  qfn = minx = maxx = NULL
-  out = .super_crate(
-    # support
-    minx = support[1],
-    maxx = support[2],
-    #transforms
-    qy_from_qx = qy_from_qx,
-    qx_from_x = qx_from_x,
-    qx_from_qy = qx_from_qy,
-    x_from_qx = x_from_qx,
-    #functions
-    .fns = list(
-      pfn = function(q) {
-        ifelse(
-          q <= minx,
-          0,
-          ifelse(q >= maxx, 1, qy_from_qx(qx_from_x(q)))
-        )
-      },
-      qfn = function(p) {
-        ifelse(p < 0 | p > 1, NaN, x_from_qx(qx_from_qy(p)))
-      },
-      rfn = function(n) {
-        qfn(stats::runif(n))
-      }
-    )
-  )
+  # qfn = minx = maxx = NULL
+  # out = .super_crate(
+  #   # support
+  #   minx = support[1],
+  #   maxx = support[2],
+  #   #transforms
+  #   qy_from_qx = qy_from_qx,
+  #   qx_from_x = qx_from_x,
+  #   qx_from_qy = qx_from_qy,
+  #   x_from_qx = x_from_qx,
+  #   #functions
+  #   .fns = list(
+  #     pfn = function(q) {
+  #       ifelse(
+  #         q <= minx,
+  #         0,
+  #         ifelse(q >= maxx, 1, qy_from_qx(qx_from_x(q)))
+  #       )
+  #     },
+  #     qfn = function(p) {
+  #       ifelse(p < 0 | p > 1, NaN, x_from_qx(qx_from_qy(p)))
+  #     },
+  #     rfn = function(n) {
+  #       qfn(stats::runif(n))
+  #     }
+  #   )
+  # )
 
-  return(
-    new_dist_fns(
-      name = if (is.null(name)) "empirical" else name,
-      pfn = out$pfn,
-      qfn = out$qfn,
-      rfn = out$rfn,
-      knots = dplyr::tibble(x = x_from_qx(qx), p = qy),
-      smooth = smooth
-    )
+  out2 = new_dist_fns(
+    name = if (is.null(name)) "empirical" else name,
+    pfn = out$pfn,
+    qfn = out$qfn,
+    rfn = out$rfn,
+    knots = dplyr::tibble(x = x_from_qx(qx), qx = qx, p = qy),
+    smooth = smooth
   )
+  class(out2) = c(class(out2), "emp_cdf")
+  return(out2)
 }
 
 
@@ -815,6 +877,7 @@ NULL
 #'   x=seq(-10,10,length.out=1000),
 #'   w=dnorm(seq(-10,10,length.out=1000))
 #' )
+#' plot(e7)+ggplot2::geom_function(fun = dnorm)
 #' testthat::expect_equal(e7$p(-5:5), pnorm(-5:5), tolerance=0.01)
 #'
 empirical_data = function(
@@ -823,11 +886,12 @@ empirical_data = function(
   link = "identity",
   ...,
   name = NULL,
-  bw = NULL
+  bw = wbw.nrd(x, w)^sqrt(2)
 ) {
   link = as.link_fns(link)
 
-  bw_min = .p_from_n(length(x), 40, 1000)
+  bw_min = 0.01
+  # bw_min = .p_from_n(length(x), 40, 1000)
   if (is.null(bw) || bw < bw_min) {
     bw = bw_min
   }
@@ -875,13 +939,15 @@ empirical_data = function(
     )
   )
 
-  return(new_dist_fns(
+  out2 = new_dist_fns(
     name = name,
     pfn = out$pfn,
     qfn = out$qfn,
     rfn = out$rfn,
     dfn = out$dfn
-  ))
+  )
+  class(out2) = c(class(out2), "emp_data")
+  return(out2)
 }
 
 
@@ -1130,10 +1196,12 @@ empirical_data = function(
   # n = length(x)
 
   # fit locfit models forward and backwards:
-  cdf_fit = locfit::locfit.raw(
-    x = locfit::lp(x2, nn = bw, deg = 1),
-    y = y2
-  )
+  browse_on_error({
+    cdf_fit = locfit::locfit.raw(
+      x = locfit::lp(x2, nn = bw, deg = 1),
+      y = y2
+    )
+  })
 
   pdf_fit = locfit::locfit.raw(
     x = locfit::lp(x2, nn = bw, deg = 1),
@@ -1466,6 +1534,28 @@ wquantile = function(
     names(q) = sprintf("%1.3g%%", p * 100)
   }
   return(q)
+}
+
+#' Weighted bandwidth selector
+#'
+#' @param x data
+#' @param w weights
+#'
+#' @returns a bandwidth based on weighted data
+#' @concept empirical
+#' @export
+wbw.nrd = function(x, w) {
+  if (is.null(w)) {
+    tmp = stats::bw.nrd(x)
+  } else {
+    if (length(x) < 2L) {
+      stop("need at least 2 data points")
+    }
+    r <- wquantile(c(0.25, 0.75), x, w)
+    h <- (r[2L] - r[1L]) / 1.34
+    tmp = 1.06 * min(sqrt(stats::var(x)), h) * length(x)^(-1 / 5)
+  }
+  return(tmp)
 }
 
 # Utility ----

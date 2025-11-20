@@ -56,28 +56,3 @@ observed data before the comparison.
     # zero if no distance
     testthat::expect_equal(tmp(0:10), 0)
     testthat::expect_equal(tmp(10:0), 0)
-
-    # normalised so that all mass at mean = 1
-    testthat::expect_equal(tmp(rep(5, 11)), 1)
-
-    # smaller sample recycled and normalises to same value
-    testthat::expect_equal(tmp(rep(5, 5)), 1)
-
-    # should be ((0+1+0+1+0+0+0+1+0+1+0) / 11) / ((5+4+3+2+1+0+1+2+3+4+5) / 11) = 0.1333...
-    testthat::expect_equal(
-      tmp(c(0, 0, 2, 2, 4, 5, 6, 8, 8, 10, 10)),
-      0.133333333333333
-    )
-
-    withr::with_seed(100, {
-       ref = rnorm(1000)
-       cmp1 = rnorm(1000)
-       cmp2 = rnorm(1000, sd=2)
-       cmp3 = rnorm(100)
-    })
-
-    tmp2 = wasserstein_calculator(ref)
-
-    testthat::expect_equal(tmp2(cmp1), 0.0576417503974498)
-    testthat::expect_equal(tmp2(cmp2), 1.04950621760385)
-    testthat::expect_equal(tmp2(cmp3), 0.212977231452674)

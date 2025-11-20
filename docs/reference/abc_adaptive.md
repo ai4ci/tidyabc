@@ -34,7 +34,9 @@ abc_adaptive(
   debug_errors = FALSE,
   kernel = "epanechnikov",
   bw = 0.1,
-  scoreweights = NULL
+  widen_by = 1.05,
+  scoreweights = NULL,
+  use_proposal_correlation = TRUE
 )
 ```
 
@@ -161,9 +163,22 @@ abc_adaptive(
 - bw:
 
   for Adaptive ABC data distributions are smoothed before modelling the
-  CDF. Over smoothing can reduce convergence, under-smoothing may result
-  in noisy posterior estimates. This is in units of the ESS and defaults
-  to 0.1.
+  CDF. Over smoothing can reduce convergence rate, under-smoothing may
+  result in noisy posterior estimates, and appearance of local modes.
+  This is a proportion of the ESS and defaults to 0.1.
+
+- widen_by:
+
+  change the dispersion of proposal distribution in ABC adaptive,
+  preserving the median. This is akin to a nonlinear, heteroscedastic
+  random walk in the quantile space, and can help address over-fitting
+  or local modes in the ABC adaptive waves. `widen_by` is an odds ratio
+  and describes how much further from the median any given part of the
+  distribution is after transformation. E.g. if the median of a
+  distribution is zero, and the `widen_by` is 2 then the 0.75 quantile
+  will move to the position of the 0.9 quantile. The distribution will
+  stay within the support of the prior. This is by default 1.05 which
+  allows for some additional variability in proposals.
 
 - scoreweights:
 
@@ -176,6 +191,12 @@ abc_adaptive(
   some degree of normalisation is done first on the first wave scores to
   make different components have approximately the same relevance to the
   overall score.
+
+- use_proposal_correlation:
+
+  When calculating the weight of a particle the proposal correlation
+  structure is available, to help determine how unusual or otherwise a
+  particle is.
 
 ## Value
 
@@ -250,8 +271,7 @@ constructs a new proposal distribution \\Q_t(\theta)\\ at each wave
       Q\_{t,j}(\theta^{(i)}\_{t,j})\\ is the empirical proposal density
       (also assuming independence for density calculation, consistent
       with the marginal fitting). The correlation structure is handled
-      only in the sampling process, not in the density evaluation, which
-      is a common practical approximation.
+      in the sampling process, and optionally in the density evaluation.
 
 3.  **Normalization:** Weights \\w^{(i)}\_t\\ are normalized to sum to
     one. The algorithm includes a recovery mechanism: if the Effective
@@ -278,18 +298,23 @@ fit = abc_adaptive(
   allow_continue = FALSE
 )
 #> ABC-Adaptive
-#> Adaptive waves:  ■■■■■■■■                          24% | wave 2 ETA:  5s
-#> Adaptive waves:  ■■■■■■■■■■■■■■■■■■■■■■            70% | wave 6 ETA:  2s
-#> Converged on wave: 7
+#> Adaptive waves:  ■■■■■                             15% | wave 1 ETA: 10s
+#> Adaptive waves:  ■■■■■■■■■■                        29% | wave 2 ETA:  6s
+#> Adaptive waves:  ■■■■■■■■■■■■■                     42% | wave 3 ETA:  4s
+#> Adaptive waves:  ■■■■■■■■■■■■■■■■■                 54% | wave 4 ETA:  3s
+#> Adaptive waves:  ■■■■■■■■■■■■■■■■■■■■■             67% | wave 5 ETA:  2s
+#> Adaptive waves:  ■■■■■■■■■■■■■■■■■■■■■■■■■         80% | wave 6 ETA:  1s
+#> Adaptive waves:  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■     92% | wave 7 ETA:  0s
+#> Converged on wave: 8
 
 summary(fit)
-#> ABC adaptive fit: 7 waves - (converged)
+#> ABC adaptive fit: 8 waves - (converged)
 #> Parameter estimates:
 #> # A tibble: 3 × 4
 #> # Groups:   param [3]
 #>   param mean_sd       median_95_CrI           ESS
 #>   <chr> <chr>         <chr>                 <dbl>
-#> 1 mean  4.976 ± 0.032 4.973 [4.893 — 5.079]  304.
-#> 2 sd1   2.011 ± 0.059 2.012 [1.780 — 2.174]  304.
-#> 3 sd2   0.995 ± 0.031 0.995 [0.896 — 1.093]  304.
+#> 1 mean  4.985 ± 0.030 4.987 [4.888 — 5.062]  344.
+#> 2 sd1   1.964 ± 0.072 1.949 [1.758 — 2.263]  344.
+#> 3 sd2   1.010 ± 0.029 1.008 [0.923 — 1.107]  344.
 ```

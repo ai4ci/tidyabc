@@ -1,13 +1,20 @@
 Package: tidyabc
 Title: Approximate Bayesian Computing with Tidy Data
-Version: 0.0.0.9003
+Version: 0.0.1
 Authors@R: 
     person(given = "Robert",
            family = "Challen",
            role = c("aut", "cre"),
            email = "rob.challen@bristol.ac.uk",
            comment = c(ORCID = "0000-0002-5504-7768"))
-Description: What the package does (one paragraph).
+Description: A flexible framework for Approximate Bayesian Computation (ABC) 
+    that integrates with the tidyverse. Define simulation models and summary 
+    statistics as standard R functions, use 'dist_fns' to represent prior and 
+    posterior distributions, and perform inference via rejection sampling, 
+    Sequential Monte Carlo (SMC), or Adaptive ABC. The package provides tools 
+    for diagnostics, visualization, and convergence assessment, enabling 
+    reproducible Bayesian inference for complex models with intractable 
+    likelihoods.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE, packages = "pkgtools")

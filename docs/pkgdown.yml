@@ -8,7 +8,7 @@ articles:
   scorer-functions: scorer-functions.html
   articles/sim-example: sim-example.html
   tidyabc: tidyabc.html
-last_built: 2025-11-18T22:16Z
+last_built: 2025-11-20T16:57Z
 urls:
   reference: https://ai4ci.github.io/tidyabc/reference
   article: https://ai4ci.github.io/tidyabc/articles

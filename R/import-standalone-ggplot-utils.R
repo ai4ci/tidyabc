@@ -881,3 +881,11 @@
     ggplot2::ylab(deparse(substitute(x))) +
     ggplot2::xlab("index")
 }
+
+#' @describeIn dot-gg_hist Function plot
+#' @keywords internal
+.gg_fun = function(fn, ..., xlim = NULL) {
+  fn = rlang::as_function(fn)
+  ggplot2::ggplot() +
+    ggplot2::geom_function(fun = function(x) fn(x, ...), xlim = xlim)
+}

@@ -94,6 +94,6 @@ fit = example_rejection_fit()
 metrics = posterior_distance_metrics(fit$posteriors)
 # other elements available:
 metrics$scoreweights
-#>         A         B 
-#> 0.5551078 0.4448922 
+#>        A        B 
+#> 0.570004 0.429996 
 ```

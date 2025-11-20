@@ -1,4 +1,4 @@
-# Getting started
+# Getting started with tidyabc
 
 ``` r
 library(tidyabc)
@@ -17,12 +17,35 @@ library(dplyr)
 #> 
 #>     intersect, setdiff, setequal, union
 library(ggplot2)
+
+ggplot2::set_theme(theme_minimal())
 ```
 
-``` r
+## Introduction
 
+This vignette walks you through a complete **Approximate Bayesian
+Computation (ABC)** workflow using `tidyabc`, from defining a simulation
+model to fitting parameters from observed data. ABC is used when the
+likelihood function is intractable or expensive to compute — common in
+complex models like those in systems biology, ecology, or social
+science.
+
+We’ll simulate data from a model with two latent processes — a normal
+distribution and a gamma distribution — and then use ABC to recover
+their parameters from summary statistics, even without knowing the exact
+likelihood.
+
+------------------------------------------------------------------------
+
+## Step 1: Define the Simulation Function
+
+We begin by defining a simulation function that generates synthetic data
+from known parameters. This represents our “forward model” — the
+mechanism we believe generated the real-world observations.
+
+``` r
 # example simulation
-# Well be trying to recover norm and gamma parameters
+# We'll be trying to recover norm and gamma parameters
 # We'll use this function for both example generation and fitting
 test_simulation_fn = function(norm_mean, norm_sd, gamma_mean, gamma_sd) {
   
@@ -40,8 +63,22 @@ test_simulation_fn = function(norm_mean, norm_sd, gamma_mean, gamma_sd) {
 }
 ```
 
-``` r
+Here, `data1 = A + B - C` combines a normal variable with two gamma
+variables, and `data2 = B * C` is their product. The true parameters are
+unknown to the ABC algorithm — we’ll recover them from summary
+statistics.
 
+------------------------------------------------------------------------
+
+## Step 2: Define the Scoring Function
+
+Since we can’t compute the likelihood directly, we compare simulated and
+observed data using **summary statistics**. Here, we use the
+**Wasserstein distance** — a robust metric for comparing distributions —
+to measure how similar the simulated and observed data are for each
+output.
+
+``` r
 test_scorer_fn = function(simdata, obsdata) {
   return(list(
     data1 = calculate_wasserstein(simdata$data1, obsdata$data1),
@@ -50,8 +87,19 @@ test_scorer_fn = function(simdata, obsdata) {
 }
 ```
 
-``` r
+Each element of the returned list represents a distance between the
+simulated and observed version of `data1` and `data2`. These distances
+become the basis for accepting or rejecting parameter proposals.
 
+------------------------------------------------------------------------
+
+## Step 3: Generate Observed Data (Ground Truth)
+
+We now generate “observed” data using known parameters — this simulates
+real-world measurements. In practice, this would come from your actual
+dataset.
+
+``` r
 tmp = test_simulation(
   test_simulation_fn,
   test_scorer_fn,
@@ -63,11 +111,28 @@ truth = tmp$truth
 test_obsdata = tmp$obsdata
 ```
 
-``` r
+The
+[`test_simulation()`](https://ai4ci.github.io/tidyabc/reference/test_simulation.md)
+function runs the model once with the specified parameters and returns
+both the raw simulated data (`obsdata`) and the summary distances
+(`obsscores`). The `truth` object contains the known parameter values:  
+- `norm_mean = 4`  
+- `norm_sd = 2`  
+- `gamma_mean = 6`  
+- `gamma_sd = 2`
 
+We’ll see how well ABC recovers these values.
+
+------------------------------------------------------------------------
+
+## Step 4: Visualize the Observed Data
+
+Let’s look at the two summary variables we’re using for inference.
+
+``` r
 ggplot(
   tibble(data1 = test_obsdata$data1), aes(x=data1))+
-  geom_histogram(,binwidth = 1)+
+  geom_histogram(bins=50, fill="steelblue", color="white")+
   xlab("A + B - C")
 ```
 
@@ -76,11 +141,26 @@ ggplot(
 ``` r
 
 ggplot(tibble(data2 = test_obsdata$data2), aes(x=data2))+
-  geom_histogram(,binwidth = 1)+
-  xlab("B x C")
+  geom_histogram(bins=50, fill="coral", color="white")+
+  xlab("B × C")
 ```
 
 ![](tidyabc_files/figure-html/unnamed-chunk-5-2.png)
+
+These histograms show the empirical distributions of the two summary
+statistics. `data1` is roughly symmetric (due to the normal + gamma
+combination), while `data2` is right-skewed (product of two gamma
+variables). ABC will use these shapes to infer the underlying
+parameters.
+
+------------------------------------------------------------------------
+
+## Step 5: Define Prior Distributions
+
+In Bayesian inference, we express our uncertainty about the parameters
+before seeing the data using **priors**. Here, we define uniform priors
+for all parameters, and add a constraint to ensure the gamma
+distribution has a meaningful shape (mean \> standard deviation).
 
 ``` r
 test_priors = priors(
@@ -88,7 +168,7 @@ test_priors = priors(
   norm_sd ~ unif(0, 10),
   gamma_mean ~ unif(0, 10),
   gamma_sd ~ unif(0, 10),
-  # enforces convex gamma:
+  # enforces convex gamma: mean > sd
   ~ gamma_mean > gamma_sd 
 )
 
@@ -102,8 +182,19 @@ test_priors
 #> * gamma_mean > gamma_sd
 ```
 
-``` r
+The output shows the prior distributions for each parameter and the
+constraint. The constraint `~ gamma_mean > gamma_sd` ensures that the
+gamma distribution is not overly flat — a common real-world assumption.
 
+------------------------------------------------------------------------
+
+## Step 6: Run ABC Rejection Sampling
+
+Now we perform **ABC rejection sampling**: generate many parameter sets
+from the prior, simulate data for each, and accept those whose summary
+statistics are close enough to the observed ones.
+
+``` r
 rejection_fit = abc_rejection(
   obsdata = test_obsdata,
   priors_list = test_priors,
@@ -111,7 +202,7 @@ rejection_fit = abc_rejection(
   scorer_fn = test_scorer_fn,
   n_sims = 10000,
   acceptance_rate = 0.01,
-  parallel= FALSE
+  parallel = FALSE
 )
 #> ABC rejection, 1 wave.
 
@@ -122,14 +213,67 @@ summary(rejection_fit)
 #> # Groups:   param [4]
 #>   param      mean_sd       median_95_CrI           ESS
 #>   <chr>      <chr>         <chr>                 <dbl>
-#> 1 gamma_mean 5.903 ± 0.396 5.933 [5.040 — 6.695]  78.0
-#> 2 gamma_sd   1.908 ± 0.595 1.906 [0.752 — 3.113]  78.0
-#> 3 norm_mean  3.991 ± 0.919 3.923 [2.067 — 6.048]  78.0
-#> 4 norm_sd    2.240 ± 1.406 2.081 [0.148 — 5.713]  78.0
+#> 1 gamma_mean 5.932 ± 0.374 5.962 [5.159 — 6.701]  79.3
+#> 2 gamma_sd   1.999 ± 0.603 1.999 [0.641 — 3.193]  79.3
+#> 3 norm_mean  3.996 ± 0.800 4.033 [2.271 — 5.831]  79.3
+#> 4 norm_sd    2.032 ± 1.325 1.872 [0.070 — 4.916]  79.3
 ```
+
+- `n_sims = 10000`: We simulate 10,000 parameter sets.
+- `acceptance_rate = 0.01`: We accept the top 1% of simulations with
+  smallest distances (i.e., best matches).
+
+The [`summary()`](https://rdrr.io/r/base/summary.html) output shows: -
+The **median** and **IQR** of the posterior for each parameter (i.e.,
+the best estimates after conditioning on the data). - The **Effective
+Sample Size (ESS)**: a measure of how much information is in the
+posterior (higher = better). - The **convergence status**.
+
+Compare the posterior medians to the true values (`truth`). With enough
+simulations and a good distance metric, we expect them to be close.
+
+------------------------------------------------------------------------
+
+## Step 7: Plot the Results
+
+Finally, we visualize the posterior distributions alongside the true
+parameter values.
 
 ``` r
 plot(rejection_fit, truth=truth)
 ```
 
 ![](tidyabc_files/figure-html/unnamed-chunk-8-1.png)
+
+The plot shows: - **Marginal posterior densities** for each parameter
+(red curves), estimated using empirical distribution fitting. - **Dotted
+vertical lines** indicating the true parameter values (`truth`). -
+**Solid vertical marks** representing the median and 95% credible
+intervals.
+
+If the true values lie within the credible intervals and are near the
+peak of the posterior, we can conclude that ABC successfully recovered
+the underlying parameters — even without knowing the likelihood!
+
+------------------------------------------------------------------------
+
+## Conclusion
+
+This vignette demonstrates a complete ABC workflow that could work with
+observed data:
+
+1.  Define a simulation model (`sim_fn`),
+2.  Define a distance metric (`scorer_fn`),
+3.  Specify priors,
+4.  Run ABC rejection sampling,
+5.  Summarize and visualize the posterior.
+
+The `tidyabc` package makes this process intuitive and modular. You can
+now replace `test_simulation_fn` and `test_scorer_fn` with your own
+model and summary statistics — and let ABC do the inference for you.
+
+For more efficiency, consider switching to
+[`abc_smc()`](https://ai4ci.github.io/tidyabc/reference/abc_smc.md) or
+[`abc_adaptive()`](https://ai4ci.github.io/tidyabc/reference/abc_adaptive.md)
+in larger problems, which use sequential refinement to reduce the number
+of required simulations.

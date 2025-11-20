@@ -15,7 +15,7 @@ representing the mixture distribution.
 ## Usage
 
 ``` r
-mixture(dists, weights = 1, steps = 200, tail_p = 1e-04, ...)
+mixture(dists, weights = 1, steps = 200, tail_p = 1e-04, ..., name = "mixture")
 ```
 
 ## Arguments
@@ -51,6 +51,10 @@ mixture(dists, weights = 1, steps = 200, tail_p = 1e-04, ...)
       `x=p(q(x))` is no longer exactly true. Setting this to false will
       replace this with a piecewise linear fit that is not smooth in the
       density, but is exact in forward and reverse transformation.
+
+- name:
+
+  a name for the mixture
 
 ## Value
 

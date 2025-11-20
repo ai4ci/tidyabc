@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">tidyabc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9003</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,7 +48,7 @@
 <li><a class="dropdown-item" href="../articles/abc-adaptive.html">ABC Adaptive</a></li>
     <li><a class="dropdown-item" href="../articles/abc-smc.html">ABC Sequential Monte-Carlo</a></li>
     <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distribution functions</a></li>
-    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Scoring and summarising functions</a></li>
+    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Simulation, scoring and convergence functions</a></li>
     <li><a class="dropdown-item" href="../articles/sim-example.html">Early outbreak and Generation time</a></li>
   </ul>
 </li>
@@ -80,35 +80,541 @@
 
     
     
-<!-- TODO: Update Statistical distributions vignette -->
-<!-- Issue URL: https://github.com/ai4ci/tidyabc/issues/18 -->
-<div class="section level2">
-<h2 id="s3-distribution-wrappers">S3 distribution wrappers<a class="anchor" aria-label="anchor" href="#s3-distribution-wrappers"></a>
-</h2>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ai4ci.github.io/tidyabc">tidyabc</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Attaching package: 'tidyabc'</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     transform, truncate</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Attaching package: 'dplyr'</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:stats':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     filter, lag</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/get_theme.html" class="external-link">set_theme</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h3>
+<p>There are parts to this vignette. A description of extra distribution
+functions available in <code>tidyabc</code> and explanation of the
+<code>dist_fns</code> S3 class which collects statistical distribution
+functions for use as a single entity.</p>
+</div>
+<div class="section level3">
+<h3 id="reparameterised-statistical-distributions">Reparameterised statistical distributions<a class="anchor" aria-label="anchor" href="#reparameterised-statistical-distributions"></a>
+</h3>
+<p>The <code>tidyabc</code> package provides several useful probability
+distribution functions beyond the standard R families available through
+<code>stats</code>. These are particularly handy for modelling scenarios
+common in ABC workflows, offering convenient parametrizations (e.g., by
+mean and standard deviation) or specific support ranges.</p>
+<div class="section level4">
+<h4 id="core-functions">Core Functions<a class="anchor" aria-label="anchor" href="#core-functions"></a>
+</h4>
+<p>Like standard R distributions (e.g., <code><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">stats::dnorm</a></code>,
+<code><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">stats::pnorm</a></code>), these custom families provide four main
+types of functions:</p>
 <ul>
-<li>example of as.dist_fns</li>
-<li>plotting</li>
-<li>naming</li>
+<li>
+<strong><code>dXXX(x, ...)</code></strong>: Density (PDF) or
+Probability Mass (PMF) function.</li>
+<li>
+<strong><code>pXXX(q, ...)</code></strong>: Cumulative Distribution
+Function (CDF).</li>
+<li>
+<strong><code>qXXX(p, ...)</code></strong>: Quantile function
+(inverse CDF).</li>
+<li>
+<strong><code>rXXX(n, ...)</code></strong>: Random number generation
+function.</li>
 </ul>
 </div>
-<div class="section level2">
-<h2 id="empirical-distributions">Empirical distributions<a class="anchor" aria-label="anchor" href="#empirical-distributions"></a>
-</h2>
+<div class="section level4">
+<h4 id="selected-examples">Selected Examples<a class="anchor" aria-label="anchor" href="#selected-examples"></a>
+</h4>
+<p>Here are examples of a few key families available in
+<code>tidyabc</code>:</p>
+<p><strong>1. Logit-Normal (<code>logitnorm</code> /
+<code>logitnorm2</code>)</strong></p>
+<p>A distribution supported on (0, 1), useful for modelling
+probabilities or proportions. The <code>logitnorm2</code> family
+parametrizes via the median (<code>prob.0.5</code>) and a dispersion
+parameter (<code>kappa</code>).</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Density at x=0.7 with median 0.6 and low dispersion</span></span>
+<span><span class="fu"><a href="../reference/dlogitnorm2.html">dlogitnorm2</a></span><span class="op">(</span><span class="fl">0.7</span>, prob.0.5 <span class="op">=</span> <span class="fl">0.6</span>, kappa <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 1.198863</span></span>
+<span></span>
+<span><span class="co"># CDF value at q=0.5</span></span>
+<span><span class="fu"><a href="../reference/plogitnorm2.html">plogitnorm2</a></span><span class="op">(</span><span class="fl">0.5</span>, prob.0.5 <span class="op">=</span> <span class="fl">0.6</span>, kappa <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.034604</span></span>
+<span></span>
+<span><span class="co"># Generate 5 random samples</span></span>
+<span><span class="fu"><a href="../reference/rlogitnorm2.html">rlogitnorm2</a></span><span class="op">(</span><span class="fl">5</span>, prob.0.5 <span class="op">=</span> <span class="fl">0.6</span>, kappa <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.5232468 0.6507264 0.6135923 0.5451227 0.4654565</span></span></code></pre></div>
+<p><strong>2. Beta (<code>beta2</code>)</strong></p>
+<p>Another distribution supported on (0, 1), re-parametrized for mean
+(<code>prob</code>) and a coefficient of variation (<code>kappa</code>),
+useful for modelling uncertainty around a central probability.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Density at x=0.3 with mean 0.3 and variability 0.1</span></span>
+<span><span class="fu"><a href="../reference/dbeta2.html">dbeta2</a></span><span class="op">(</span><span class="fl">0.3</span>, prob <span class="op">=</span> <span class="fl">0.3</span>, kappa <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 18.08818</span></span>
+<span></span>
+<span><span class="co"># Quantile for the 90th percentile</span></span>
+<span><span class="fu"><a href="../reference/qbeta2.html">qbeta2</a></span><span class="op">(</span><span class="fl">0.9</span>, prob <span class="op">=</span> <span class="fl">0.3</span>, kappa <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.3284255</span></span>
+<span></span>
+<span><span class="co"># Generate 5 random samples</span></span>
+<span><span class="fu"><a href="../reference/rbeta2.html">rbeta2</a></span><span class="op">(</span><span class="fl">5</span>, prob <span class="op">=</span> <span class="fl">0.3</span>, kappa <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.2979052 0.2862110 0.3194007 0.2763879 0.2884079</span></span></code></pre></div>
+<p><strong>3. Gamma (<code>gamma2</code>,
+<code>cgamma</code>)</strong></p>
+<p>Distributions supported on (0, ∞). <code>gamma2</code> is
+parametrized by mean and standard deviation. <code>cgamma</code> is a
+“convex” gamma (mean &gt; standard deviation), useful for positive
+variables with a defined mode.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Density at x=6 for a gamma with mean=5, sd=2</span></span>
+<span><span class="fu"><a href="../reference/dgamma2.html">dgamma2</a></span><span class="op">(</span><span class="fl">6</span>, mean <span class="op">=</span> <span class="fl">5</span>, sd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.1468682</span></span>
+<span></span>
+<span><span class="co"># Quantile for the 75th percentile for convex gamma</span></span>
+<span><span class="fu"><a href="../reference/qcgamma.html">qcgamma</a></span><span class="op">(</span><span class="fl">0.75</span>, mean <span class="op">=</span> <span class="fl">3</span>, kappa <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span> <span class="co"># kappa is coef. of variation here</span></span>
+<span><span class="co">#&gt; [1] 3.975408</span></span>
+<span></span>
+<span><span class="co"># Generate 5 random samples from gamma2</span></span>
+<span><span class="fu"><a href="../reference/rgamma2.html">rgamma2</a></span><span class="op">(</span><span class="fl">5</span>, mean <span class="op">=</span> <span class="fl">5</span>, sd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 3.102579 4.073661 5.531429 3.104214 2.003245</span></span></code></pre></div>
+<p><strong>4. Wedge (<code>wedge</code>)</strong></p>
+<p>A distribution supported on [0, 1] with a linear probability density
+function. The <code>a</code> parameter controls skewness (a=0 is
+uniform, a&gt;0 is right-skewed, a&lt;0 is left-skewed).</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Density at x=0.8 with right skew (a=1)</span></span>
+<span><span class="fu"><a href="../reference/dwedge.html">dwedge</a></span><span class="op">(</span><span class="fl">0.8</span>, a <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.72</span></span>
+<span></span>
+<span><span class="co"># Quantile for the 50th percentile (median) with left skew (a=-1)</span></span>
+<span><span class="fu"><a href="../reference/qwedge.html">qwedge</a></span><span class="op">(</span><span class="fl">0.5</span>, a <span class="op">=</span> <span class="op">-</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.381966</span></span>
+<span></span>
+<span><span class="co"># Generate 5 random samples</span></span>
+<span><span class="fu"><a href="../reference/rwedge.html">rwedge</a></span><span class="op">(</span><span class="fl">5</span>, a <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.7755830 0.0589818 0.3373321 0.4228551 0.7340710</span></span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="list-of-additional-families">List of Additional Families<a class="anchor" aria-label="anchor" href="#list-of-additional-families"></a>
+</h4>
 <ul>
-<li>from data</li>
-<li>from CDF</li>
+<li>
+<code>logitnorm</code>, <code>logitnorm2</code>
+</li>
+<li><code>wedge</code></li>
+<li><code>beta2</code></li>
+<li>
+<code>lnorm2</code> (Log-Normal)</li>
+<li>
+<code>gamma2</code>, <code>cgamma</code> (Convex Gamma)</li>
+<li>
+<code>nbinom2</code> (Negative Binomial)</li>
+<li>
+<code>null</code> (Always returns <code>NA</code> - via
+<code>rnull</code>, <code>pnull</code>, etc.)</li>
 </ul>
+<p>These functions can be used directly in R for calculations,
+simulations, or defining priors before wrapping them into
+<code>dist_fns</code> objects.</p>
+</div>
+<div class="section level4">
+<h4 id="specialized-random-number-generators">Specialized Random Number Generators<a class="anchor" aria-label="anchor" href="#specialized-random-number-generators"></a>
+</h4>
+<p><code>tidyabc</code> also provides specific functions designed
+primarily for random sampling, which are particularly useful for forward
+simulation within ABC workflows.</p>
+<p><strong>1. Bernoulli (<code>rbern</code>)</strong></p>
+<p>Generates logical values (<code>TRUE</code>/<code>FALSE</code>) based
+on a probability of success.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Simulate 10 Bernoulli trials with prob=0.3</span></span>
+<span><span class="fu"><a href="../reference/rbern.html">rbern</a></span><span class="op">(</span><span class="fl">10</span>, prob <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  [1] FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE</span></span></code></pre></div>
+<p><strong>2. Categorical (<code>rcategorical</code>)</strong></p>
+<p>Generates random samples from a multinomial-like distribution over a
+set of named or numbered categories, based on provided
+probabilities.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Define probabilities for categories "A", "B", "C"</span></span>
+<span><span class="va">probs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span> <span class="op">=</span> <span class="fl">0.1</span>, <span class="st">"B"</span> <span class="op">=</span> <span class="fl">0.3</span>, <span class="st">"C"</span> <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Sample 5 categories according to the probabilities</span></span>
+<span><span class="fu"><a href="../reference/rcategorical.html">rcategorical</a></span><span class="op">(</span><span class="fl">5</span>, prob <span class="op">=</span> <span class="va">probs</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "A" "C" "C" "C" "C"</span></span>
+<span></span>
+<span><span class="co"># Sample 5 categories and return them as a factor</span></span>
+<span><span class="fu"><a href="../reference/rcategorical.html">rcategorical</a></span><span class="op">(</span><span class="fl">5</span>, prob <span class="op">=</span> <span class="va">probs</span>, factor <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] B C B B C</span></span>
+<span><span class="co">#&gt; Levels: A B C</span></span></code></pre></div>
+<p><strong>3. Exponential Growth Process Times (<code>rexpgrowth</code>,
+<code>rexpgrowthI0</code>)</strong></p>
+<p>These functions sample event times from an exponentially growing (or
+decaying) process. This is useful for simulating arrival times,
+infection times, or other phenomena where the underlying rate changes
+exponentially over time.</p>
+<ul>
+<li>
+<code>rexpgrowth(n, r, t_end, t_start)</code>: Generates
+<code>n</code> event times assuming an exponential growth rate
+<code>r</code> over the interval <code>[t_start, t_end]</code>.</li>
+<li>
+<code>rexpgrowthI0(I0, r, t_end, t_start)</code>: Generates event
+times aiming for an <em>expected</em> initial number of events
+<code>I0</code> in the first unit of time, given the growth rate
+<code>r</code>.</li>
+</ul>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Example: Simulate 100 event times from a process growing at rate 0.1</span></span>
+<span><span class="co"># over the interval [0, 40]</span></span>
+<span><span class="va">event_times_growth</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rexpgrowth.html">rexpgrowth</a></span><span class="op">(</span><span class="fl">100</span>, r <span class="op">=</span> <span class="fl">0.1</span>, t_end <span class="op">=</span> <span class="fl">40</span>, t_start <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">event_times_growth</span>, breaks <span class="op">=</span> <span class="fl">20</span>, main <span class="op">=</span> <span class="st">"Event Times (Growth r=0.1)"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="s3-distributions_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" width="672"></p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="co"># Example: Simulate event times aiming for an initial rate of 10 events per day</span></span>
+<span><span class="co"># over 20 days with a growth rate of 0.05</span></span>
+<span><span class="va">event_times_I0</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rexpgrowthI0.html">rexpgrowthI0</a></span><span class="op">(</span>I0 <span class="op">=</span> <span class="fl">10</span>, r <span class="op">=</span> <span class="fl">0.05</span>, t_end <span class="op">=</span> <span class="fl">20</span>, t_start <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">event_times_I0</span>, breaks <span class="op">=</span> <span class="fl">20</span>, main <span class="op">=</span> <span class="st">"Event Times (I0=10, r=0.05)"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="s3-distributions_files/figure-html/unnamed-chunk-8-2.png" class="r-plt" width="672"></p>
+<p>These functions provide convenient ways to model specific random
+processes often encountered in simulation models used with ABC.</p>
+<hr>
+</div>
 </div>
 <div class="section level2">
-<h2 id="mixtures-and-truncation">Mixtures and truncation<a class="anchor" aria-label="anchor" href="#mixtures-and-truncation"></a>
+<h2 id="distribution-family-s3-class">Distribution family S3 class:<a class="anchor" aria-label="anchor" href="#distribution-family-s3-class"></a>
 </h2>
+<p>The <code>dist_fns</code> S3 class in <code>tidyabc</code> provides a
+powerful and unified interface for working with probability
+distributions. It encapsulates the core statistical functions (CDF
+<code>p</code>, quantile <code>q</code>, density <code>d</code>, random
+<code>r</code>) into a single object, enabling flexible creation,
+manipulation, and analysis. This vignette demonstrates how to create
+<code>dist_fns</code> objects from standard families, manipulate them
+within data frames using <code>tidyverse</code> principles, fit
+empirical distributions from data or quantiles, and combine them into
+mixtures.</p>
+<div class="section level3">
+<h3 id="creating-dist_fns-objects">Creating <code>dist_fns</code> Objects<a class="anchor" aria-label="anchor" href="#creating-dist_fns-objects"></a>
+</h3>
+<div class="section level4">
+<h4 id="from-standard-families">From Standard Families<a class="anchor" aria-label="anchor" href="#from-standard-families"></a>
+</h4>
+<p>The most straightforward way to create a <code>dist_fns</code> object
+is from standard R distribution families using
+<code><a href="../reference/as.dist_fns.html">as.dist_fns()</a></code>.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Create a single normal distribution object</span></span>
+<span><span class="va">norm_dist</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as.dist_fns.html">as.dist_fns</a></span><span class="op">(</span><span class="st">"norm"</span>, mean <span class="op">=</span> <span class="fl">4</span>, sd <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">norm_dist</span><span class="op">)</span></span>
+<span><span class="co">#&gt; norm(mean = 4, sd = 3); Median (IQR) 4 [1.98 — 6.02]</span></span>
+<span></span>
+<span><span class="co"># Access its functions directly</span></span>
+<span><span class="va">norm_dist</span><span class="op">$</span><span class="fu">p</span><span class="op">(</span><span class="fl">5</span><span class="op">)</span> <span class="co"># CDF at x=5</span></span>
+<span><span class="co">#&gt; [1] 0.6305587</span></span>
+<span><span class="va">norm_dist</span><span class="op">$</span><span class="fu">q</span><span class="op">(</span><span class="fl">0.95</span><span class="op">)</span> <span class="co"># 95th percentile</span></span>
+<span><span class="co">#&gt; [1] 8.934561</span></span>
+<span><span class="va">norm_dist</span><span class="op">$</span><span class="fu">r</span><span class="op">(</span><span class="fl">5</span><span class="op">)</span> <span class="co"># Generate 5 random samples</span></span>
+<span><span class="co">#&gt; [1] 6.916409 4.776708 7.622407 3.191541 1.905080</span></span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="alternative-distribution-parameterisation">Alternative distribution parameterisation<a class="anchor" aria-label="anchor" href="#alternative-distribution-parameterisation"></a>
-</h2>
-<ul>
-<li>rgamma2 etc.</li>
-</ul>
+<div class="section level4">
+<h4 id="creating-multiple-distributions-with-pmap_dist_fns">Creating Multiple Distributions with <code>pmap_dist_fns</code><a class="anchor" aria-label="anchor" href="#creating-multiple-distributions-with-pmap_dist_fns"></a>
+</h4>
+<p>You can create a <em>list</em> of <code>dist_fns</code> objects, each
+with different parameters. This is efficiently done using
+<code><a href="../reference/pmap_dist_fns.html">pmap_dist_fns()</a></code> within a <code><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">dplyr::mutate()</a></code> call,
+mapping parameter values from columns of a data frame.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Define a data frame with parameters for different families</span></span>
+<span><span class="va">param_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
+<span>  id <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,</span>
+<span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"norm"</span>, <span class="st">"gamma2"</span>, <span class="st">"lnorm2"</span><span class="op">)</span>,</span>
+<span>  mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">2</span>, <span class="fl">5</span><span class="op">)</span>,</span>
+<span>  sd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1.5</span>, <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Use pmap_dist_fns to create a list column of dist_fns objects</span></span>
+<span><span class="va">dist_df</span> <span class="op">&lt;-</span> <span class="va">param_df</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    dist_obj <span class="op">=</span> <span class="fu"><a href="../reference/pmap_dist_fns.html">pmap_dist_fns</a></span><span class="op">(</span></span>
+<span>      <span class="va">.</span>,</span>
+<span>      <span class="kw">function</span><span class="op">(</span><span class="va">family</span>, <span class="va">mean</span>, <span class="va">sd</span>, <span class="va">...</span><span class="op">)</span> <span class="fu"><a href="../reference/as.dist_fns.html">as.dist_fns</a></span><span class="op">(</span><span class="va">family</span>, <span class="va">mean</span>, <span class="va">sd</span><span class="op">)</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="co"># N.b. annoyingly RStudio does not use the default pillar printer and the</span></span>
+<span><span class="co"># details do not show up when rendering a tibble in RStudio</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">dist_df</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 5</span></span></span>
+<span><span class="co">#&gt;      id family  mean    sd</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>     1 norm       0   1  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>     2 gamma2     2   1.5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>     3 lnorm2     5   2  </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 more variable: dist_obj &lt;distfn[]&gt;</span></span></span></code></pre></div>
+<p>This pattern is intended for scenarios like storing prior
+distributions or posterior approximations for multiple parameters within
+a single data frame.</p>
+<p>Plotting distributions together is managed with the <code>plot</code>
+function which can be modified with <code>ggplot</code> commands.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">dist_df</span><span class="op">$</span><span class="va">dist_obj</span><span class="op">)</span></span></code></pre></div>
+<p><img src="s3-distributions_files/figure-html/unnamed-chunk-11-1.png" class="r-plt" width="672"></p>
+<hr>
+</div>
+</div>
+<div class="section level3">
+<h3 id="manipulating-dist_fns-objects-in-data-frames">Manipulating <code>dist_fns</code> Objects in Data Frames<a class="anchor" aria-label="anchor" href="#manipulating-dist_fns-objects-in-data-frames"></a>
+</h3>
+<p>Once <code>dist_fns</code> objects are stored in a data frame column,
+you can manipulate them using <code><a href="../reference/map_dist_fns.html">map_dist_fns()</a></code> or standard
+<code>purrr</code>/<code>dplyr</code> functions.</p>
+<div class="section level4">
+<h4 id="applying-transformations-truncation-example">Applying Transformations: Truncation Example<a class="anchor" aria-label="anchor" href="#applying-transformations-truncation-example"></a>
+</h4>
+<p>You can apply transformations like <code><a href="../reference/truncate.html">truncate()</a></code> to
+<code>dist_fns</code> objects stored in a column.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Truncate each distribution from the previous example to be positive</span></span>
+<span><span class="va">dist_df_truncated</span> <span class="op">&lt;-</span> <span class="va">dist_df</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    dist_truncated <span class="op">=</span> <span class="fu"><a href="../reference/map_dist_fns.html">map_dist_fns</a></span><span class="op">(</span><span class="va">dist_obj</span>, <span class="op">~</span> <span class="fu"><a href="../reference/truncate.html">truncate</a></span><span class="op">(</span><span class="va">.x</span>, x_left <span class="op">=</span> <span class="fl">0</span>, x_right <span class="op">=</span> <span class="fl">5</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Plot the truncated versions of the distributions</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">dist_df_truncated</span><span class="op">$</span><span class="va">dist_truncated</span><span class="op">)</span></span></code></pre></div>
+<p><img src="s3-distributions_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" width="672"></p>
+<hr>
+</div>
+</div>
+<div class="section level3">
+<h3 id="combining-dist_fns-mixture-distributions">Combining <code>dist_fns</code>: Mixture Distributions<a class="anchor" aria-label="anchor" href="#combining-dist_fns-mixture-distributions"></a>
+</h3>
+<p>A powerful feature is creating mixture distributions from a list of
+<code>dist_fns</code> objects, for example, using
+<code><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">dplyr::summarise()</a></code>.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Create a list of different distribution objects (e.g., representing different scenarios/models)</span></span>
+<span></span>
+<span><span class="va">mix_df</span> <span class="op">=</span> <span class="va">dist_df</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="co"># Assign weights to each component</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>weights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.4</span>, <span class="fl">0.4</span>, <span class="fl">0.2</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
+<span>    mix <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="../reference/mixture.html">mixture</a></span><span class="op">(</span><span class="va">dist_obj</span>, weights <span class="op">=</span> <span class="va">weights</span>, name<span class="op">=</span><span class="st">"weighted"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: There was 1 warning in `summarise()`.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> In argument: `mix = c(mixture(dist_obj, weights = weights, name =</span></span>
+<span><span class="co">#&gt;   "weighted"))`.</span></span>
+<span><span class="co">#&gt; Caused by warning in `empirical_cdf()`:</span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> CDF was not stricly increasing. Ignoring invalid points.</span></span>
+<span></span>
+<span><span class="va">mixture_dist</span> <span class="op">=</span> <span class="va">mix_df</span><span class="op">$</span><span class="va">mix</span></span>
+<span></span>
+<span><span class="co"># Plot the mixture</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">mixture_dist</span><span class="op">)</span></span></code></pre></div>
+<p><img src="s3-distributions_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" width="672"></p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="co"># Evaluate the mixture CDF</span></span>
+<span><span class="va">mixture_dist</span><span class="op">$</span><span class="fu">p</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.2001710 0.4509674 0.6336441 0.7431442 0.8298949</span></span></code></pre></div>
+<hr>
+</div>
+<div class="section level3">
+<h3 id="fitting-empirical-distributions">Fitting Empirical Distributions<a class="anchor" aria-label="anchor" href="#fitting-empirical-distributions"></a>
+</h3>
+<p><code>tidyabc</code> provides robust tools for fitting empirical
+distributions from data or quantiles.</p>
+<div class="section level4">
+<h4 id="from-quantiles-using-empirical_cdf">From Quantiles using <code>empirical_cdf</code><a class="anchor" aria-label="anchor" href="#from-quantiles-using-empirical_cdf"></a>
+</h4>
+<p>If you have quantile values (e.g., from another distribution or
+simulation output), you can fit an empirical CDF. This takes a link
+parameter which lets you easily define support for the empirical CDF.
+The resulting fit will impute the tails of the distribution to prevent
+truncation.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Example: Fit an empirical distribution to quantiles of a known distribution</span></span>
+<span><span class="va">target_dist</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as.dist_fns.html">as.dist_fns</a></span><span class="op">(</span><span class="st">"gamma"</span>, shape <span class="op">=</span> <span class="fl">2</span>, rate <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co"># Define probability points</span></span>
+<span><span class="va">p_points</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">0.9</span>, <span class="fl">0.95</span>, <span class="fl">0.975</span><span class="op">)</span> </span>
+<span><span class="co"># Get corresponding quantiles</span></span>
+<span><span class="va">q_values</span> <span class="op">&lt;-</span> <span class="va">target_dist</span><span class="op">$</span><span class="fu">q</span><span class="op">(</span><span class="va">p_points</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Fit an empirical distribution using these quantiles</span></span>
+<span><span class="va">empirical_from_quantiles</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/empirical_cdf.html">empirical_cdf</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">q_values</span>, p <span class="op">=</span> <span class="va">p_points</span>, link <span class="op">=</span> <span class="st">"log"</span>, name <span class="op">=</span> <span class="st">"Empirical from Quantiles"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Compare the original and fitted </span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">target_dist</span>,<span class="va">empirical_from_quantiles</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="s3-distributions_files/figure-html/unnamed-chunk-14-1.png" class="r-plt" width="672"></p>
+<div class="section level5">
+<h5 id="ensemble-of-quantile-based-distributions-as-a-mixture">Ensemble of Quantile-Based Distributions as a Mixture<a class="anchor" aria-label="anchor" href="#ensemble-of-quantile-based-distributions-as-a-mixture"></a>
+</h5>
+<p>You can create an ensemble of such quantile-based fits and combine
+them into a mixture.</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="co"># From previous example we create a data frame with quantiles in it</span></span>
+<span><span class="va">quantile_df</span> <span class="op">=</span> <span class="va">dist_df</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    quantiles <span class="op">=</span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">dist_obj</span>, <span class="op">~</span> <span class="va">.x</span><span class="op">$</span><span class="fu">q</span><span class="op">(</span><span class="va">p_points</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">dist_obj</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># now if this was our input we could fit empirical distributions:</span></span>
+<span><span class="co"># N.B. We could do this with a grouped data frame.</span></span>
+<span><span class="va">ensemble_df</span> <span class="op">=</span> <span class="va">quantile_df</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    emp_cdf <span class="op">=</span> <span class="fu"><a href="../reference/map_dist_fns.html">map_dist_fns</a></span><span class="op">(</span><span class="va">quantiles</span>, <span class="kw">function</span><span class="op">(</span><span class="va">q</span><span class="op">)</span> <span class="fu"><a href="../reference/empirical.html">empirical</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">q</span>,p <span class="op">=</span> <span class="va">p_points</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
+<span>    ensemble <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="../reference/mixture.html">mixture</a></span><span class="op">(</span><span class="va">emp_cdf</span>,name <span class="op">=</span> <span class="st">"unweighted ensemble"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">ensemble_df</span><span class="op">$</span><span class="va">ensemble</span>, <span class="va">mixture_dist</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="s3-distributions_files/figure-html/unnamed-chunk-15-1.png" class="r-plt" width="672"></p>
+</div>
+</div>
+<div class="section level4">
+<h4 id="from-samples-using-empirical_data">From Samples using <code>empirical_data</code><a class="anchor" aria-label="anchor" href="#from-samples-using-empirical_data"></a>
+</h4>
+<p>For fitting directly from sample data (e.g., MCMC output, simulation
+results), use <code><a href="../reference/empirical.html">empirical()</a></code> or
+<code><a href="../reference/empirical_data.html">empirical_data()</a></code>.</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Generate sample data from a distribution</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
+<span><span class="va">sample_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/GammaDist.html" class="external-link">rgamma</a></span><span class="op">(</span><span class="fl">1000</span>, shape <span class="op">=</span> <span class="fl">2</span>, rate <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Fit an empirical distribution to the samples</span></span>
+<span><span class="va">empirical_from_samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/empirical.html">empirical</a></span><span class="op">(</span></span>
+<span>  x <span class="op">=</span> <span class="va">sample_data</span>, name <span class="op">=</span> <span class="st">"Empirical from Samples"</span>, bw<span class="op">=</span><span class="fl">0.25</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Compare the sample histogram with the fitted density</span></span>
+<span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>sample <span class="op">=</span> <span class="va">sample_data</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">sample</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html" class="external-link">geom_histogram</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>y <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes_eval.html" class="external-link">after_stat</a></span><span class="op">(</span><span class="va">density</span><span class="op">)</span><span class="op">)</span>, bins <span class="op">=</span> <span class="fl">50</span>, alpha <span class="op">=</span> <span class="fl">0.5</span>, fill <span class="op">=</span> <span class="st">"lightblue"</span>, color <span class="op">=</span> <span class="st">"black"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html" class="external-link">stat_function</a></span><span class="op">(</span>fun <span class="op">=</span> <span class="va">empirical_from_samples</span><span class="op">$</span><span class="va">d</span>, color <span class="op">=</span> <span class="st">"red"</span>, linewidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Sample Histogram vs. Fitted Empirical Density"</span>, x <span class="op">=</span> <span class="st">"x"</span>, y <span class="op">=</span> <span class="st">"Density"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="s3-distributions_files/figure-html/unnamed-chunk-16-1.png" class="r-plt" width="672"></p>
+<div class="section level5">
+<h5 id="weighted-sample-fitting">Weighted Sample Fitting<a class="anchor" aria-label="anchor" href="#weighted-sample-fitting"></a>
+</h5>
+<p><code><a href="../reference/empirical.html">empirical()</a></code> also handles <em>weighted</em> samples,
+which is crucial in methods like ABC where particles have importance
+weights.</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Simulate weighted samples (e.g., importance sampling output)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">456</span><span class="op">)</span></span>
+<span><span class="va">n_samples</span> <span class="op">&lt;-</span> <span class="fl">500</span></span>
+<span></span>
+<span><span class="va">raw_samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n_samples</span> <span class="op">/</span> <span class="fl">2</span>, mean <span class="op">=</span> <span class="fl">1</span>, sd <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span>, </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n_samples</span> <span class="op">/</span> <span class="fl">2</span>, mean <span class="op">=</span> <span class="fl">3</span>, sd <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Simulate some weights (e.g., importance weights)</span></span>
+<span><span class="co"># these are correlated to the distance from 3, which for example might be the </span></span>
+<span><span class="co"># true value</span></span>
+<span><span class="va">weights</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="va">n_samples</span>, min <span class="op">=</span> <span class="fl">0.1</span>, max <span class="op">=</span> <span class="fl">2.0</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="op">(</span><span class="op">(</span><span class="va">raw_samples</span> <span class="op">-</span> <span class="fl">3</span><span class="op">)</span><span class="op">/</span><span class="fl">2</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Normalize weights (often done automatically internally, but good practice)</span></span>
+<span><span class="va">weights</span> <span class="op">&lt;-</span> <span class="va">weights</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">weights</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Fit empirical distribution from weighted samples</span></span>
+<span><span class="va">empirical_weighted</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/empirical.html">empirical</a></span><span class="op">(</span></span>
+<span>  x <span class="op">=</span> <span class="va">raw_samples</span>, w <span class="op">=</span> <span class="va">weights</span>, </span>
+<span>  name <span class="op">=</span> <span class="st">"weighted"</span>, bw<span class="op">=</span><span class="fl">0.25</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">empirical_unweighted</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/empirical.html">empirical</a></span><span class="op">(</span></span>
+<span>  x <span class="op">=</span> <span class="va">raw_samples</span>, </span>
+<span>  name <span class="op">=</span> <span class="st">"unweighted"</span>, bw<span class="op">=</span><span class="fl">0.25</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Plot the fitted distribution</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">empirical_weighted</span>,<span class="va">empirical_unweighted</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="s3-distributions_files/figure-html/unnamed-chunk-17-1.png" class="r-plt" width="672"></p>
+</div>
+<div class="section level5">
+<h5 id="using-wquantile-for-quantiles-from-weighted-data">Using <code>wquantile</code> for Quantiles from Weighted Data<a class="anchor" aria-label="anchor" href="#using-wquantile-for-quantiles-from-weighted-data"></a>
+</h5>
+<p>The approach above can give you quantiles from the data. It is
+however fairly heavyweight if you know you are only going ot need a few
+quantiles from the weighted data.</p>
+<p>The <code><a href="../reference/wquantile.html">wquantile()</a></code> function provides a quicker way to
+estimate quantiles from weighted data, including use of link functions,
+using a similar but less complex approach to <code>empirical</code>. In
+this case agreement is close but not perfect</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Calculate specific quantiles from the weighted samples using wquantile</span></span>
+<span><span class="va">weighted_quantiles</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/wquantile.html">wquantile</a></span><span class="op">(</span></span>
+<span>  p <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">0.975</span><span class="op">)</span>, <span class="co"># Common quantiles</span></span>
+<span>  x <span class="op">=</span> <span class="va">raw_samples</span>,</span>
+<span>  w <span class="op">=</span> <span class="va">weights</span>,</span>
+<span>  link <span class="op">=</span> <span class="st">"log"</span>, <span class="co"># Use identity link for unbounded support, or specify prior support</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning in log(.x): NaNs produced</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>Probability <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">0.975</span><span class="op">)</span>, Quantile <span class="op">=</span> <span class="va">weighted_quantiles</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 2</span></span></span>
+<span><span class="co">#&gt;   Probability Quantile</span></span>
+<span><span class="co">#&gt;         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>       0.025    0.526</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>       0.25     1.61 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>       0.5      2.75 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>       0.75     3.29 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>       0.975    4.19</span></span>
+<span></span>
+<span><span class="co"># Compare with quantiles from the fitted empirical distribution (which used the same weighted data)</span></span>
+<span><span class="va">fitted_quantiles</span> <span class="op">&lt;-</span> <span class="va">empirical_weighted</span><span class="op">$</span><span class="fu">q</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">0.975</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>Probability <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">0.975</span><span class="op">)</span>, Quantile_Fitted <span class="op">=</span> <span class="va">fitted_quantiles</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 2</span></span></span>
+<span><span class="co">#&gt;   Probability Quantile_Fitted</span></span>
+<span><span class="co">#&gt;         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>       0.025           0.565</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>       0.25            1.68 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>       0.5             2.71 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>       0.75            3.28 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>       0.975           4.19</span></span>
+<span><span class="co"># Values should be similar.</span></span>
+<span><span class="co"># Choices regarding the degree of smoothing will affect the exact answer.</span></span></code></pre></div>
+<hr>
+</div>
+</div>
+</div>
+<div class="section level3">
+<h3 id="conclusion">Conclusion<a class="anchor" aria-label="anchor" href="#conclusion"></a>
+</h3>
+<p>The <code>dist_fns</code> class provides a flexible and consistent
+way to represent, manipulate, and combine probability distributions in
+R, especially within a <code>tidyverse</code> workflow. Its integration
+with data frames allows for powerful batch operations and storage of
+complex distributional information. The empirical fitting capabilities
+make it suitable for approximating complex distributions derived from
+data or simulation results, including handling weighted samples common
+in Bayesian and ABC methods.</p>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

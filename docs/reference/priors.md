@@ -59,10 +59,11 @@ print(p)
 # Plot methods are also provided:
 if (interactive()) plot(p)
 
+
 # constraints:
 p@constraints
 #> [[1]]
 #> ~mean > sd
-#> <environment: 0x566a0bb11538>
+#> <environment: 0x58080fefe860>
 #> 
 ```

@@ -162,7 +162,7 @@ NULL
 #' @returns a nested tibble with 2 columns `summary` and `per_parameter`
 #'   with stats in each. The `summary` stats are
 #' @keywords internal
-.compare_waves = function(sim_df, prev_sim_df = NULL, priors_list) {
+.compare_waves = function(sim_df, prev_sim_df = NULL, priors_list, wave) {
   nms = priors_list@params
 
   sim_weight = suppressWarnings(sim_df$abc_weight)
@@ -243,6 +243,7 @@ NULL
   names(quantile_range_redn) = nms
 
   return(dplyr::tibble(
+    wave = wave,
     summary = list(dplyr::tibble(
       abs_distance = epsilon_new,
       abs_distance_redn = (epsilon_old - epsilon_new),
@@ -516,7 +517,8 @@ NULL
   priors_list,
   epsilon,
   proposal_list,
-  kernel
+  kernel,
+  use_proposal_correlation
 ) {
   # N.B. this is not currently being used
   # as tends to produce worse results than a kernel distance only weight.
@@ -539,7 +541,7 @@ NULL
   if (!is.null(proposal_list)) {
     cor = attr(proposal_list, "cor")
   }
-  if (is.null(cor)) {
+  if (is.null(cor) || !use_proposal_correlation) {
     cor = diag(length(params))
   }
 
@@ -549,6 +551,7 @@ NULL
 
   # In proposal MVN space:
   # This should be the same copula that was used to generate the proposals:
+  # Correlation is accounted for unless switched off
   log_q = mvtnorm::dmvnorm(theta_new, sigma = cor, log = TRUE)
 
   # The prior probability of this particle is defined in the MVN space using the

@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">tidyabc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9003</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -28,7 +28,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/abc-adaptive.html">ABC Adaptive</a></li>
     <li><a class="dropdown-item" href="../articles/abc-smc.html">ABC Sequential Monte-Carlo</a></li>
     <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distribution functions</a></li>
-    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Scoring and summarising functions</a></li>
+    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Simulation, scoring and convergence functions</a></li>
     <li><a class="dropdown-item" href="../articles/sim-example.html">Early outbreak and Generation time</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -69,7 +69,26 @@
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>passed on to methods</p></dd>
+<dd><p>passed on to methods
+  Named arguments passed on to <code><a href="plot.dist_fns_list.html">plot.dist_fns_list</a></code></p><dl><dt><code>mapping</code></dt>
+<dd><p>override default aesthetics with <code>name</code>, <code>id</code> or <code>group</code></p></dd>
+
+<dt><code>steps</code></dt>
+<dd><p>resolution of the plot</p></dd>
+
+<dt><code>tail</code></dt>
+<dd><p>the minimum tail probability to plot</p></dd>
+
+<dt><code>plot_quantiles</code></dt>
+<dd><p>by default the quantiles of the distribution are
+plotted over the density sometimes this makes it hard to read</p></dd>
+
+<dt><code>smooth</code></dt>
+<dd><p>by default some additional smoothing is used to cover up small
+discontinuities in the PDF.</p></dd>
+
+
+</dl></dd>
 
 </dl></div>
     <div class="section level2">

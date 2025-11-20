@@ -11,7 +11,16 @@ plot_evolution(fit, truth = NULL, ...)
 
 \item{truth}{a named numeric vector of known parameter values}
 
-\item{...}{passed on to methods}
+\item{...}{passed on to methods
+  Named arguments passed on to \code{\link[=plot.dist_fns_list]{plot.dist_fns_list}}\describe{
+    \item{\code{mapping}}{override default aesthetics with \code{name}, \code{id} or \code{group}}
+\item{\code{steps}}{resolution of the plot}
+\item{\code{tail}}{the minimum tail probability to plot}
+\item{\code{plot_quantiles}}{by default the quantiles of the distribution are
+plotted over the density sometimes this makes it hard to read}
+\item{\code{smooth}}{by default some additional smoothing is used to cover up small
+discontinuities in the PDF.}
+}}
 }
 \value{
 a plot of the density functions by wave

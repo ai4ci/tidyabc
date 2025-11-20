@@ -24,6 +24,7 @@
 #' @param dist a distribution as a name, function or a `dist_fn` S3 object
 #' @param x_left The lower end of the interval or NA for open
 #' @param x_right The upper end of the interval or NA for open
+#' @param name a name for the truncation
 #' @param ... parameters for the underlying distribution if `dist` is a name or
 #'  function.
 #'
@@ -68,7 +69,7 @@
 #'   "trunc(gamma(shape = 2, rate = 1), 2.00 - Inf); Median (IQR) 2.97 [2.42 — 3.87]"
 #' )
 #'
-truncate = function(dist, x_left, x_right, ...) {
+truncate = function(dist, x_left, x_right, ..., name = NULL) {
   if (!is.dist_fns_list(dist)) {
     if (!is.dist_fns(dist)) {
       dist = as.dist_fns(dist, ...)
@@ -126,7 +127,9 @@ truncate = function(dist, x_left, x_right, ...) {
     )
   )
 
-  name = sprintf("trunc(%s, %1.2f - %1.2f)", dist$name, x_low, x_high)
+  if (is.null(name)) {
+    name = sprintf("trunc(%s, %1.2f - %1.2f)", dist$name, x_low, x_high)
+  }
 
   return(
     new_dist_fns(

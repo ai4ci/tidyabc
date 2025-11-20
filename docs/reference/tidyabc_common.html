@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">tidyabc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9003</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -28,7 +28,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/abc-adaptive.html">ABC Adaptive</a></li>
     <li><a class="dropdown-item" href="../articles/abc-smc.html">ABC Sequential Monte-Carlo</a></li>
     <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distribution functions</a></li>
-    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Scoring and summarising functions</a></li>
+    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Simulation, scoring and convergence functions</a></li>
     <li><a class="dropdown-item" href="../articles/sim-example.html">Early outbreak and Generation time</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -175,9 +175,9 @@ we expect the distribution to be unimodal.</p></dd>
 
 <dt id="arg-bw">bw<a class="anchor" aria-label="anchor" href="#arg-bw"></a></dt>
 <dd><p>for Adaptive ABC data distributions are smoothed before modelling
-the CDF. Over smoothing can reduce convergence, under-smoothing may result
-in noisy posterior estimates. This is in units of the ESS and defaults to
-0.1.</p></dd>
+the CDF. Over smoothing can reduce convergence rate, under-smoothing may result
+in noisy posterior estimates, and appearance of local modes.
+This is a proportion of the ESS and defaults to 0.1.</p></dd>
 
 
 <dt id="arg-max-time">max_time<a class="anchor" aria-label="anchor" href="#arg-max-time"></a></dt>
@@ -224,6 +224,25 @@ simulation and associated parameters should be rejected or held for the
 next round. All kernels except <code>gaussian</code> have a hard cut-off outside of
 which the probability of acceptance of a particle is zero. Use of
 <code>gaussian</code> kernels can result in poor convergence.</p></dd>
+
+
+<dt id="arg-widen-by">widen_by<a class="anchor" aria-label="anchor" href="#arg-widen-by"></a></dt>
+<dd><p>change the dispersion of proposal distribution in ABC
+adaptive, preserving the median. This is akin to a nonlinear,
+heteroscedastic random walk in the quantile space, and can help address
+over-fitting or local modes in the ABC adaptive waves. <code>widen_by</code> is an odds
+ratio and describes how much further from the median any given part of the
+distribution is after transformation. E.g. if the median of a distribution
+is zero, and the <code>widen_by</code> is 2 then the 0.75 quantile will move to the
+position of the 0.9 quantile. The distribution will stay within the
+support of the prior. This is by default 1.05 which allows for some
+additional variability in proposals.</p></dd>
+
+
+<dt id="arg-use-proposal-correlation">use_proposal_correlation<a class="anchor" aria-label="anchor" href="#arg-use-proposal-correlation"></a></dt>
+<dd><p>When calculating the weight of a particle the
+proposal correlation structure is available, to help determine how unusual
+or otherwise a particle is.</p></dd>
 
 </dl></div>
 

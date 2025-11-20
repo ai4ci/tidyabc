@@ -28,15 +28,68 @@ library(tidyabc)
 
 knitr::opts_chunk$set(
   echo = TRUE,
-  dev = "ragg_png"
+  dev = "ragg_png",
+  fig.width = 7,
+  fig.height = 5
 )
 
+ggplot2::set_theme(theme_minimal())
 ```
 
+## Introduction
 
-# Simulation
+This vignette demonstrates a complex, real-world application of ABC to infer key
+epidemiological parameters from early outbreak data. Specifically, we aim to
+estimate the **basic reproduction number (R0)** and the **generation time
+distribution** using only linked case data that includes symptom onset times and
+observation delays.
 
-## Setup simulation
+During the early stages of an outbreak, detailed information like who infected
+whom (a "transmission tree") is often incomplete or unknown. However, if we can
+observe *some* linked transmission pairs (e.g., through contact tracing), we can
+use the times between symptom onsets in these pairs—the **serial interval**—to
+learn about the underlying **generation time** (the time between infection in a
+primary case and infection in a secondary case).
+
+This is a challenging inference problem because:
+1.  **Infection times are hidden**: 
+We only observe symptom onset and reporting times, which are delayed and stochastic.
+2.  **Observation is biased**: 
+Cases are only observed if their symptom onset and reporting happen within the
+observation window. This "right-censoring" distorts the observed distributions.
+3.  **Parameters are linked**: 
+R0 is mathematically related to the growth rate (`r0`) and the generation time
+distribution via the **Wallinga-Lipsitch equation**.
+
+`tidyabc` provides a flexible framework to build a simulation model that
+captures this complexity and then use ABC to infer the hidden parameters.
+
+---
+
+## Simulation: Generating "Observed" Data
+
+We begin by simulating a realistic outbreak using the `ggoutbreak` package to
+create a synthetic "ground truth" dataset.
+
+### Simulation Setup
+
+We define the true epidemiological parameters:
+- **Generation time**: 
+Mean = 4 days, SD = 2 days (a relatively short time between infections).
+- **R0**: 
+2.0 (each case infects 2 others on average).
+- **Initial cases (`I0`)**: 10.
+- **Symptom and observation process**: 
+Only 30% of infected individuals become symptomatic. Symptom onset is delayed
+from infection by a gamma-distributed time (Mean=7, SD=5). Of those symptomatic,
+70% are eventually detected, with a further gamma-distributed delay to
+observation (Mean=5, SD=3).
+- **Observation window**: 
+We only observe cases whose symptom onset and observation occur before day 40
+(`T_obs = 40`).
+
+### Running the Simulation
+
 
 ```{r}
 sim_params = list(
@@ -71,7 +124,8 @@ truth = ggoutbreak::sim_branching_process(
   fn_Rt = ~ sim_params$R0,
   fn_ip = ~sim_ip,
   fn_imports = \(t) ifelse(t == 1, sim_params$I0, 0),
-  max_time = 40
+  max_time = 40,
+  seed = 123
 )
 
 delayed = truth %>%
@@ -83,7 +137,8 @@ delayed = truth %>%
       sim_params$sd_onset
     ),
     input = "time",
-    output = "symptom"
+    output = "symptom",
+    seed = 123
   ) %>%
   ggoutbreak::sim_delay(
     p_fn = \(t, symptom) {
@@ -95,7 +150,8 @@ delayed = truth %>%
       sim_params$sd_obs
     ),
     input = "symptom_time",
-    output = "observation"
+    output = "observation",
+    seed = 123
   )
 
 
@@ -105,17 +161,40 @@ traced_contacts = observed %>%
   dplyr::semi_join(observed, by = c("infector" = "id"))
 ```
 
-## Index case onset
+1.  **Branching Process**: 
+The core outbreak is simulated as a stochastic branching process with a constant
+`R0` of 2.0 and the specified generation time distribution (`sim_ip`).
+2.  **Adding Delays**: 
+We then layer on the complexities of real-world observation:
+    - `sim_delay(..., output = "symptom")` adds the symptom onset delay.
+    - `sim_delay(..., output = "observation")` adds the delay from symptom onset 
+    to being recorded in the dataset.
+3.  **Observation and Tracing**: 
+We filter the data to only include cases observed before `T_obs=40` and then
+identify a subset of **traced transmission pairs** (where both the infector and
+the infected are observed and linked).
 
-```{r}
+### The Observed Data
+
+From this simulated outbreak, we extract three key pieces of information to use
+as our `obsdata` for ABC:
+
+1.  **Primary Case Onset Times**:
+
+```{r fig.width=3, fig.height=3}
+
 index_case_onset = observed %>% dplyr::transmute(onset_time = floor(symptom_time))
 
 ggplot(index_case_onset, aes(x=onset_time))+geom_histogram(binwidth = 1)
 ```
 
+This histogram shows the distribution of symptom onset times for all observed
+primary cases. The shape is influenced by the exponential growth rate of the
+outbreak, the symptom onset delay distribution, and the delay to observation.
+
 ## Delay to observation
 
-```{r}
+```{r fig.width=3, fig.height=3}
 
 # Data
 
@@ -127,9 +206,14 @@ ggplot(delay_distribution, aes(x = obs_delay))+geom_histogram(binwidth = 1)+
   xlab("symptom to observation")
 ```
 
+This shows the distribution of delays between symptom onset and when the case
+was observed. This reflects the `mean_obs` and `sd_obs` parameters. In an
+exponentially growing outbreak longer delays to observation may be be fully
+represented due to right censoring.
+
 ## Observed serial interval
 
-```{r}
+```{r fig.width=3, fig.height=3}
 serial_pairs = observed %>%
   inner_join(
     traced_contacts,
@@ -141,12 +225,18 @@ serial_pairs = observed %>%
     # serial_interval = abs(floor(symptom_time.2) - floor(symptom_time.1)) #order uncertain
   ) 
 
-
-
 ggplot(serial_pairs) +
   geom_histogram(aes(x = serial_interval), binwidth = 1)+
   xlab("symptom serial interval (given observed)")
 ```
+
+This is the most critical piece of data. The serial interval is the time between
+symptom onsets in observed transmission pairs. Because symptom onset is itself
+delayed from infection, the serial interval is a **noisy and potentially biased
+proxy** for the true generation time. Our model must account for this
+relationship. Longer serial intervals are not as frequently observed in the 
+context of exponential growth as long intervals between cases are less likely
+to have been observed yet.
 
 ```{r}
 obsdata = list(
@@ -157,21 +247,18 @@ obsdata = list(
 ```
 
 
+## The Inference Model
 
+Our goal is to fit a model that can simultaneously explain all three observed data components. The model makes explicit assumptions about the hidden processes:
 
+### Model Assumptions
 
-
-# Model
-
-Aim is to fit a model to all 3 aspects of the data simultaneously. 
-The model makes the following hard assumptions:
-
-- constant exponential growth in infection times (hidden t_inf)
-- delayed onset to symptoms - gamma distributed (t_onset = t_inf + onset_delay)
-- delayed observation of symptoms - gamma distributed (t_obs = onset + obs_delay)
-- secondary case delayed by generation time (hidden t_inf2 = t_inf + gt_delay)
-- secondary case symptom onset and observation as above (t_onset_2 / t_obs_2)
-- cases only observed if t_obs / t_obs_2 within time window (0-T)
+1.  **Transmission Dynamics**: 
+Infection times follow a process of **constant exponential growth** with rate `r0`.
+2.  **Delays**:
+    - Time from infection to symptom onset is **Gamma-distributed** (`mean_onset`, `sd_onset`).
+    - Time from symptom onset to observation is **Gamma-distributed** (`mean_obs`, `sd_obs`).
+    - The true **generation time** (time between infections in a pair) is **Gamma-distributed** (`mean_gt`, `sd_gt`).
 
 $$
 \begin{align}
@@ -182,6 +269,8 @@ t_{max} - T_{inf} &\sim Exp(r_0) \\
 \end{align}
 $$
 
+Delays are linked together like this:
+
 $$
 \begin{align}
 T_{onset} &= T_{inf} + \Delta T_{inf \rightarrow onset} \\
@@ -191,6 +280,10 @@ T_{inf_2} &= T_{inf_1} + \Delta T_{gt} \\
 \end{align}
 $$
 
+    
+3.  **Observation Process**: 
+A case is only "observed" if its symptom onset is after day 0 and its
+observation time is before `T_obs`.
 
 $$
 \begin{align}
@@ -201,6 +294,29 @@ T_{onset_1}|O_1 &\Rightarrow \text{primary case times}\\
 \Delta T_{onset_1 \rightarrow onset_2}|O_{1,2} &\Rightarrow \text{onset to onset serial interval}\\
 \end{align}
 $$
+
+4.  **Parameter Linkage**: 
+The basic reproduction number **R0** is not a free parameter. It is **determined
+by `r0` and the generation time distribution** through the Wallinga-Lipsitch
+formula, specific for gamma distributed generation times: 
+
+$$
+\begin{align}
+R_0 = (1 +  \frac{r_0\sigma_{gt}^2}{\mu_{gt}})^{\frac{\mu_{gt}^2}{\sigma_{gt}^2}}
+\end{align}
+$$
+
+
+### The Simulation Function (`sim1_fn`)
+
+The mathematical formulation of the model is implemented below, showing how the
+hidden infection times (`T_inf`) are used to generate the observed symptom times
+(`T_onset`), observation times (`T_obs`), and serial intervals (derived from
+linked pairs).
+
+This function is fully self contained and using `carrier::crate` to bind the
+observation window `T_obs` and the number of primary cases `n` from the observed
+data.
 
 ```{r}
 n = nrow(observed)
@@ -270,6 +386,28 @@ sim1_fn = carrier::crate(
 )
 ```
 
+It performs the following steps:
+1.  **Simulate Primary Infections**: 
+Generates `n` primary infection times from an exponentially growing process,
+starting early enough to account for long symptom delays.
+2.  **Add Delays for Primary Cases**: 
+Adds symptom onset and observation delays, then applies the observation filter.
+3.  **Simulate Secondary Infections**: 
+For each observed primary case, it generates a Poisson(`R0`) number of secondary
+cases.
+4.  **Add Delays for Secondary Cases**: 
+Adds their own generation time delay, symptom onset delay, and observation delay.
+5.  **Calculate Observed Quantities**: 
+Computes the final vectors for `onset`, `diff` (observation delay), and `si`
+(serial interval) from the simulated and filtered data.
+
+### The Scoring Function (`scorer1_fn`)
+
+The scorer function compares the simulated output to the observed data using the
+Wasserstein distance, which is well-suited for comparing distributions of event
+times. It also uses the mean absolute difference between simulated and observed
+data, to give some more information about the most important aspect of the 
+serial interval distribution.
 
 ```{r}
 
@@ -290,6 +428,16 @@ scorer1_fn = function(simdata, obsdata) {
 
 ```
 
+It returns a list of four components:
+- `sim_onset`, `sim_diff`, `sim_si`: 
+Wasserstein distances for the three main data components.
+- `sim_mad_si`: 
+The absolute difference in the **mean** serial interval. This provides an
+additional, direct constraint on the central tendency of the serial interval,
+complementing the distributional comparison from the Wasserstein distance.
+
+We test the `sim_fn` and `scorer_fn` pair to ensure they work correctly with the
+observed data.
 
 ```{r}
 
@@ -305,20 +453,19 @@ test = tidyabc::test_simulation(
 
 ```
 
-## Scoring
+## Inference with ABC
 
-We are going to fit the model in a custom ABC with rejection framework
+We now perform ABC to infer the true parameters from the `obsdata`.
 
-I'm assessing model fits to the data using an earth movers distance at the
-level of individual's observed times versus simulations observed times. Given 
-that simulations cutoff different numbers of people I have to match the size
-of the simulation and observed data
+### Priors
 
-
-## Priors
-
-Use a set of uninformative priors. RO is derived from Wallinga-Lipsitch, Gamma
-distributions hyperparameters constrained so that they are convex:
+We specify priors for the model parameters. The priors for the gamma
+distribution hyper-parameters (`mean_*`, `sd_*`) are constrained to be "convex"
+(mean > sd), ensuring the distributions have a single mode, which is a
+reasonable assumption for biological delays. The prior for `r0` is set to allow
+for growth rates consistent with the observation window. The `R0` parameter is
+**not given a prior**; it is a deterministic function of `r0`, `mean_gt`, and
+`sd_gt`.
 
 ```{r}
 
@@ -331,7 +478,7 @@ priors = priors(
   mean_gt ~ unif(0, 12),
   sd_gt ~ unif(0, 8),
   R0 ~ (1+r0*sd_gt^2/mean_gt) ^ (mean_gt^2 / sd_gt^2),
-  ~ is.finite(R0) & R0 > 0,
+  ~ is.finite(R0) & R0 > 0 & R0 < 12,
   ~ mean_onset > sd_onset,
   ~ mean_obs > sd_obs,
   ~ mean_gt > sd_gt
@@ -339,6 +486,19 @@ priors = priors(
 
 priors
 ```
+
+### ABC Workflow
+
+We run a multi-stage ABC workflow:
+
+1.  **Initial Rejection Sampling (`abc_rejection`)**:
+  - We perform a quick, low-resolution rejection fit with `n_sims=1000` and `acceptance_rate=0.5`.
+  - The primary goal is **not** to get the final answer, but to analyze the
+  resulting component scores using `posterior_distance_metrics()`. This helps us
+  calibrate the `scoreweights` to ensure the serial interval (`sim_si`,
+  `sim_mad_si`) has a strong influence on the distance calculation, as it is the
+  most informative data for inferring the generation time and R0.
+
 
 
 ```{r}
@@ -358,26 +518,13 @@ metrics = posterior_distance_metrics(abc_fit)
 
 # make the serial interval fitting much more important:
 scoreweights1 = metrics$scoreweights 
-# *
-#   c(
-#     sim_onset = 2,
-#     sim_diff = 1,
-#     sim_si = 3,
-#     sim_mad_si = 3
-#   )
-
-# scoreweights1 = 
-#   c(
-#     sim_onset = 2,
-#     sim_diff = 1,
-#     sim_si = 3,
-#     sim_mad_si = 4
-#   )
-
-
 
 ```
 
+2.  **Sequential Monte Carlo (`abc_smc`)**:
+  - Using the calibrated `scoreweights`, we run a more efficient SMC fit with `n_sims=8000`.
+  - SMC iteratively refines the proposal distribution, allowing it to home in on
+  the high-posterior-density region more effectively than rejection sampling.
 
 ```{r}
 
@@ -387,7 +534,7 @@ smc_fit = abc_smc(
   sim_fn = sim1_fn,
   scorer_fn = scorer1_fn,
   n_sims = 8000,
-  acceptance_rate = 0.5,
+  acceptance_rate = 0.25,
   #debug_errors = TRUE,
   parallel = TRUE,
   scoreweights = scoreweights1
@@ -397,10 +544,25 @@ summary(smc_fit)
 
 ```
 
+This is generally quite slow for the relative large number of waves and 
+simulations it requires until convergence. It has good matching between the 
+estimated parameters and the truth for initial growth rate, reproduction number
+and observation delays. It is uninformed about delay to onset (and this is 
+inherent in the model and data), and the generation time is somewhat constrained
+and the mode aligns with the true value but the median is still somewhat high.
+
 ```{r}
 plot(smc_fit,truth = sim_params)
 plot_evolution(smc_fit,truth = sim_params)
 ```
+
+
+3.  **Adaptive ABC (`abc_adaptive`)**:
+  - Finally, we run the Adaptive ABC algorithm. This method fits empirical
+  distributions to the posterior from each wave to create the next proposal,
+  which can be very effective for complex, non-Gaussian posteriors.
+  - We use `widen_by = 1.2` to provide a safety net against particle degeneracy.
+
 
 ```{r}
 
@@ -415,39 +577,92 @@ adaptive_fit = abc_adaptive(
   acceptance_rate = 0.2,
   # debug_errors = TRUE,
   parallel = TRUE,
-  scoreweights = scoreweights1
+  scoreweights = scoreweights1,
+  widen_by = 1.2
 )
 
 summary(adaptive_fit)
 
 ```
 
-
+The adaptive algorithm is quicker, less focussed on exploration and more on 
+convergence. With the settings above it can identify the growth rate, reproduction
+number, generation time mean, observation delay mean and SD to a high degree of 
+accuracy. In this case it tends to generate distributions that are very peaked
+but with heavy tails, leading to wide 95% credible intervals even when the 
+central estimate seems very close. The model is not informative about the onset
+distribution and this affects its predictive ability for the generation time
+SD.
 
 ```{r}
 
 plot(adaptive_fit,truth = sim_params)
+
+```
+
+
+The evolution plot shows how the posterior for each parameter evolved over the
+adaptive waves, demonstrating the algorithm's convergence.
+
+```{r}
 plot_evolution(adaptive_fit,truth = sim_params)
+```
+
+A correlation plot accounting for weighting reveals correlations between
+parameters in the final posterior (e.g., `r0` and `mean_gt` are often
+correlated).
+
+```{r fig.width = 7,fig.height = 7}
 plot_correlations(adaptive_fit,truth = sim_params) & ggplot2::theme(
-   axis.title.y = ggplot2::element_text(angle=70,vjust=0.1)
+   axis.title.y = ggplot2::element_text(angle=45,vjust=0, hjust=1),
+   axis.title.x = ggplot2::element_text(angle=45, hjust=1) #,vjust=1, hjust=0.5)
 )
+```
+
+- **`plot_convergence(adaptive_fit)`**: 
+The key diagnostic for iterative methods, showing the decline in distance
+(`abs_distance`), increase in ESS, and stabilization of parameter estimates
+(`rel_mean_change`).
+
+```{r}
 plot_convergence(adaptive_fit)
+```
+
+A powerful posterior predictive check. It generates new simulated datasets from
+the posterior and overlays their summary statistics (histograms) on the observed
+data. If the model is adequate and the inference successful, the simulated data
+should closely match the observed data.
+
+```{r}
 plot_simulations(obsdata, adaptive_fit, sim_fn = sim1_fn)
 ```
 
+### Refining the Priors
+
+With the knowledge that the onset distribution is not informed by the model. We
+imagine that we have other data to feed into this model. It is plausible that we
+might have independent estimates of symptom onset delay from traveller or
+household data. Likewise better estimates of the observation delay may be
+available elsewhere. We replace the uniform priors on the delay parameters with
+more informative
+**log-normal priors** (`lnorm2`) that reflect our prior belief about their
+likely scale.
+
+Using the output of previous runs we also given more informed priors for the 
+parameters under investigation.
 
 ```{r}
 
 priors2 = priors(
-  r0 ~ unif(-0.1, 0.7),
+  r0 ~ norm(0.2, 0.1),
   mean_onset ~ lnorm2(7, 2),
   sd_onset ~ lnorm2(5, 1),
   mean_obs ~ lnorm2(5, 1),
   sd_obs ~ lnorm2(3, 1),
-  mean_gt ~ unif(0, 12),
-  sd_gt ~ unif(0, 8),
+  mean_gt ~ lnorm2(4, 3),
+  sd_gt ~ lnorm2(3, 2),
   R0 ~ (1+r0*sd_gt^2/mean_gt) ^ (mean_gt^2 / sd_gt^2),
-  ~ is.finite(R0) & R0 > 0,
+  ~ is.finite(R0) & R0 > 0 & R0 < 12,
   ~ mean_onset > sd_onset,
   ~ mean_obs > sd_obs,
   ~ mean_gt > sd_gt
@@ -457,8 +672,17 @@ priors2
 ```
 
 
+We run the Adaptive ABC again with these new priors and compare the results.
+This allows us to assess the robustness of our inferences to prior
+specification. We also want to focus the algorithm on the elements of the data
+that are unknown, by modifying the `scoreweights`. We also let the algorithm 
+converge hard as we are relatively sure where we are investigating and trying 
+to twist it away from a relaxed state.
+
 ```{r}
 
+scoreweights2 = scoreweights1 *
+  c(sim_onset = 2, sim_diff = 0.5, sim_si = 2, sim_mad_si = 3)
 
 adaptive_fit2 = abc_adaptive(
   obsdata = obsdata,
@@ -469,20 +693,42 @@ adaptive_fit2 = abc_adaptive(
   acceptance_rate = 0.2,
   # debug_errors = TRUE,
   parallel = TRUE,
-  scoreweights = scoreweights1
+  scoreweights = scoreweights2,
+  widen_by = 1.1
 )
 
 summary(adaptive_fit2)
 
 ```
+
 ```{r}
 
-plot(adaptive_fit2,truth = sim_params)
-plot_evolution(adaptive_fit2,truth = sim_params)
-plot_correlations(adaptive_fit2,truth = sim_params) & ggplot2::theme(
-   axis.title.y = ggplot2::element_text(angle=45,vjust=0, hjust=1),
-   axis.title.x = ggplot2::element_text(angle=45, hjust=1) #,vjust=1, hjust=0.5)
-)
-plot_convergence(adaptive_fit2)
-plot_simulations(obsdata, adaptive_fit2, sim_fn = sim1_fn)
+plot(adaptive_fit2,truth = sim_params, tail = 0.01)
+
 ```
+
+And we can check that posterior resamples from the new fit are still consistent 
+with the data.
+
+```{r}
+
+plot_simulations(obsdata, adaptive_fit2, sim_fn = sim1_fn)
+
+```
+
+## Conclusion
+
+This vignette showcases the power of `tidyabc` for tackling complex, real-world
+inference problems in epidemiology. Including this tricky example where
+relatively short generation time is coupled with long delay to symptom onset. By
+building a detailed simulation model that captures the hidden processes of
+transmission and observation, and by carefully designing the scoring function
+and priors, we can use ABC to infer critical but unobservable parameters like R0
+and the generation time from limited, biased observational data. The suite of
+diagnostic plots provided by `tidyabc` allows for thorough evaluation of the
+inference quality and model adequacy.
+
+When working with a real problem developing a simulation first and checking that
+the ABC machinery is able to recover the simulation parameters is a very important
+aspect to fitting with ABC where there are quite a lot of variables in the
+fitting process that all may influence the overall quality of fit.

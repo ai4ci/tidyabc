@@ -4,7 +4,7 @@
 \alias{truncate}
 \title{Generate a distribution from a truncation of another}
 \usage{
-truncate(dist, x_left, x_right, ...)
+truncate(dist, x_left, x_right, ..., name = NULL)
 }
 \arguments{
 \item{dist}{a distribution as a name, function or a \code{dist_fn} S3 object}
@@ -15,6 +15,8 @@ truncate(dist, x_left, x_right, ...)
 
 \item{...}{parameters for the underlying distribution if \code{dist} is a name or
 function.}
+
+\item{name}{a name for the truncation}
 }
 \value{
 a \code{dist_fn} or \code{dist_fn_list} holding the truncated distribution(s)

@@ -4,7 +4,14 @@
 \alias{empirical_data}
 \title{Fit a piecewise logit transformed linear model to weighted data}
 \usage{
-empirical_data(x, w = NULL, link = "identity", ..., name = NULL, bw = NULL)
+empirical_data(
+  x,
+  w = NULL,
+  link = "identity",
+  ...,
+  name = NULL,
+  bw = wbw.nrd(x, w)
+)
 }
 \arguments{
 \item{x}{either a vector of samples from a distribution \code{X} or cut-offs for
@@ -101,6 +108,7 @@ e7 = empirical_data(
   x=seq(-10,10,length.out=1000),
   w=dnorm(seq(-10,10,length.out=1000))
 )
+plot(e7)+ggplot2::geom_function(fun = dnorm)
 testthat::expect_equal(e7$p(-5:5), pnorm(-5:5), tolerance=0.01)
 
 }\if{html}{\out{</div>}}

@@ -20,7 +20,7 @@ functions of the resulting `dist_fns` object.
 ## Usage
 
 ``` r
-truncate(dist, x_left, x_right, ...)
+truncate(dist, x_left, x_right, ..., name = NULL)
 ```
 
 ## Arguments
@@ -41,6 +41,10 @@ truncate(dist, x_left, x_right, ...)
 
   parameters for the underlying distribution if `dist` is a name or
   function.
+
+- name:
+
+  a name for the truncation
 
 ## Value
 

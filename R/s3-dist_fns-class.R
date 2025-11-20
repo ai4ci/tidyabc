@@ -544,6 +544,9 @@ plot.dist_fns_list = function(
 #' pois = as.dist_fns("pois",lambda = 8)
 #' n = as.dist_fns("norm",mean=4)
 as.dist_fns.character = function(x, ...) {
+  if (length(x) > 1) {
+    stop("This does not accept vector inputs for `x`")
+  }
   distr = x
   fn_names = paste0(c("p", "q", "r", "d"), distr)
 
@@ -606,6 +609,9 @@ as.dist_fns.character = function(x, ...) {
 #' @describeIn as.dist_fns From a statistical function
 #' @concept dist_fns_s3
 as.dist_fns.function = function(x, ...) {
+  if (length(x) > 1) {
+    stop("This does not accept vector inputs for `x`")
+  }
   distr = deparse(substitute(x)) #rlang::enexpr(x)
   name = gsub("^([^:]+::)?[dpqr]", "", distr, perl = TRUE)
   fn_names = paste0(c("p", "q", "r", "d"), name)

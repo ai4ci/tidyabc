@@ -85,6 +85,8 @@
   #   }
   # }
 
+  # TODO: Match name parameter for recycling.
+
   missing = sapply(names, function(x) {
     !(exists(x, envir = env, inherits = FALSE)) || rlang::is_missing(env[[x]])
   })
@@ -171,4 +173,39 @@
     lst,
     function(x) if (length(x) == 1) rep(x, max_len) else x
   ))
+}
+
+
+#' Recycles an input to match the length a set of names
+#'
+#' @param input an input vector which may be named
+#' @param names a set of names to match
+#'
+#' @returns a recycled vector with names matching the order of `names`
+#' @keywords internal
+#'
+#' @unit
+#'
+#' testthat::expect_equal(
+#'   .recycle_and_name(c(a = 1, b = 2, c = 3), c("c", "b", "a")),
+#'   c(c = 3, b = 2, a = 1)
+#' )
+#'
+#' testthat::expect_equal(
+#'   .recycle_and_name(1, c("A", "B")),
+#'   c(A = 1, B = 1)
+#' )
+#'
+.recycle_and_name = function(input, names) {
+  if (length(input) != length(names)) {
+    input = rep(input, length(names))
+  }
+  if (is.null(names(input))) {
+    names(input) = names
+  }
+  input = input[names]
+  if (!identical(names(input), names)) {
+    stop("Could not match input to names.")
+  }
+  return(input)
 }

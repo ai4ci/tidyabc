@@ -5,7 +5,7 @@ Generate comparison metrics for two sequential waves
 ## Usage
 
 ``` r
-.compare_waves(sim_df, prev_sim_df = NULL, priors_list)
+.compare_waves(sim_df, prev_sim_df = NULL, priors_list, wave)
 ```
 
 ## Arguments

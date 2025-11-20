@@ -78,9 +78,38 @@ test_that(".make_square unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/import-standalone-recycle.R"), c(146, 1, 146+1, 1))
+    srcref = srcref(srcfile("../../R/import-standalone-recycle.R"), c(148, 1, 148+1, 1))
   )
 })
 
 # unit test end: .make_square ----
+# unit test start: .recycle_and_name ----
+
+test_that(".recycle_and_name unit test", {
+
+  # Automatically generated test case from roxygen @unit tag
+  # Do not edit here - follow the link to the source file.
+  # or navigate to topic with <F2>
+  F2 = .recycle_and_name
+  
+
+  testthat::expect_equal(
+    .recycle_and_name(c(a = 1, b = 2, c = 3), c("c", "b", "a")),
+    c(c = 3, b = 2, a = 1)
+  )
+  
+  testthat::expect_equal(
+    .recycle_and_name(1, c("A", "B")),
+    c(A = 1, B = 1)
+  )
+
+  # generates a failure if the overall test is failing with a link to the 
+  # source of the unit test:
+  testthat::expect(rlang::caller_env(n = 2)$ok,
+    failure_message = "Source link for failing @unit test.",
+    srcref = srcref(srcfile("../../R/import-standalone-recycle.R"), c(187, 1, 187+1, 1))
+  )
+})
+
+# unit test end: .recycle_and_name ----
 # end of unit tests ----

@@ -149,9 +149,9 @@ abc_rejection = function(
   metric = .compare_waves(
     sim_df = sim_df,
     prev_sim_df = prev_sim_df,
-    priors_list = priors_list
-  ) %>%
-    dplyr::mutate(wave = 1)
+    priors_list = priors_list,
+    wave = 1
+  )
 
   converged = converged_fn(
     summary = metric$summary[[1]],
@@ -374,9 +374,9 @@ abc_smc = function(
     metric = .compare_waves(
       sim_df = sim_df,
       prev_sim_df = prev_sim_df,
-      priors_list = priors_list
-    ) %>%
-      dplyr::mutate(wave = i)
+      priors_list = priors_list,
+      wave = i
+    )
 
     wave_df = dplyr::bind_rows(wave_df, metric)
 
@@ -389,6 +389,7 @@ abc_smc = function(
 
     if (
       converged_fn(
+        wave = i,
         summary = metric$summary[[1]],
         per_param = metric$per_param[[1]]
       )
@@ -509,8 +510,8 @@ abc_smc = function(
 #'      and \eqn{Q_t(\theta^{(i)}_t) = \prod_j Q_{t,j}(\theta^{(i)}_{t,j})} is the
 #'      empirical proposal density (also assuming independence for density
 #'      calculation, consistent with the marginal fitting). The correlation
-#'      structure is handled only in the sampling process, not in the density
-#'      evaluation, which is a common practical approximation.
+#'      structure is handled in the sampling process, and optionally in the density
+#'      evaluation.
 #'
 #' 3. **Normalization:** Weights \eqn{w^{(i)}_t} are normalized to sum to one.
 #'    The algorithm includes a recovery mechanism: if the Effective Sample Size
@@ -525,6 +526,7 @@ abc_smc = function(
 #' @inheritParams tidyabc_common
 #' @inheritParams empirical
 #' @param ... must be empty
+
 #'
 #' @inherit new_abc_fit return
 #' @export
@@ -565,7 +567,9 @@ abc_adaptive = function(
   debug_errors = FALSE,
   kernel = "epanechnikov",
   bw = 0.1,
-  scoreweights = NULL
+  widen_by = 1.05,
+  scoreweights = NULL,
+  use_proposal_correlation = TRUE
 ) {
   rlang::check_dots_empty()
   if (!is.null(seed)) {
@@ -643,7 +647,8 @@ abc_adaptive = function(
           priors_list = priors_list,
           epsilon = epsilon,
           proposal_list = proposal_list,
-          kernel = kernel
+          kernel = kernel,
+          use_proposal_correlation = use_proposal_correlation
         )
 
       tmp_sim_df = tmp_sim_df %>%
@@ -700,10 +705,10 @@ abc_adaptive = function(
     metric = .compare_waves(
       sim_df = sim_df,
       prev_sim_df = prev_sim_df,
-      priors_list = priors_list
+      priors_list = priors_list,
+      wave = i
     ) %>%
       dplyr::mutate(
-        wave = i,
         # keep the proposal distribution
         proposal_distribution = list(proposal_list)
       )
@@ -721,6 +726,7 @@ abc_adaptive = function(
     # Check whether current wave meets convergence criteria
     if (
       converged_fn(
+        wave = i,
         summary = metric$summary[[1]],
         per_param = metric$per_param[[1]]
       )
@@ -754,7 +760,8 @@ abc_adaptive = function(
       # priors_list = proposal_list,
       # might think this could be proposal_list but either seems to work...
       knots = knots,
-      bw = bw
+      bw = bw,
+      widen_by = widen_by
     )
 
     sim_df = .sample_constrained(
@@ -826,31 +833,43 @@ abc_adaptive = function(
 #' # fitting and is here only for example
 #' last_wave_metrics = utils::tail(fit$waves,1)
 #' converged = check(
-#'   last_wave_metrics$summary[[1]],
-#'   last_wave_metrics$per_param[[1]]
+#'   wave = 0,
+#'   summary = last_wave_metrics$summary[[1]],
+#'   per_param = last_wave_metrics$per_param[[1]]
 #' )
 #'
 #' if (isTRUE(converged)) print("Converged (permissive definition)")
 #'
 default_termination_fn = function(stability = 0.01, confidence = 0.1) {
-  function(summary, per_param) {
-    if (length(stability) != nrow(per_param)) {
-      stability = rep(stability, nrow(per_param))
-    }
-    if (is.null(names(stability))) {
-      names(stability) = per_param$param
-    }
-    if (length(confidence) != nrow(per_param)) {
-      confidence = rep(confidence, nrow(per_param))
-    }
-    if (is.null(names(confidence))) {
-      names(confidence) = per_param$param
-    }
+  function(wave, summary, per_param) {
+    stability = .recycle_and_name(stability, per_param$param)
+    confidence = .recycle_and_name(confidence, per_param$param)
 
     isTRUE(
-      all(per_param$rel_mean_change < stability[per_param$param]) &&
-        all(per_param$IQR_95_redn < confidence[per_param$param])
+      all(per_param$rel_mean_change < stability) &&
+        all(per_param$IQR_95_redn < confidence)
     )
+  }
+}
+
+
+#' Run the SMC or adaptive algorithm for a set number of waves
+#'
+#' @param max_wave the number of waves to run
+#'
+#' @returns A function that will test for completion
+#' @export
+#'
+#' @examples
+#' # Declare converged after 3 waves:
+#' converged_fn = fixed_wave_termination_fn(3)
+fixed_wave_termination_fn = function(max_wave) {
+  # TODO: The termination function should have mulitple possible statuses
+  function(wave, summary, per_param) {
+    if (wave < max_wave) {
+      return(FALSE)
+    }
+    return(TRUE) # sprintf("Finished at wave %d",wave))
   }
 }
 
@@ -1266,7 +1285,8 @@ posterior_fit_empirical = function(
   posteriors_df,
   priors_list,
   knots = NULL,
-  bw = 0.1
+  bw = 0.1,
+  widen_by = 1
 ) {
   weights = suppressWarnings(posteriors_df$abc_weight) #maybe null
 
@@ -1292,7 +1312,7 @@ posterior_fit_empirical = function(
       wsd(col, weights)
     )
     # limits = prior$q(c(0, 1))
-    empirical(
+    tmp2 = empirical(
       x = col,
       w = weights,
       fit_spline = TRUE,
@@ -1301,6 +1321,10 @@ posterior_fit_empirical = function(
       name = name,
       bw = bw
     )
+    if (!isFALSE(widen_by)) {
+      tmp2 = widen(tmp2, scale = widen_by, name = name)
+    }
+    return(tmp2)
   })
   names(tmp) = nms
 
@@ -1309,7 +1333,11 @@ posterior_fit_empirical = function(
     dplyr::select(dplyr::starts_with("abc_mvn_")) %>%
     as.matrix()
   # weighted correlation:
-  cov = stats::cov.wt(theta, wt = weights, method = "ML")$cov
+  if (is.null(weights)) {
+    cov = stats::cov(theta)
+  } else {
+    cov = stats::cov.wt(theta, wt = weights, method = "ML")$cov
+  }
 
   proposal_list = utils::modifyList(priors_list, tmp)
   attr(proposal_list, "cor") = stats::cov2cor(cov)

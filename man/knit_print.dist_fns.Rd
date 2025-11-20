@@ -4,7 +4,7 @@
 \alias{knit_print.dist_fns}
 \title{Print a \code{dist_fns} S3 object in an Rd document}
 \usage{
-\method{knit_print}{dist_fns}(x, ...)
+knit_print.dist_fns(x, ...)
 }
 \arguments{
 \item{x}{a \code{dist_fns} S3 object}

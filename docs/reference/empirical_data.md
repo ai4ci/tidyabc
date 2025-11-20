@@ -7,7 +7,14 @@ is either something like "log", "logit", etc.
 ## Usage
 
 ``` r
-empirical_data(x, w = NULL, link = "identity", ..., name = NULL, bw = NULL)
+empirical_data(
+  x,
+  w = NULL,
+  link = "identity",
+  ...,
+  name = NULL,
+  bw = wbw.nrd(x, w)
+)
 ```
 
 ## Arguments
@@ -129,4 +136,5 @@ samples or as quantiles it should recover the tail
       x=seq(-10,10,length.out=1000),
       w=dnorm(seq(-10,10,length.out=1000))
     )
+    plot(e7)+ggplot2::geom_function(fun = dnorm)
     testthat::expect_equal(e7$p(-5:5), pnorm(-5:5), tolerance=0.01)

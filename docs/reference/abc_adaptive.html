@@ -29,7 +29,7 @@ high acceptance rate, over multiple waves."><meta property="og:image" content="h
 
     <a class="navbar-brand me-2" href="../index.html">tidyabc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9003</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,7 +44,7 @@ high acceptance rate, over multiple waves."><meta property="og:image" content="h
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/abc-adaptive.html">ABC Adaptive</a></li>
     <li><a class="dropdown-item" href="../articles/abc-smc.html">ABC Sequential Monte-Carlo</a></li>
     <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distribution functions</a></li>
-    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Scoring and summarising functions</a></li>
+    <li><a class="dropdown-item" href="../articles/scorer-functions.html">Simulation, scoring and convergence functions</a></li>
     <li><a class="dropdown-item" href="../articles/sim-example.html">Early outbreak and Generation time</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -97,7 +97,9 @@ high acceptance rate, over multiple waves.</p>
 <span>  debug_errors <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  kernel <span class="op">=</span> <span class="st">"epanechnikov"</span>,</span>
 <span>  bw <span class="op">=</span> <span class="fl">0.1</span>,</span>
-<span>  scoreweights <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  widen_by <span class="op">=</span> <span class="fl">1.05</span>,</span>
+<span>  scoreweights <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  use_proposal_correlation <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -225,9 +227,22 @@ which the probability of acceptance of a particle is zero. Use of
 
 <dt id="arg-bw">bw<a class="anchor" aria-label="anchor" href="#arg-bw"></a></dt>
 <dd><p>for Adaptive ABC data distributions are smoothed before modelling
-the CDF. Over smoothing can reduce convergence, under-smoothing may result
-in noisy posterior estimates. This is in units of the ESS and defaults to
-0.1.</p></dd>
+the CDF. Over smoothing can reduce convergence rate, under-smoothing may result
+in noisy posterior estimates, and appearance of local modes.
+This is a proportion of the ESS and defaults to 0.1.</p></dd>
+
+
+<dt id="arg-widen-by">widen_by<a class="anchor" aria-label="anchor" href="#arg-widen-by"></a></dt>
+<dd><p>change the dispersion of proposal distribution in ABC
+adaptive, preserving the median. This is akin to a nonlinear,
+heteroscedastic random walk in the quantile space, and can help address
+over-fitting or local modes in the ABC adaptive waves. <code>widen_by</code> is an odds
+ratio and describes how much further from the median any given part of the
+distribution is after transformation. E.g. if the median of a distribution
+is zero, and the <code>widen_by</code> is 2 then the 0.75 quantile will move to the
+position of the 0.9 quantile. The distribution will stay within the
+support of the prior. This is by default 1.05 which allows for some
+additional variability in proposals.</p></dd>
 
 
 <dt id="arg-scoreweights">scoreweights<a class="anchor" aria-label="anchor" href="#arg-scoreweights"></a></dt>
@@ -239,6 +254,12 @@ distance methods these weights multiply the output of <code>scorer_fn</code> dir
 For the other 2 distance methods some degree of normalisation is done first
 on the first wave scores to make different components have approximately the
 same relevance to the overall score.</p></dd>
+
+
+<dt id="arg-use-proposal-correlation">use_proposal_correlation<a class="anchor" aria-label="anchor" href="#arg-use-proposal-correlation"></a></dt>
+<dd><p>When calculating the weight of a particle the
+proposal correlation structure is available, to help determine how unusual
+or otherwise a particle is.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -294,8 +315,8 @@ density (assuming independence), \(K_{\epsilon_t}\) is the ABC kernel,
 and \(Q_t(\theta^{(i)}_t) = \prod_j Q_{t,j}(\theta^{(i)}_{t,j})\) is the
 empirical proposal density (also assuming independence for density
 calculation, consistent with the marginal fitting). The correlation
-structure is handled only in the sampling process, not in the density
-evaluation, which is a common practical approximation.</p></li>
+structure is handled in the sampling process, and optionally in the density
+evaluation.</p></li>
 </ul></li>
 <li><p><strong>Normalization:</strong> Weights \(w^{(i)}_t\) are normalized to sum to one.
 The algorithm includes a recovery mechanism: if the Effective Sample Size
@@ -322,20 +343,25 @@ contraction are met.</p></li>
 <span class="r-in"><span>  allow_continue <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ABC-Adaptive</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■                        </span>  24% | wave 2 ETA:  5s</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■          </span>  70% | wave 6 ETA:  2s</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Converged on wave: 7</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Adaptive waves:  <span style="color: #00BB00;">■■■■■                           </span>  15% | wave 1 ETA: 10s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■■■                      </span>  29% | wave 2 ETA:  6s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■                   </span>  42% | wave 3 ETA:  4s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■               </span>  54% | wave 4 ETA:  3s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■           </span>  67% | wave 5 ETA:  2s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■■■       </span>  80% | wave 6 ETA:  1s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■■■■■■■   </span>  92% | wave 7 ETA:  0s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Converged on wave: 8</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ABC adaptive fit: 7 waves - (converged)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ABC adaptive fit: 8 waves - (converged)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Parameter estimates:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 4</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Groups:   param [3]</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   param mean_sd       median_95_CrI           ESS</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mean  4.976 ± 0.032 4.973 [4.893 — 5.079]  304.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> sd1   2.011 ± 0.059 2.012 [1.780 — 2.174]  304.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> sd2   0.995 ± 0.031 0.995 [0.896 — 1.093]  304.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mean  4.985 ± 0.030 4.987 [4.888 — 5.062]  344.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> sd1   1.964 ± 0.072 1.949 [1.758 — 2.263]  344.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> sd2   1.010 ± 0.029 1.008 [0.923 — 1.107]  344.</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

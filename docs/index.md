@@ -1,6 +1,21 @@
 # tidyabc
 
-R framework for approximate Bayesian computing with tidy data
+## Approximate Bayesian Computation Made Tidy
+
+`tidyabc` provides a flexible, intuitive, and modern framework for
+Approximate Bayesian Computation (ABC). Designed for data-driven
+science, it allows you to perform Bayesian inference on complex models
+where the likelihood function is intractable or unknowable — common in
+fields like epidemiology, ecology, systems biology, and social science.
+
+Unlike traditional ABC tools, `tidyabc` integrates with the `tidyverse`
+ecosystem. Define your simulation model and summary statistics using
+familiar R functions, leverage powerful `dist_fns` objects to represent
+priors and posteriors, and use `dplyr`-style workflows to manage your
+ABC iterations. Whether you need a simple rejection sampler or the
+efficiency of Sequential Monte Carlo (SMC) or Adaptive ABC, `tidyabc`
+gives you the tools to build, diagnose, and interpret your inference
+within a clear, reproducible, and publication-ready workflow.
 
 ## Installation
 

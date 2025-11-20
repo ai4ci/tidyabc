@@ -134,6 +134,7 @@ print.abc_fit = function(x, ...) {
 }
 
 #' @describeIn abc_fit S3 plot method
+#' @inheritDotParams plot.dist_fns_list
 #' @export
 plot.abc_fit = function(x, ..., truth = NULL) {
   fits = x$summary %>%
@@ -151,7 +152,8 @@ plot.abc_fit = function(x, ..., truth = NULL) {
   tmp = plot(
     fits,
     plot_quantiles = TRUE,
-    mapping = ggplot2::aes(fill = group, colour = group)
+    mapping = ggplot2::aes(fill = group, colour = group),
+    ...
   ) +
     ggplot2::guides(
       fill = ggplot2::guide_none(),

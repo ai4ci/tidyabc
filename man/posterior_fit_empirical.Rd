@@ -4,7 +4,13 @@
 \alias{posterior_fit_empirical}
 \title{Fit empirical distribution to posterior samples for generating more waves}
 \usage{
-posterior_fit_empirical(posteriors_df, priors_list, knots = NULL, bw = 0.1)
+posterior_fit_empirical(
+  posteriors_df,
+  priors_list,
+  knots = NULL,
+  bw = 0.1,
+  widen_by = 1
+)
 }
 \arguments{
 \item{posteriors_df}{a dataframe of posteriors that have been selected by ABC
@@ -23,9 +29,20 @@ typically inferred from the data size. Small numbers tend to work better if
 we expect the distribution to be unimodal.}
 
 \item{bw}{for Adaptive ABC data distributions are smoothed before modelling
-the CDF. Over smoothing can reduce convergence, under-smoothing may result
-in noisy posterior estimates. This is in units of the ESS and defaults to
-0.1.}
+the CDF. Over smoothing can reduce convergence rate, under-smoothing may result
+in noisy posterior estimates, and appearance of local modes.
+This is a proportion of the ESS and defaults to 0.1.}
+
+\item{widen_by}{change the dispersion of proposal distribution in ABC
+adaptive, preserving the median. This is akin to a nonlinear,
+heteroscedastic random walk in the quantile space, and can help address
+over-fitting or local modes in the ABC adaptive waves. \code{widen_by} is an odds
+ratio and describes how much further from the median any given part of the
+distribution is after transformation. E.g. if the median of a distribution
+is zero, and the \code{widen_by} is 2 then the 0.75 quantile will move to the
+position of the 0.9 quantile. The distribution will stay within the
+support of the prior. This is by default 1.05 which allows for some
+additional variability in proposals.}
 }
 \value{
 an \code{abc_prior} S3 object approximating the distribution of the
