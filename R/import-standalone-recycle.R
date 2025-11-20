@@ -86,6 +86,7 @@
   # }
 
   # TODO: Match name parameter for recycling.
+  # Issue URL: https://github.com/ai4ci/tidyabc/issues/30
 
   missing = sapply(names, function(x) {
     !(exists(x, envir = env, inherits = FALSE)) || rlang::is_missing(env[[x]])

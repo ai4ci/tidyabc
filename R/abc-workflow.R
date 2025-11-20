@@ -865,6 +865,7 @@ default_termination_fn = function(stability = 0.01, confidence = 0.1) {
 #' converged_fn = fixed_wave_termination_fn(3)
 fixed_wave_termination_fn = function(max_wave) {
   # TODO: The termination function should have mulitple possible statuses
+  # Issue URL: https://github.com/ai4ci/tidyabc/issues/29
   function(wave, summary, per_param) {
     if (wave < max_wave) {
       return(FALSE)
