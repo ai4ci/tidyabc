@@ -290,7 +290,7 @@ test_that("wquantile unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(1425, 1, 1425+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(1427, 1, 1427+1, 1))
   )
 })
 
@@ -343,7 +343,7 @@ test_that(".fit_lm_1d unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(1575, 1, 1575+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(1577, 1, 1577+1, 1))
   )
 })
 

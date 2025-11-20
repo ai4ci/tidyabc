@@ -78,7 +78,7 @@ test_that(".make_square unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/import-standalone-recycle.R"), c(148, 1, 148+1, 1))
+    srcref = srcref(srcfile("../../R/import-standalone-recycle.R"), c(149, 1, 149+1, 1))
   )
 })
 
@@ -107,7 +107,7 @@ test_that(".recycle_and_name unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/import-standalone-recycle.R"), c(187, 1, 187+1, 1))
+    srcref = srcref(srcfile("../../R/import-standalone-recycle.R"), c(188, 1, 188+1, 1))
   )
 })
 

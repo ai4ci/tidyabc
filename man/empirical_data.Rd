@@ -10,7 +10,7 @@ empirical_data(
   link = "identity",
   ...,
   name = NULL,
-  bw = wbw.nrd(x, w)
+  bw = wbw.nrd(x, w)^sqrt(2)
 )
 }
 \arguments{

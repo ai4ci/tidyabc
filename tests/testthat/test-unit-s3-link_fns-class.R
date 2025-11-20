@@ -26,7 +26,7 @@ test_that("as.link_fns.character unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/s3-link_fns-class.R"), c(145, 1, 145+1, 1))
+    srcref = srcref(srcfile("../../R/s3-link_fns-class.R"), c(148, 1, 148+1, 1))
   )
 })
 
@@ -44,6 +44,8 @@ test_that("as.link_fns.numeric unit test", {
   testthat::expect_no_error(withCallingHandlers(
     {
       tmp <- as.link_fns(c(0, 10))
+      tmp2 <- as.link_fns(tidyabc::rgamma2(1000, 5, 4))
+      tmp <- as.link_fns(c(0, 10))
     },
     warning = function(e) {
       message("Warning issued: ", e$message)
@@ -55,7 +57,7 @@ test_that("as.link_fns.numeric unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/s3-link_fns-class.R"), c(247, 1, 247+1, 1))
+    srcref = srcref(srcfile("../../R/s3-link_fns-class.R"), c(250, 1, 250+1, 1))
   )
 })
 

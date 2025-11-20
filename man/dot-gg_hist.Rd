@@ -7,6 +7,7 @@
 \alias{.gg_scatter}
 \alias{.gg_denshist}
 \alias{.gg_linebar}
+\alias{.gg_fun}
 \title{Simple one liner plots from vectors with defaults}
 \usage{
 .gg_hist(x, binwidth = 1, ...)
@@ -20,6 +21,8 @@
 .gg_denshist(x, y, binwidth = 1)
 
 .gg_linebar(x, y, binwidth = 1)
+
+.gg_fun(fn, ..., xlim = NULL)
 }
 \arguments{
 \item{x}{a vector of data or counts}
@@ -51,6 +54,8 @@ Simple one liner plots from vectors with defaults
 \item \code{.gg_denshist()}: Histogram with densities overlaid.
 
 \item \code{.gg_linebar()}: Bar chart with lines overlaid
+
+\item \code{.gg_fun()}: Function plot
 
 }}
 \concept{ggplot}
