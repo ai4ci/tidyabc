@@ -69,6 +69,12 @@
 #'   "trunc(gamma(shape = 2, rate = 1), 2.00 - Inf); Median (IQR) 2.97 [2.42 — 3.87]"
 #' )
 #'
+#' @examples
+#'
+#' shape2_gamma = as.dist_fns(pgamma, shape=2)
+#' g2 = truncate(shape2_gamma, 0.5, 4)
+#' plot(g2)+ggplot2::geom_function(fun = ~ dgamma(.x,shape=2), xlim = c(0,5))
+#'
 truncate = function(dist, x_left, x_right, ..., name = NULL) {
   if (!is.dist_fns_list(dist)) {
     if (!is.dist_fns(dist)) {

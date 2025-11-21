@@ -29,6 +29,21 @@ must be of the same length. Missing values (\code{NA}) are removed
 pairwise before calculation. Returns \code{NA} if the input vectors are
 not of equal length.
 }
+\examples{
+
+# example case counts from an exponential growth process
+sim = table(floor(rexpgrowth(1000, 0.05, 40, 0)))
+obs = table(floor(rexpgrowth(1000, 0.075, 40, 0)))
+obs2 = table(floor(rexpgrowth(1000, 0.05, 40, 0)))
+
+# obs is a different distribution to sim (larger growth)
+calculate_rmse(sim, obs)
+
+# obs2 is from the same distribution as sim so the RMSE should be lower:
+calculate_rmse(sim, obs2)
+
+
+}
 \concept{workflow}
 
 \section{Unit tests}{

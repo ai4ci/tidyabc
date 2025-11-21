@@ -43,6 +43,13 @@ where \eqn{Q} is the quantile function of the original distribution.
 This function implements these transformations for the \code{p}, \code{q}, and \code{r} functions
 of the resulting \code{dist_fns} object.
 }
+\examples{
+
+shape2_gamma = as.dist_fns(pgamma, shape=2)
+g2 = truncate(shape2_gamma, 0.5, 4)
+plot(g2)+ggplot2::geom_function(fun = ~ dgamma(.x,shape=2), xlim = c(0,5))
+
+}
 \concept{empirical}
 
 \section{Unit tests}{

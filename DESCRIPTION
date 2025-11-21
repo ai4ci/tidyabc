@@ -21,7 +21,6 @@ Roxygen: list(markdown = TRUE, packages = "pkgtools")
 RoxygenNote: 7.3.3.9007
 Config/Needs/build: terminological/pkgtools
 Suggests: 
-    ggoutbreak (>= 0.5.1),
     progressr,
     testthat,
     lifecycle,
@@ -32,8 +31,6 @@ Suggests:
     rmarkdown
 Config/testthat/edition: 3
 Config/Needs/website: rmarkdown
-Remotes: 
-    ai4ci/ggoutbreak
 Imports: 
     dplyr,
     furrr,
@@ -63,4 +60,6 @@ VignetteBuilder: knitr
 URL: https://ai4ci.github.io/tidyabc,
      https://github.com/ai4ci/tidyabc
 BugReports: https://github.com/ai4ci/tidyabc/issues
-
+Depends: 
+    R (>= 3.5)
+LazyData: true

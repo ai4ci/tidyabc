@@ -65,11 +65,19 @@ consider using \code{empirical()} to build a quantile function and using that.
 }
 \examples{
 
+# fit weighted data
+samples = seq(0,10,0.01)
+weights = dgamma2(samples, mean=5, sd=2)
+
+wquantile(c(0.25,0.5,0.75), x = samples, w = weights, link="log")
+
+# compared to the sampled distribution
+qgamma2(c(0.25,0.5,0.75), mean=5, sd=2)
+
 # unweighted:
 wquantile(p = c(0.25,0.5,0.75), x = stats::rnorm(1000))
+qnorm(p = c(0.25,0.5,0.75))
 
-# weighted:
-wquantile(p = c(0.25,0.5,0.75), x = seq(-2,2,0.1), w = stats::dnorm(seq(-2,2,0.1)))
 
 }
 \concept{empirical}
@@ -105,7 +113,6 @@ withr::with_seed(123, {
   test(stats::runif,stats::qunif,as.link_fns(c(0,10)),0,10)
 
 })
-
 
 }\if{html}{\out{</div>}}
 }

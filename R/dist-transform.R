@@ -45,6 +45,14 @@
 #'
 #' t2 = transform("log","norm", 0.4, 0.1)
 #' testthat::expect_equal(t2$q(ps),qlnorm(ps,0.4,0.1))
+#'
+#' @examples
+#'
+#' n = as.dist_fns("norm",mean=0.5, sd=0.1)
+#' t = transform("log",n)
+#'
+#' plot(t)+ggplot2::geom_function(fun=~ dlnorm(.x, 0.5, 0.1), linetype="dashed")
+#'
 transform = function(link, dist, ..., name = NULL) {
   if (!is.dist_fns_list(dist)) {
     if (!is.dist_fns(dist)) {

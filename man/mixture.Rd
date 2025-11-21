@@ -46,6 +46,18 @@ knot points from empirical components). The resulting \eqn{(x, F_{\text{mix}}(x)
 pairs are then used as input to \code{empirical_cdf} to create the final smooth or
 piecewise linear \code{dist_fns} object representing the mixture distribution.
 }
+\examples{
+dists = c(
+  as.dist_fns("norm", mean=-1),
+  as.dist_fns("norm", mean=1),
+  as.dist_fns("gamma", shape=2)
+)
+weights = c(1,1,0.3)
+
+mix = mixture(dists,weights)
+plot(c(dists,mix))+ggplot2::facet_wrap(~name)
+
+}
 \concept{empirical}
 
 \section{Unit tests}{

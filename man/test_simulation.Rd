@@ -64,4 +64,21 @@ the result list (as \code{sim_fn} and \code{scorer_fn} respectively)
 \description{
 Run the simulation for one set of parameters
 }
+\examples{
+test = test_simulation(
+  example_sim_fn,
+  example_scorer_fn,
+  # Model parameters to test with:
+  mean = 4, sd1 = 3, sd2 = 2,
+  obsdata = example_obsdata()
+)
+
+# the rewritten function:
+cat(test$sim_fn, sep="\n")
+
+# The scores resulting from this one simulation, when compared to the
+# reference `obsdata`.
+test$obsscores
+
+}
 \concept{workflow}

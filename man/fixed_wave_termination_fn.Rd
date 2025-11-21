@@ -19,3 +19,4 @@ Run the SMC or adaptive algorithm for a set number of waves
 # Declare converged after 3 waves:
 converged_fn = fixed_wave_termination_fn(3)
 }
+\concept{workflow}

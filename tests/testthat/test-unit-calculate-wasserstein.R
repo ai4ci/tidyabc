@@ -116,7 +116,7 @@ test_that("wasserstein_calculator unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/calculate-wasserstein.R"), c(192, 1, 192+1, 1))
+    srcref = srcref(srcfile("../../R/calculate-wasserstein.R"), c(206, 1, 206+1, 1))
   )
 })
 

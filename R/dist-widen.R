@@ -39,6 +39,8 @@
 #' @returns an empirical `dist_fn` with the same median and increased SD. This
 #'   transformation will change the mean of skewed distributions.
 #' @export
+#' @concept empirical
+#'
 #'
 #' @examples
 #' d1 = as.dist_fns("norm",4,2)

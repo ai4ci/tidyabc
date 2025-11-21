@@ -39,6 +39,22 @@ In the comparison unequal lengths of the data can be accommodated. The
 simulated data is recycled, and sampled, until the same length as the
 observed data before the comparison.
 }
+\examples{
+
+# example case counts from an exponential growth process
+sim = rexpgrowth(1000, 0.05, 40, 0)
+obs = rexpgrowth(1000, 0.075, 40, 0)
+obs2 = rexpgrowth(1000, 0.05, 40, 0)
+
+calc = wasserstein_calculator(sim)
+
+# obs is a different distribution to sim (larger growth)
+calc(obs)
+
+# obs2 is from the same distribution as sim so the RMSE should be lower:
+calc(obs2)
+
+}
 \concept{workflow}
 
 \section{Unit tests}{
@@ -49,7 +65,6 @@ tmp = wasserstein_calculator(0:10)
 # zero if no distance
 testthat::expect_equal(tmp(0:10), 0)
 testthat::expect_equal(tmp(10:0), 0)
-
 
 }\if{html}{\out{</div>}}
 }

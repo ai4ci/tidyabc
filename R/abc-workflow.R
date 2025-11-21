@@ -859,6 +859,7 @@ default_termination_fn = function(stability = 0.01, confidence = 0.1) {
 #'
 #' @returns A function that will test for completion
 #' @export
+#' @concept workflow
 #'
 #' @examples
 #' # Declare converged after 3 waves:
@@ -892,6 +893,22 @@ fixed_wave_termination_fn = function(max_wave) {
 #'   the result list (as `sim_fn` and `scorer_fn` respectively)
 #' @export
 #' @concept workflow
+#' @examples
+#' test = test_simulation(
+#'   example_sim_fn,
+#'   example_scorer_fn,
+#'   # Model parameters to test with:
+#'   mean = 4, sd1 = 3, sd2 = 2,
+#'   obsdata = example_obsdata()
+#' )
+#'
+#' # the rewritten function:
+#' cat(test$sim_fn, sep="\n")
+#'
+#' # The scores resulting from this one simulation, when compared to the
+#' # reference `obsdata`.
+#' test$obsscores
+#'
 test_simulation = function(
   sim_fn,
   scorer_fn,
@@ -953,6 +970,7 @@ test_simulation = function(
   ))
 }
 
+## Functions for working with posteriors ----
 
 #' Generate a set of metrics from component scores
 #'
@@ -1013,7 +1031,11 @@ test_simulation = function(
 #'
 #' fit = example_rejection_fit()
 #' metrics = posterior_distance_metrics(fit$posteriors)
-#' # other elements available:
+#'
+#' # other elements available but this is the most important and tells you what
+#' # the relative sizes of the component scores from `scorer_fn` in this sample.
+#' # If this is a sample from the prior then this gives us a way to judge the
+#' # most appropriate relative weighting of each component:
 #' metrics$scoreweights
 posterior_distance_metrics = function(
   posteriors_df,
@@ -1090,7 +1112,6 @@ posterior_distance_metrics = function(
   ))
 }
 
-## Functions for working with posteriors ----
 
 #' Generate a set of samples from selected posteriors
 #'

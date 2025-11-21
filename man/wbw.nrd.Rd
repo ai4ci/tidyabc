@@ -4,7 +4,7 @@
 \alias{wbw.nrd}
 \title{Weighted bandwidth selector}
 \usage{
-wbw.nrd(x, w)
+wbw.nrd(x, w = NULL)
 }
 \arguments{
 \item{x}{data}
@@ -16,5 +16,14 @@ a bandwidth based on weighted data
 }
 \description{
 Weighted bandwidth selector
+}
+\examples{
+
+x = runif(1000)
+w = rgamma(1000,2)
+
+wbw.nrd(x)
+wbw.nrd(x,w)
+
 }
 \concept{empirical}

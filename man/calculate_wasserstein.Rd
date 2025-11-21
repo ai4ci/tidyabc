@@ -61,6 +61,20 @@ then \eqn{\hat{x}_i = x_{\lfloor idx_i \rfloor}}.
 For bootstrapping (\code{bootstraps > 1}), the process is repeated \code{bootstraps}
 times with random sampling, and the final distance is the average of the results.
 }
+\examples{
+
+# example case timeseries from an exponential growth process
+sim = rexpgrowth(1000, 0.05, 40, 0)
+obs = rexpgrowth(1000, 0.075, 40, 0)
+obs2 = rexpgrowth(1000, 0.05, 40, 0)
+
+# obs is a different distribution to sim (larger growth)
+calculate_wasserstein(sim, obs)
+
+# obs2 is from the same distribution as sim so the distance should be lower:
+calculate_wasserstein(sim, obs2)
+
+}
 \concept{workflow}
 
 \section{Unit tests}{

@@ -118,6 +118,30 @@ If \code{fit_spline=TRUE} (or \code{knots} is specified) when fitting from data,
 the resulting \code{empirical_data} fit is re-interpolated using \code{empirical_cdf}
 at quantiles defined by \code{knots}.
 }
+\examples{
+
+# A random sample from a distribution:
+sample = rgamma2(1000, mean=5, sd=2)
+
+# fit direct from data
+fit = empirical(sample, link="log")
+plot(fit)+ggplot2::geom_function(fun= ~ dgamma2(.x, mean=5, sd=2))
+
+# suppose we only have quantiles
+p = seq(0.1,0.9, 0.1)
+quantiles = quantile(sample, p)
+
+# fit from quantiles:
+fit2 = empirical(x=quantiles,p=p, link="log")
+plot(fit2)+ggplot2::geom_function(fun= ~ dgamma2(.x, mean=5, sd=2))
+
+# fit weighted data
+samples = seq(0,10,0.1)
+weights = dgamma2(samples, mean=5, sd=2)
+fit3 = empirical(x=samples, w=weights, link="log")
+plot(fit3)+ggplot2::geom_function(fun= ~ dgamma2(.x, mean=5, sd=2))
+
+}
 \concept{empirical}
 
 \section{Unit tests}{

@@ -66,126 +66,48 @@ captures this complexity and then use ABC to infer the hidden parameters.
 
 ---
 
-## Simulation: Generating "Observed" Data
+## Simulation
 
-We begin by simulating a realistic outbreak using the `ggoutbreak` package to
-create a synthetic "ground truth" dataset.
-
-### Simulation Setup
-
-We define the true epidemiological parameters:
-- **Generation time**: 
-Mean = 4 days, SD = 2 days (a relatively short time between infections).
-- **R0**: 
-2.0 (each case infects 2 others on average).
-- **Initial cases (`I0`)**: 10.
-- **Symptom and observation process**: 
-Only 30% of infected individuals become symptomatic. Symptom onset is delayed
-from infection by a gamma-distributed time (Mean=7, SD=5). Of those symptomatic,
-70% are eventually detected, with a further gamma-distributed delay to
-observation (Mean=5, SD=3).
-- **Observation window**: 
-We only observe cases whose symptom onset and observation occur before day 40
-(`T_obs = 40`).
-
-### Running the Simulation
-
+`tidyabc` includes a synthetic dataset generated from a branching process model
+which we are using for this example (`sim_outbreak`) which is supposed to 
+replicate the early days of an infectious disease outbreak where very little is 
+known about the pathogen and its epidemiological parameters.
 
 ```{r}
-sim_params = list(
-  # A short generation time
-  mean_gt = 4,
-  sd_gt = 2,
-  R0 = 2,
-  I0 = 10,
-  # Add a longish and very variable delay to symptoms
-  p_symptomatic = 0.3,
-  mean_onset = 7,
-  sd_onset = 5,
-  # and a slightly shorter delay to observation:
-  # Only symptomatic cases are observed
-  p_detected_given_symptoms = 0.7,
-  mean_obs = 5,
-  sd_obs = 3,
-  # Observation cutoff:
-  T_obs = 40
-)
 
-# Run simulation ----
+sim_params = sim_outbreak$parameters
+observed = sim_outbreak$contact_tracing
 
-sim_ip = ggoutbreak::make_gamma_ip(
-  median_of_mean = sim_params$mean_gt,
-  median_of_sd = sim_params$sd_gt
-)
+R0_truth = sprintf("%1.1f", sim_params$R0)
+r0_truth = sprintf("%1.2f", sim_params$r0) 
+gt_truth = sprintf("%1.1f \u00B1 %1.1f", sim_params$mean_gt, sim_params$sd_gt)
+onset_truth = sprintf("%1.1f \u00B1 %1.1f", sim_params$mean_onset, sim_params$sd_onset)
+obs_truth = sprintf("%1.1f \u00B1 %1.1f", sim_params$mean_obs, sim_params$sd_obs)
 
-sim_params$r0 = ggoutbreak::inv_wallinga_lipsitch(sim_params$R0, sim_ip)
-
-truth = ggoutbreak::sim_branching_process(
-  fn_Rt = ~ sim_params$R0,
-  fn_ip = ~sim_ip,
-  fn_imports = \(t) ifelse(t == 1, sim_params$I0, 0),
-  max_time = 40,
-  seed = 123
-)
-
-delayed = truth %>%
-  ggoutbreak::sim_delay(
-    p_fn = ~ sim_params$p_symptomatic,
-    delay_fn = ~ ggoutbreak::rgamma2(
-      .x,
-      sim_params$mean_onset,
-      sim_params$sd_onset
-    ),
-    input = "time",
-    output = "symptom",
-    seed = 123
-  ) %>%
-  ggoutbreak::sim_delay(
-    p_fn = \(t, symptom) {
-      ifelse(symptom, sim_params$p_detected_given_symptoms, 0)
-    },
-    delay_fn = ~ ggoutbreak::rgamma2(
-      .x,
-      sim_params$mean_obs,
-      sim_params$sd_obs
-    ),
-    input = "symptom_time",
-    output = "observation",
-    seed = 123
-  )
-
-
-observed = delayed %>% dplyr::filter(observation_time < sim_params$T)
-
-traced_contacts = observed %>%
-  dplyr::semi_join(observed, by = c("infector" = "id"))
 ```
 
 1.  **Branching Process**: 
+
 The core outbreak is simulated as a stochastic branching process with a constant
-`R0` of 2.0 and the specified generation time distribution (`sim_ip`).
-2.  **Adding Delays**: 
-We then layer on the complexities of real-world observation:
-    - `sim_delay(..., output = "symptom")` adds the symptom onset delay.
-    - `sim_delay(..., output = "observation")` adds the delay from symptom onset 
-    to being recorded in the dataset.
-3.  **Observation and Tracing**: 
-We filter the data to only include cases observed before `T_obs=40` and then
-identify a subset of **traced transmission pairs** (where both the infector and
-the infected are observed and linked).
+`R0` of `r R0_truth` and with a gamma distributed generation time with mean 
+and SD of `r gt_truth`, together these imply an initial growth rate of `r r0_truth`. 
+
+After infection a proportion of people experience 
+symptoms with a random delay with mean and SD of `r onset_truth`. Of those with 
+symptoms a proportion are detected with a random delay with mean and SD of 
+`r obs_truth`. The outbreak is simulated to day `r sim_params$T_obs`, after which 
+point no further cases can be observed.
 
 ### The Observed Data
 
 From this simulated outbreak, we extract three key pieces of information to use
-as our `obsdata` for ABC:
+as our observational data (`obsdata`) for ABC:
 
 1.  **Primary Case Onset Times**:
 
 ```{r fig.width=3, fig.height=3}
 
-index_case_onset = observed %>% dplyr::transmute(onset_time = floor(symptom_time))
-
-ggplot(index_case_onset, aes(x=onset_time))+geom_histogram(binwidth = 1)
+ggplot(observed, aes(x=onset_time))+geom_histogram(binwidth = 1)
 ```
 
 This histogram shows the distribution of symptom onset times for all observed
@@ -199,7 +121,7 @@ outbreak, the symptom onset delay distribution, and the delay to observation.
 # Data
 
 delay_distribution = observed %>% dplyr::transmute(
-  obs_delay = floor(observation_time) - floor(symptom_time)
+  obs_delay = obs_time - onset_time
 )
 
 ggplot(delay_distribution, aes(x = obs_delay))+geom_histogram(binwidth = 1)+
@@ -216,14 +138,14 @@ represented due to right censoring.
 ```{r fig.width=3, fig.height=3}
 serial_pairs = observed %>%
   inner_join(
-    traced_contacts,
-    by = c("id" = "infector"),
+    observed,
+    by = c("id" = "contact_id"),
     suffix = c(".1", ".2")
   ) %>%
   transmute(
-    serial_interval = floor(symptom_time.2) - floor(symptom_time.1) #order known
-    # serial_interval = abs(floor(symptom_time.2) - floor(symptom_time.1)) #order uncertain
-  ) 
+    serial_interval = onset_time.2 - onset_time.1 #order known
+    # serial_interval = abs(onset_time.2 - onset_time.1) #order uncertain
+  )
 
 ggplot(serial_pairs) +
   geom_histogram(aes(x = serial_interval), binwidth = 1)+
@@ -240,7 +162,7 @@ to have been observed yet.
 
 ```{r}
 obsdata = list(
-  onset = as.numeric(index_case_onset$onset_time),
+  onset = as.numeric(observed$onset_time),
   diff = as.numeric(delay_distribution$obs_delay),
   si = as.numeric(serial_pairs$serial_interval)
 )
@@ -249,16 +171,17 @@ obsdata = list(
 
 ## The Inference Model
 
-Our goal is to fit a model that can simultaneously explain all three observed data components. The model makes explicit assumptions about the hidden processes:
+Our goal is to fit a model that can simultaneously explain all three observed 
+data components. The model makes explicit assumptions about the hidden processes:
 
 ### Model Assumptions
 
 1.  **Transmission Dynamics**: 
-Infection times follow a process of **constant exponential growth** with rate `r0`.
+Infection times follow a process of **constant exponential growth** with rate $r_0$.
 2.  **Delays**:
-    - Time from infection to symptom onset is **Gamma-distributed** (`mean_onset`, `sd_onset`).
-    - Time from symptom onset to observation is **Gamma-distributed** (`mean_obs`, `sd_obs`).
-    - The true **generation time** (time between infections in a pair) is **Gamma-distributed** (`mean_gt`, `sd_gt`).
+    - Time from infection to symptom onset is **Gamma-distributed** ($\mu_{onset}$, $\sigma_{onset}$).
+    - Time from symptom onset to observation is **Gamma-distributed** ($\mu_{obs}$, $\sigma_{obs}$).
+    - The true **generation time** (time between infections in a pair) is **Gamma-distributed** ($\mu_{gt}$, $\sigma_{gt}$).
 
 $$
 \begin{align}
@@ -269,12 +192,15 @@ t_{max} - T_{inf} &\sim Exp(r_0) \\
 \end{align}
 $$
 
-Delays are linked together like this:
+Secondary cases are generated from primary cases with a poisson process with 
+rate equal to the reproduction number $R_0$ and the time of infection of secondary
+cases ($T_{inf_2}$) by the generation time.:
 
 $$
 \begin{align}
 T_{onset} &= T_{inf} + \Delta T_{inf \rightarrow onset} \\
 T_{obs} &= T_{onset} + \Delta T_{onset \rightarrow obs}\\
+N_{inf_1 \rightarrow inf_2} &\sim Poisson(R_0) \\
 T_{inf_2} &= T_{inf_1} + \Delta T_{gt} \\
 \Delta T_{onset_1 \rightarrow onset_2} &=  \Delta T_{gt} + \Delta T_{inf_2 \rightarrow onset_2} -  \Delta T_{inf_1 \rightarrow onset_1} \\
 \end{align}
@@ -282,8 +208,10 @@ $$
 
     
 3.  **Observation Process**: 
-A case is only "observed" if its symptom onset is after day 0 and its
-observation time is before `T_obs`.
+A primary case is only "observed" if its symptom onset is after day 0 and its
+observation time is before $T_{obs}$. A secondary case is only observed if the
+primary case was observed and its symptom onset is after day 0 and its 
+observation time is also before $T_{obs}$.
 
 $$
 \begin{align}
@@ -387,6 +315,7 @@ sim1_fn = carrier::crate(
 ```
 
 It performs the following steps:
+
 1.  **Simulate Primary Infections**: 
 Generates `n` primary infection times from an exponentially growing process,
 starting early enough to account for long symptom delays.

@@ -43,6 +43,14 @@ where \eqn{h'(y)} is the derivative of the link function. This function implemen
 these transformations for the \code{p}, \code{q}, \code{d}, and \code{r} functions of the resulting
 \code{dist_fns} object.
 }
+\examples{
+
+n = as.dist_fns("norm",mean=0.5, sd=0.1)
+t = transform("log",n)
+
+plot(t)+ggplot2::geom_function(fun=~ dlnorm(.x, 0.5, 0.1), linetype="dashed")
+
+}
 \concept{empirical}
 
 \section{Unit tests}{
@@ -59,6 +67,7 @@ testthat::expect_equal(t$d(qs),dlnorm(qs))
 
 t2 = transform("log","norm", 0.4, 0.1)
 testthat::expect_equal(t2$q(ps),qlnorm(ps,0.4,0.1))
+
 }\if{html}{\out{</div>}}
 }
 

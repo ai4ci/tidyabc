@@ -88,6 +88,22 @@ is the quantile function derived from the fitted models in Z-space.
 This function imputes tails of distributions. Given perfect data as samples
 or as quantiles it should recover the tail
 }
+\examples{
+
+# A random sample from a distribution:
+sample = rgamma2(1000, mean=5, sd=2)
+
+# fit direct from data
+fit = empirical(sample, link="log")
+plot(fit)+ggplot2::geom_function(fun= ~ dgamma2(.x, mean=5, sd=2))
+
+# fit weighted data
+samples = seq(0,10,0.1)
+weights = dgamma2(samples, mean=5, sd=2)
+fit3 = empirical(x=samples, w=weights, link="log")
+plot(fit3)+ggplot2::geom_function(fun= ~ dgamma2(.x, mean=5, sd=2))
+
+}
 \concept{empirical}
 
 \section{Unit tests}{

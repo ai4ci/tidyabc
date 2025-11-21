@@ -120,6 +120,29 @@
 #' e7 = empirical(x=seq(-10,10,length.out=1000),w=dnorm(seq(-10,10,length.out=1000)),knots = 20)
 #' testthat::expect_equal(e7$p(-5:5), pnorm(-5:5), tolerance=0.01)
 #'
+#' @examples
+#'
+#' # A random sample from a distribution:
+#' sample = rgamma2(1000, mean=5, sd=2)
+#'
+#' # fit direct from data
+#' fit = empirical(sample, link="log")
+#' plot(fit)+ggplot2::geom_function(fun= ~ dgamma2(.x, mean=5, sd=2))
+#'
+#' # suppose we only have quantiles
+#' p = seq(0.1,0.9, 0.1)
+#' quantiles = quantile(sample, p)
+#'
+#' # fit from quantiles:
+#' fit2 = empirical(x=quantiles,p=p, link="log")
+#' plot(fit2)+ggplot2::geom_function(fun= ~ dgamma2(.x, mean=5, sd=2))
+#'
+#' # fit weighted data
+#' samples = seq(0,10,0.1)
+#' weights = dgamma2(samples, mean=5, sd=2)
+#' fit3 = empirical(x=samples, w=weights, link="log")
+#' plot(fit3)+ggplot2::geom_function(fun= ~ dgamma2(.x, mean=5, sd=2))
+#'
 empirical = function(
   x,
   ...,
@@ -382,6 +405,18 @@ empirical = function(
 #'   c(0, 1.63476839034733, 3, 5.05332769159444, 5.51891960240613, 7)
 #' )
 #'
+#' @examples
+#'
+#' # A random sample from a distribution:
+#' sample = rgamma2(1000, mean=5, sd=2)
+#'
+#' # suppose we only have quantiles
+#' p = seq(0.1,0.9, 0.1)
+#' quantiles = quantile(sample, p)
+#'
+#' # fit from quantiles:
+#' fit2 = empirical(x=quantiles,p=p, link="log")
+#' plot(fit2)+ggplot2::geom_function(fun= ~ dgamma2(.x, mean=5, sd=2))
 #'
 empirical_cdf = function(
   x,
@@ -879,6 +914,21 @@ NULL
 #' )
 #' plot(e7)+ggplot2::geom_function(fun = dnorm)
 #' testthat::expect_equal(e7$p(-5:5), pnorm(-5:5), tolerance=0.01)
+#'
+#' @examples
+#'
+#' # A random sample from a distribution:
+#' sample = rgamma2(1000, mean=5, sd=2)
+#'
+#' # fit direct from data
+#' fit = empirical(sample, link="log")
+#' plot(fit)+ggplot2::geom_function(fun= ~ dgamma2(.x, mean=5, sd=2))
+#'
+#' # fit weighted data
+#' samples = seq(0,10,0.1)
+#' weights = dgamma2(samples, mean=5, sd=2)
+#' fit3 = empirical(x=samples, w=weights, link="log")
+#' plot(fit3)+ggplot2::geom_function(fun= ~ dgamma2(.x, mean=5, sd=2))
 #'
 empirical_data = function(
   x,
@@ -1416,13 +1466,6 @@ wmean = function(x, w = NULL, na.rm = TRUE) {
 #'
 #' @returns a vector of quantiles
 #' @export
-#' @examples
-#'
-#' # unweighted:
-#' wquantile(p = c(0.25,0.5,0.75), x = stats::rnorm(1000))
-#'
-#' # weighted:
-#' wquantile(p = c(0.25,0.5,0.75), x = seq(-2,2,0.1), w = stats::dnorm(seq(-2,2,0.1)))
 #'
 #' @unit
 #'
@@ -1454,6 +1497,21 @@ wmean = function(x, w = NULL, na.rm = TRUE) {
 #'
 #' })
 #'
+#' @examples
+#'
+#' # fit weighted data
+#' samples = seq(0,10,0.01)
+#' weights = dgamma2(samples, mean=5, sd=2)
+#'
+#' wquantile(c(0.25,0.5,0.75), x = samples, w = weights, link="log")
+#'
+#' # compared to the sampled distribution
+#' qgamma2(c(0.25,0.5,0.75), mean=5, sd=2)
+#'
+#' # unweighted:
+#' wquantile(p = c(0.25,0.5,0.75), x = stats::rnorm(1000))
+#' qnorm(p = c(0.25,0.5,0.75))
+#'
 #'
 wquantile = function(
   p,
@@ -1480,6 +1538,8 @@ wquantile = function(
   w = w[o]
 
   x1 = link$trans(x)
+  w = w[is.finite(x1)]
+  x1 = x1[is.finite(x1)]
 
   x1mu = wmean(x1, w)
   x1sigma = wsd(x1, w)
@@ -1487,12 +1547,12 @@ wquantile = function(
   y = cumsum(w)
   y = (y - 0.5 * w) / sum(w)
 
-  dup = duplicated(x, fromLast = TRUE) | duplicated(y)
+  dup = duplicated(x1, fromLast = TRUE) | duplicated(y)
   oob = y <= 0 | y >= 1
   x = x[!dup & !oob]
   y = y[!dup & !oob]
 
-  if (length(x) < window * 2) {
+  if (length(x1) < window * 2) {
     stop("Insufficient data for interpolation.")
   }
 
@@ -1544,7 +1604,15 @@ wquantile = function(
 #' @returns a bandwidth based on weighted data
 #' @concept empirical
 #' @export
-wbw.nrd = function(x, w) {
+#' @examples
+#'
+#' x = runif(1000)
+#' w = rgamma(1000,2)
+#'
+#' wbw.nrd(x)
+#' wbw.nrd(x,w)
+#'
+wbw.nrd = function(x, w = NULL) {
   if (is.null(w)) {
     tmp = stats::bw.nrd(x)
   } else {

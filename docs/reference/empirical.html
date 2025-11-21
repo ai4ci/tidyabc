@@ -234,6 +234,35 @@ at quantiles defined by <code>knots</code>.</p>
 <span id="cb1-41"><a href="#cb1-41" tabindex="-1"></a></span></code></pre><p></p></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># A random sample from a distribution:</span></span></span>
+<span class="r-in"><span><span class="va">sample</span> <span class="op">=</span> <span class="fu"><a href="rgamma2.html">rgamma2</a></span><span class="op">(</span><span class="fl">1000</span>, mean<span class="op">=</span><span class="fl">5</span>, sd<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># fit direct from data</span></span></span>
+<span class="r-in"><span><span class="va">fit</span> <span class="op">=</span> <span class="fu">empirical</span><span class="op">(</span><span class="va">sample</span>, link<span class="op">=</span><span class="st">"log"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">+</span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html" class="external-link">geom_function</a></span><span class="op">(</span>fun<span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="dgamma2.html">dgamma2</a></span><span class="op">(</span><span class="va">.x</span>, mean<span class="op">=</span><span class="fl">5</span>, sd<span class="op">=</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="empirical-1.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># suppose we only have quantiles</span></span></span>
+<span class="r-in"><span><span class="va">p</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.1</span>,<span class="fl">0.9</span>, <span class="fl">0.1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">quantiles</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">sample</span>, <span class="va">p</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># fit from quantiles:</span></span></span>
+<span class="r-in"><span><span class="va">fit2</span> <span class="op">=</span> <span class="fu">empirical</span><span class="op">(</span>x<span class="op">=</span><span class="va">quantiles</span>,p<span class="op">=</span><span class="va">p</span>, link<span class="op">=</span><span class="st">"log"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit2</span><span class="op">)</span><span class="op">+</span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html" class="external-link">geom_function</a></span><span class="op">(</span>fun<span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="dgamma2.html">dgamma2</a></span><span class="op">(</span><span class="va">.x</span>, mean<span class="op">=</span><span class="fl">5</span>, sd<span class="op">=</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="empirical-2.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># fit weighted data</span></span></span>
+<span class="r-in"><span><span class="va">samples</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">10</span>,<span class="fl">0.1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">weights</span> <span class="op">=</span> <span class="fu"><a href="dgamma2.html">dgamma2</a></span><span class="op">(</span><span class="va">samples</span>, mean<span class="op">=</span><span class="fl">5</span>, sd<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">fit3</span> <span class="op">=</span> <span class="fu">empirical</span><span class="op">(</span>x<span class="op">=</span><span class="va">samples</span>, w<span class="op">=</span><span class="va">weights</span>, link<span class="op">=</span><span class="st">"log"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit3</span><span class="op">)</span><span class="op">+</span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html" class="external-link">geom_function</a></span><span class="op">(</span>fun<span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="dgamma2.html">dgamma2</a></span><span class="op">(</span><span class="va">.x</span>, mean<span class="op">=</span><span class="fl">5</span>, sd<span class="op">=</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="empirical-3.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

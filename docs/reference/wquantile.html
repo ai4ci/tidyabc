@@ -161,22 +161,31 @@ consider using <code><a href="empirical.html">empirical()</a></code> to build a 
 <span id="cb1-28"><a href="#cb1-28" tabindex="-1"></a>  <span class="fu">test</span>(stats<span class="sc">::</span>runif,stats<span class="sc">::</span>qunif,<span class="fu">as.link_fns</span>(<span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">10</span>)),<span class="dv">0</span>,<span class="dv">10</span>)</span>
 <span id="cb1-29"><a href="#cb1-29" tabindex="-1"></a></span>
 <span id="cb1-30"><a href="#cb1-30" tabindex="-1"></a>})</span>
-<span id="cb1-31"><a href="#cb1-31" tabindex="-1"></a></span>
-<span id="cb1-32"><a href="#cb1-32" tabindex="-1"></a></span></code></pre><p></p></div>
+<span id="cb1-31"><a href="#cb1-31" tabindex="-1"></a></span></code></pre><p></p></div>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># fit weighted data</span></span></span>
+<span class="r-in"><span><span class="va">samples</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">10</span>,<span class="fl">0.01</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">weights</span> <span class="op">=</span> <span class="fu"><a href="dgamma2.html">dgamma2</a></span><span class="op">(</span><span class="va">samples</span>, mean<span class="op">=</span><span class="fl">5</span>, sd<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">wquantile</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>,<span class="fl">0.5</span>,<span class="fl">0.75</span><span class="op">)</span>, x <span class="op">=</span> <span class="va">samples</span>, w <span class="op">=</span> <span class="va">weights</span>, link<span class="op">=</span><span class="st">"log"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      25%      50%      75% </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3.523936 4.691167 6.067214 </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># compared to the sampled distribution</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="qgamma2.html">qgamma2</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>,<span class="fl">0.5</span>,<span class="fl">0.75</span><span class="op">)</span>, mean<span class="op">=</span><span class="fl">5</span>, sd<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 3.547199 4.736011 6.166153</span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># unweighted:</span></span></span>
 <span class="r-in"><span><span class="fu">wquantile</span><span class="op">(</span>p <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>,<span class="fl">0.5</span>,<span class="fl">0.75</span><span class="op">)</span>, x <span class="op">=</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1000</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         25%         50%         75% </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> -0.67042909 -0.04040481  0.63219351 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -0.64721687  0.04153827  0.70310794 </span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">qnorm</a></span><span class="op">(</span>p <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>,<span class="fl">0.5</span>,<span class="fl">0.75</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] -0.6744898  0.0000000  0.6744898</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># weighted:</span></span></span>
-<span class="r-in"><span><span class="fu">wquantile</span><span class="op">(</span>p <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>,<span class="fl">0.5</span>,<span class="fl">0.75</span><span class="op">)</span>, x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="op">-</span><span class="fl">2</span>,<span class="fl">2</span>,<span class="fl">0.1</span><span class="op">)</span>, w <span class="op">=</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="op">-</span><span class="fl">2</span>,<span class="fl">2</span>,<span class="fl">0.1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           25%           50%           75% </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> -6.384711e-01  2.591425e-17  6.384711e-01 </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

@@ -129,7 +129,7 @@ test_that("empirical_cdf unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(344, 1, 344+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(367, 1, 367+1, 1))
   )
 })
 
@@ -158,7 +158,7 @@ test_that(".interpolate unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(684, 1, 684+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(719, 1, 719+1, 1))
   )
 })
 
@@ -202,7 +202,7 @@ test_that(".monotonicpolyspline unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(712, 1, 712+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(747, 1, 747+1, 1))
   )
 })
 
@@ -242,7 +242,7 @@ test_that("empirical_data unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(864, 1, 864+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(899, 1, 899+1, 1))
   )
 })
 
@@ -290,7 +290,7 @@ test_that("wquantile unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(1427, 1, 1427+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(1470, 1, 1470+1, 1))
   )
 })
 
@@ -343,7 +343,7 @@ test_that(".fit_lm_1d unit test", {
   # source of the unit test:
   testthat::expect(rlang::caller_env(n = 2)$ok,
     failure_message = "Source link for failing @unit test.",
-    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(1577, 1, 1577+1, 1))
+    srcref = srcref(srcfile("../../R/dist-empirical.R"), c(1645, 1, 1645+1, 1))
   )
 })
 

@@ -136,6 +136,25 @@ must be the same length.</p>
 <span id="cb1-28"><a href="#cb1-28" tabindex="-1"></a></span></code></pre><p></p></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># example case counts from an exponential growth process</span></span></span>
+<span class="r-in"><span><span class="va">sim</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">floor</a></span><span class="op">(</span><span class="fu"><a href="rexpgrowth.html">rexpgrowth</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="fl">0.05</span>, <span class="fl">40</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">obs</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">floor</a></span><span class="op">(</span><span class="fu"><a href="rexpgrowth.html">rexpgrowth</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="fl">0.075</span>, <span class="fl">40</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">obs2</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">floor</a></span><span class="op">(</span><span class="fu"><a href="rexpgrowth.html">rexpgrowth</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="fl">0.05</span>, <span class="fl">40</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># obs is a different distribution to sim (larger growth)</span></span></span>
+<span class="r-in"><span><span class="fu">calculate_rmse</span><span class="op">(</span><span class="va">sim</span>, <span class="va">obs</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 9.994999</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># obs2 is from the same distribution as sim so the RMSE should be lower:</span></span></span>
+<span class="r-in"><span><span class="fu">calculate_rmse</span><span class="op">(</span><span class="va">sim</span>, <span class="va">obs2</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 8.45281</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

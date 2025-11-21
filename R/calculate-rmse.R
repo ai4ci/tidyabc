@@ -48,6 +48,20 @@
 #' testthat::expect_equal(tmp1, 10.3578817470424)
 #' testthat::expect_equal(tmp2, 68.8403951179829)
 #'
+#' @examples
+#'
+#' # example case counts from an exponential growth process
+#' sim = table(floor(rexpgrowth(1000, 0.05, 40, 0)))
+#' obs = table(floor(rexpgrowth(1000, 0.075, 40, 0)))
+#' obs2 = table(floor(rexpgrowth(1000, 0.05, 40, 0)))
+#'
+#' # obs is a different distribution to sim (larger growth)
+#' calculate_rmse(sim, obs)
+#'
+#' # obs2 is from the same distribution as sim so the RMSE should be lower:
+#' calculate_rmse(sim, obs2)
+#'
+#'
 calculate_rmse = function(sim, obs) {
   if (length(sim) != length(obs)) {
     return(NA)

@@ -74,7 +74,11 @@ the overall distance metric, especially when using Euclidean distance.
 
 fit = example_rejection_fit()
 metrics = posterior_distance_metrics(fit$posteriors)
-# other elements available:
+
+# other elements available but this is the most important and tells you what
+# the relative sizes of the component scores from `scorer_fn` in this sample.
+# If this is a sample from the prior then this gives us a way to judge the
+# most appropriate relative weighting of each component:
 metrics$scoreweights
 }
 \concept{workflow}
