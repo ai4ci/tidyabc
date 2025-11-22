@@ -56,3 +56,22 @@ observed data before the comparison.
     # zero if no distance
     testthat::expect_equal(tmp(0:10), 0)
     testthat::expect_equal(tmp(10:0), 0)
+
+## Examples
+
+``` r
+# example case counts from an exponential growth process
+sim = rexpgrowth(1000, 0.05, 40, 0)
+obs = rexpgrowth(1000, 0.075, 40, 0)
+obs2 = rexpgrowth(1000, 0.05, 40, 0)
+
+calc = wasserstein_calculator(sim)
+
+# obs is a different distribution to sim (larger growth)
+calc(obs)
+#> [1] 0.2760168
+
+# obs2 is from the same distribution as sim so the RMSE should be lower:
+calc(obs2)
+#> [1] 0.1103527
+```

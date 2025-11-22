@@ -528,9 +528,9 @@ print(tibble(Probability = c(0.025, 0.25, 0.5, 0.75, 0.975), Quantile = weighted
 #> # A tibble: 5 × 2
 #>   Probability Quantile
 #>         <dbl>    <dbl>
-#> 1       0.025    0.526
-#> 2       0.25     1.61 
-#> 3       0.5      2.75 
+#> 1       0.025    0.545
+#> 2       0.25     1.62 
+#> 3       0.5      2.76 
 #> 4       0.75     3.29 
 #> 5       0.975    4.19
 

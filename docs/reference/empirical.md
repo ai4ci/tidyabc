@@ -196,3 +196,31 @@ the resulting `empirical_data` fit is re-interpolated using
     # Construct a normal using a sequence and density as weight.
     e7 = empirical(x=seq(-10,10,length.out=1000),w=dnorm(seq(-10,10,length.out=1000)),knots = 20)
     testthat::expect_equal(e7$p(-5:5), pnorm(-5:5), tolerance=0.01)
+
+## Examples
+
+``` r
+# A random sample from a distribution:
+sample = rgamma2(1000, mean=5, sd=2)
+
+# fit direct from data
+fit = empirical(sample, link="log")
+plot(fit)+ggplot2::geom_function(fun= ~ dgamma2(.x, mean=5, sd=2))
+
+
+# suppose we only have quantiles
+p = seq(0.1,0.9, 0.1)
+quantiles = quantile(sample, p)
+
+# fit from quantiles:
+fit2 = empirical(x=quantiles,p=p, link="log")
+plot(fit2)+ggplot2::geom_function(fun= ~ dgamma2(.x, mean=5, sd=2))
+
+
+# fit weighted data
+samples = seq(0,10,0.1)
+weights = dgamma2(samples, mean=5, sd=2)
+fit3 = empirical(x=samples, w=weights, link="log")
+plot(fit3)+ggplot2::geom_function(fun= ~ dgamma2(.x, mean=5, sd=2))
+
+```

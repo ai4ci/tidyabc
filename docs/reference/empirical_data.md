@@ -13,7 +13,7 @@ empirical_data(
   link = "identity",
   ...,
   name = NULL,
-  bw = wbw.nrd(x, w)
+  bw = wbw.nrd(x, w)^sqrt(2)
 )
 ```
 
@@ -138,3 +138,22 @@ samples or as quantiles it should recover the tail
     )
     plot(e7)+ggplot2::geom_function(fun = dnorm)
     testthat::expect_equal(e7$p(-5:5), pnorm(-5:5), tolerance=0.01)
+
+## Examples
+
+``` r
+# A random sample from a distribution:
+sample = rgamma2(1000, mean=5, sd=2)
+
+# fit direct from data
+fit = empirical(sample, link="log")
+plot(fit)+ggplot2::geom_function(fun= ~ dgamma2(.x, mean=5, sd=2))
+
+
+# fit weighted data
+samples = seq(0,10,0.1)
+weights = dgamma2(samples, mean=5, sd=2)
+fit3 = empirical(x=samples, w=weights, link="log")
+plot(fit3)+ggplot2::geom_function(fun= ~ dgamma2(.x, mean=5, sd=2))
+
+```

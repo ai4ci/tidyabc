@@ -76,3 +76,18 @@ a `dist_fn` of the mixture distribution
       format(mix),
       "mixture; Median (IQR) 0.289 [-0.886 — 1.31]"
     )
+
+## Examples
+
+``` r
+dists = c(
+  as.dist_fns("norm", mean=-1),
+  as.dist_fns("norm", mean=1),
+  as.dist_fns("gamma", shape=2)
+)
+weights = c(1,1,0.3)
+
+mix = mixture(dists,weights)
+plot(c(dists,mix))+ggplot2::facet_wrap(~name)
+
+```

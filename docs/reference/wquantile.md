@@ -122,13 +122,23 @@ to build a quantile function and using that.
 ## Examples
 
 ``` r
+# fit weighted data
+samples = seq(0,10,0.01)
+weights = dgamma2(samples, mean=5, sd=2)
+
+wquantile(c(0.25,0.5,0.75), x = samples, w = weights, link="log")
+#>      25%      50%      75% 
+#> 3.523936 4.691167 6.067214 
+
+# compared to the sampled distribution
+qgamma2(c(0.25,0.5,0.75), mean=5, sd=2)
+#> [1] 3.547199 4.736011 6.166153
+
 # unweighted:
 wquantile(p = c(0.25,0.5,0.75), x = stats::rnorm(1000))
-#>         25%         50%         75% 
-#> -0.67042909 -0.04040481  0.63219351 
+#>        25%        50%        75% 
+#> -0.6989211 -0.0268755  0.6799402 
+qnorm(p = c(0.25,0.5,0.75))
+#> [1] -0.6744898  0.0000000  0.6744898
 
-# weighted:
-wquantile(p = c(0.25,0.5,0.75), x = seq(-2,2,0.1), w = stats::dnorm(seq(-2,2,0.1)))
-#>           25%           50%           75% 
-#> -6.384711e-01  2.591425e-17  6.384711e-01 
 ```

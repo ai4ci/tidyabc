@@ -30,12 +30,12 @@ the excess kurtosis
 
 ``` r
 kurtosis(stats::rnorm(1000))
-#> [1] 0.05797614
+#> [1] 0.6154038
 kurtosis(stats::rpois(1000, 2)) # leptokurtic > 0 (usually)
-#> [1] 0.1849754
+#> [1] 0.9326269
 kurtosis(stats::runif(1000)) # platykurtic: < 0
-#> [1] -1.162669
+#> [1] -1.140925
 
 kurtosis(stats::rlnorm(1000))
-#> [1] 20.92473
+#> [1] 38.87441
 ```

@@ -31,123 +31,47 @@ parameters.
 
 ------------------------------------------------------------------------
 
-## Simulation: Generating “Observed” Data
+## Simulation
 
-We begin by simulating a realistic outbreak using the `ggoutbreak`
-package to create a synthetic “ground truth” dataset.
-
-### Simulation Setup
-
-We define the true epidemiological parameters: - **Generation time**:
-Mean = 4 days, SD = 2 days (a relatively short time between
-infections). - **R0**: 2.0 (each case infects 2 others on average). -
-**Initial cases (`I0`)**: 10. - **Symptom and observation process**:
-Only 30% of infected individuals become symptomatic. Symptom onset is
-delayed from infection by a gamma-distributed time (Mean=7, SD=5). Of
-those symptomatic, 70% are eventually detected, with a further
-gamma-distributed delay to observation (Mean=5, SD=3). - **Observation
-window**: We only observe cases whose symptom onset and observation
-occur before day 40 (`T_obs = 40`).
-
-### Running the Simulation
+`tidyabc` includes a synthetic dataset generated from a branching
+process model which we are using for this example (`sim_outbreak`) which
+is supposed to replicate the early days of an infectious disease
+outbreak where very little is known about the pathogen and its
+epidemiological parameters.
 
 ``` r
-sim_params = list(
-  # A short generation time
-  mean_gt = 4,
-  sd_gt = 2,
-  R0 = 2,
-  I0 = 10,
-  # Add a longish and very variable delay to symptoms
-  p_symptomatic = 0.3,
-  mean_onset = 7,
-  sd_onset = 5,
-  # and a slightly shorter delay to observation:
-  # Only symptomatic cases are observed
-  p_detected_given_symptoms = 0.7,
-  mean_obs = 5,
-  sd_obs = 3,
-  # Observation cutoff:
-  T_obs = 40
-)
+sim_params = sim_outbreak$parameters
+observed = sim_outbreak$contact_tracing
 
-# Run simulation ----
-
-sim_ip = ggoutbreak::make_gamma_ip(
-  median_of_mean = sim_params$mean_gt,
-  median_of_sd = sim_params$sd_gt
-)
-
-sim_params$r0 = ggoutbreak::inv_wallinga_lipsitch(sim_params$R0, sim_ip)
-
-truth = ggoutbreak::sim_branching_process(
-  fn_Rt = ~ sim_params$R0,
-  fn_ip = ~sim_ip,
-  fn_imports = \(t) ifelse(t == 1, sim_params$I0, 0),
-  max_time = 40,
-  seed = 123
-)
+R0_truth = sprintf("%1.1f", sim_params$R0)
+r0_truth = sprintf("%1.2f", sim_params$r0) 
+gt_truth = sprintf("%1.1f \u00B1 %1.1f", sim_params$mean_gt, sim_params$sd_gt)
+onset_truth = sprintf("%1.1f \u00B1 %1.1f", sim_params$mean_onset, sim_params$sd_onset)
+obs_truth = sprintf("%1.1f \u00B1 %1.1f", sim_params$mean_obs, sim_params$sd_obs)
 ```
 
-    ## ...................complete
-    ## interfacer: development mode active (local function).
+1.  **Branching Process**:
 
-``` r
-delayed = truth %>%
-  ggoutbreak::sim_delay(
-    p_fn = ~ sim_params$p_symptomatic,
-    delay_fn = ~ ggoutbreak::rgamma2(
-      .x,
-      sim_params$mean_onset,
-      sim_params$sd_onset
-    ),
-    input = "time",
-    output = "symptom"
-  ) %>%
-  ggoutbreak::sim_delay(
-    p_fn = \(t, symptom) {
-      ifelse(symptom, sim_params$p_detected_given_symptoms, 0)
-    },
-    delay_fn = ~ ggoutbreak::rgamma2(
-      .x,
-      sim_params$mean_obs,
-      sim_params$sd_obs
-    ),
-    input = "symptom_time",
-    output = "observation"
-  )
+The core outbreak is simulated as a stochastic branching process with a
+constant `R0` of 2.0 and with a gamma distributed generation time with
+mean and SD of 4.0 ± 2.0, together these imply an initial growth rate of
+0.19.
 
-
-observed = delayed %>% dplyr::filter(observation_time < sim_params$T)
-
-traced_contacts = observed %>%
-  dplyr::semi_join(observed, by = c("infector" = "id"))
-```
-
-1.  **Branching Process**: The core outbreak is simulated as a
-    stochastic branching process with a constant `R0` of 2.0 and the
-    specified generation time distribution (`sim_ip`).
-2.  **Adding Delays**: We then layer on the complexities of real-world
-    observation:
-    - `sim_delay(..., output = "symptom")` adds the symptom onset delay.
-    - `sim_delay(..., output = "observation")` adds the delay from
-      symptom onset to being recorded in the dataset.
-3.  **Observation and Tracing**: We filter the data to only include
-    cases observed before `T_obs=40` and then identify a subset of
-    **traced transmission pairs** (where both the infector and the
-    infected are observed and linked).
+After infection a proportion of people experience symptoms with a random
+delay with mean and SD of 7.0 ± 5.0. Of those with symptoms a proportion
+are detected with a random delay with mean and SD of 5.0 ± 3.0. The
+outbreak is simulated to day 40, after which point no further cases can
+be observed.
 
 ### The Observed Data
 
 From this simulated outbreak, we extract three key pieces of information
-to use as our `obsdata` for ABC:
+to use as our observational data (`obsdata`) for ABC:
 
 1.  **Primary Case Onset Times**:
 
 ``` r
-index_case_onset = observed %>% dplyr::transmute(onset_time = floor(symptom_time))
-
-ggplot(index_case_onset, aes(x=onset_time))+geom_histogram(binwidth = 1)
+ggplot(observed, aes(x=onset_time))+geom_histogram(binwidth = 1)
 ```
 
 ![](sim-example_files/figure-html/unnamed-chunk-2-1.png)
@@ -163,7 +87,7 @@ the delay to observation.
 # Data
 
 delay_distribution = observed %>% dplyr::transmute(
-  obs_delay = floor(observation_time) - floor(symptom_time)
+  obs_delay = obs_time - onset_time
 )
 
 ggplot(delay_distribution, aes(x = obs_delay))+geom_histogram(binwidth = 1)+
@@ -182,14 +106,14 @@ be fully represented due to right censoring.
 ``` r
 serial_pairs = observed %>%
   inner_join(
-    traced_contacts,
-    by = c("id" = "infector"),
+    observed,
+    by = c("id" = "contact_id"),
     suffix = c(".1", ".2")
   ) %>%
   transmute(
-    serial_interval = floor(symptom_time.2) - floor(symptom_time.1) #order known
-    # serial_interval = abs(floor(symptom_time.2) - floor(symptom_time.1)) #order uncertain
-  ) 
+    serial_interval = onset_time.2 - onset_time.1 #order known
+    # serial_interval = abs(onset_time.2 - onset_time.1) #order uncertain
+  )
 
 ggplot(serial_pairs) +
   geom_histogram(aes(x = serial_interval), binwidth = 1)+
@@ -208,7 +132,7 @@ intervals between cases are less likely to have been observed yet.
 
 ``` r
 obsdata = list(
-  onset = as.numeric(index_case_onset$onset_time),
+  onset = as.numeric(observed$onset_time),
   diff = as.numeric(delay_distribution$obs_delay),
   si = as.numeric(serial_pairs$serial_interval)
 )
@@ -223,30 +147,36 @@ hidden processes:
 ### Model Assumptions
 
 1.  **Transmission Dynamics**: Infection times follow a process of
-    **constant exponential growth** with rate `r0`.
+    **constant exponential growth** with rate \\r_0\\.
 2.  **Delays**:
     - Time from infection to symptom onset is **Gamma-distributed**
-      (`mean_onset`, `sd_onset`).
+      (\\\mu\_{onset}\\, \\\sigma\_{onset}\\).
     - Time from symptom onset to observation is **Gamma-distributed**
-      (`mean_obs`, `sd_obs`).
+      (\\\mu\_{obs}\\, \\\sigma\_{obs}\\).
     - The true **generation time** (time between infections in a pair)
-      is **Gamma-distributed** (`mean_gt`, `sd_gt`).
+      is **Gamma-distributed** (\\\mu\_{gt}\\, \\\sigma\_{gt}\\).
 
 \\ \begin{align} t\_{max} - T\_{inf} &\sim Exp(r_0) \\ \Delta T\_{inf
 \rightarrow onset} &\sim Gamma(\mu\_{onset},\sigma\_{onset}) \\ \Delta
 T\_{onset \rightarrow obs} &\sim Gamma(\mu\_{obs},\sigma\_{obs}) \\
 \Delta T\_{gt} &\sim Gamma(\mu\_{gt},\sigma\_{gt}) \\ \end{align} \\
 
-Delays are linked together like this:
+Secondary cases are generated from primary cases with a poisson process
+with rate equal to the reproduction number \\R_0\\ and the time of
+infection of secondary cases (\\T\_{inf_2}\\) by the generation time.:
 
 \\ \begin{align} T\_{onset} &= T\_{inf} + \Delta T\_{inf \rightarrow
 onset} \\ T\_{obs} &= T\_{onset} + \Delta T\_{onset \rightarrow obs}\\
-T\_{inf_2} &= T\_{inf_1} + \Delta T\_{gt} \\ \Delta T\_{onset_1
-\rightarrow onset_2} &= \Delta T\_{gt} + \Delta T\_{inf_2 \rightarrow
-onset_2} - \Delta T\_{inf_1 \rightarrow onset_1} \\ \end{align} \\
+N\_{inf_1 \rightarrow inf_2} &\sim Poisson(R_0) \\ T\_{inf_2} &=
+T\_{inf_1} + \Delta T\_{gt} \\ \Delta T\_{onset_1 \rightarrow onset_2}
+&= \Delta T\_{gt} + \Delta T\_{inf_2 \rightarrow onset_2} - \Delta
+T\_{inf_1 \rightarrow onset_1} \\ \end{align} \\
 
-3.  **Observation Process**: A case is only “observed” if its symptom
-    onset is after day 0 and its observation time is before `T_obs`.
+3.  **Observation Process**: A primary case is only “observed” if its
+    symptom onset is after day 0 and its observation time is before
+    \\T\_{obs}\\. A secondary case is only observed if the primary case
+    was observed and its symptom onset is after day 0 and its
+    observation time is also before \\T\_{obs}\\.
 
 \\ \begin{align} O_1 &= I(t_0 \le T\_{onset_1}, T\_{obs_1} \le t\_{max})
 \\ O\_{1,2} &= I(O_1, t_0 \le T\_{onset_2}, T\_{obs_2} \le t\_{max})\\
@@ -344,17 +274,20 @@ sim1_fn = carrier::crate(
 )
 ```
 
-It performs the following steps: 1. **Simulate Primary Infections**:
-Generates `n` primary infection times from an exponentially growing
-process, starting early enough to account for long symptom delays. 2.
-**Add Delays for Primary Cases**: Adds symptom onset and observation
-delays, then applies the observation filter. 3. **Simulate Secondary
-Infections**: For each observed primary case, it generates a
-Poisson(`R0`) number of secondary cases. 4. **Add Delays for Secondary
-Cases**: Adds their own generation time delay, symptom onset delay, and
-observation delay. 5. **Calculate Observed Quantities**: Computes the
-final vectors for `onset`, `diff` (observation delay), and `si` (serial
-interval) from the simulated and filtered data.
+It performs the following steps:
+
+1.  **Simulate Primary Infections**: Generates `n` primary infection
+    times from an exponentially growing process, starting early enough
+    to account for long symptom delays.
+2.  **Add Delays for Primary Cases**: Adds symptom onset and observation
+    delays, then applies the observation filter.
+3.  **Simulate Secondary Infections**: For each observed primary case,
+    it generates a Poisson(`R0`) number of secondary cases.
+4.  **Add Delays for Secondary Cases**: Adds their own generation time
+    delay, symptom onset delay, and observation delay.
+5.  **Calculate Observed Quantities**: Computes the final vectors for
+    `onset`, `diff` (observation delay), and `si` (serial interval) from
+    the simulated and filtered data.
 
 ### The Scoring Function (`scorer1_fn`)
 
@@ -427,7 +360,7 @@ priors = priors(
   mean_gt ~ unif(0, 12),
   sd_gt ~ unif(0, 8),
   R0 ~ (1+r0*sd_gt^2/mean_gt) ^ (mean_gt^2 / sd_gt^2),
-  ~ is.finite(R0) & R0 > 0,
+  ~ is.finite(R0) & R0 > 0 & R0 < 12,
   ~ mean_onset > sd_onset,
   ~ mean_obs > sd_obs,
   ~ mean_gt > sd_gt
@@ -445,7 +378,7 @@ priors
     ## * mean_gt: unif(min = 0, max = 12)
     ## * sd_gt: unif(min = 0, max = 8)
     ## Constraints:
-    ## * is.finite(R0) & R0 > 0
+    ## * is.finite(R0) & R0 > 0 & R0 < 12
     ## * mean_onset > sd_onset
     ## * mean_obs > sd_obs
     ## * mean_gt > sd_gt
@@ -514,70 +447,76 @@ smc_fit = abc_smc(
 
     ## ABC-SMC
 
-    ## SMC waves:  ■                                  1% | wave 1 ETA:  6m
+    ## SMC waves:  ■                                  1% | wave 1 ETA:  5m
 
     ## SMC waves:  ■                                  2% | wave 2 ETA:  5m
 
     ## SMC waves:  ■■                                 3% | wave 3 ETA:  5m
 
-    ## SMC waves:  ■■                                 4% | wave 4 ETA:  5m
+    ## SMC waves:  ■■                                 3% | wave 4 ETA:  5m
 
-    ## SMC waves:  ■■                                 5% | wave 5 ETA:  5m
+    ## SMC waves:  ■■                                 4% | wave 5 ETA:  5m
 
-    ## SMC waves:  ■■■                                6% | wave 6 ETA:  5m
+    ## SMC waves:  ■■■                                5% | wave 6 ETA:  5m
 
-    ## SMC waves:  ■■■                                7% | wave 7 ETA:  5m
+    ## SMC waves:  ■■■                                6% | wave 7 ETA:  5m
 
-    ## SMC waves:  ■■■                                8% | wave 8 ETA:  5m
+    ## SMC waves:  ■■■                                7% | wave 8 ETA:  5m
 
-    ## SMC waves:  ■■■■                               9% | wave 9 ETA:  5m
+    ## SMC waves:  ■■■■                               9% | wave 10 ETA:  5m
 
-    ## SMC waves:  ■■■■                              10% | wave 10 ETA:  5m
+    ## SMC waves:  ■■■■                              10% | wave 11 ETA:  5m
 
-    ## SMC waves:  ■■■■                              11% | wave 11 ETA:  4m
+    ## SMC waves:  ■■■■                              11% | wave 12 ETA:  4m
 
-    ## SMC waves:  ■■■■■                             12% | wave 12 ETA:  4m
+    ## SMC waves:  ■■■■■                             12% | wave 13 ETA:  4m
 
-    ## SMC waves:  ■■■■■                             13% | wave 13 ETA:  4m
+    ## SMC waves:  ■■■■■                             13% | wave 14 ETA:  4m
 
-    ## SMC waves:  ■■■■■                             14% | wave 14 ETA:  4m
+    ## SMC waves:  ■■■■■                             14% | wave 15 ETA:  4m
 
-    ## SMC waves:  ■■■■■■                            15% | wave 15 ETA:  4m
+    ## SMC waves:  ■■■■■■                            15% | wave 16 ETA:  4m
 
-    ## SMC waves:  ■■■■■■                            16% | wave 16 ETA:  4m
+    ## SMC waves:  ■■■■■■                            16% | wave 17 ETA:  4m
 
-    ## SMC waves:  ■■■■■■                            18% | wave 17 ETA:  4m
+    ## SMC waves:  ■■■■■■                            17% | wave 18 ETA:  4m
 
-    ## SMC waves:  ■■■■■■■                           19% | wave 18 ETA:  4m
+    ## SMC waves:  ■■■■■■■                           18% | wave 19 ETA:  4m
 
-    ## SMC waves:  ■■■■■■■                           20% | wave 19 ETA:  4m
+    ## SMC waves:  ■■■■■■■                           19% | wave 20 ETA:  4m
 
-    ## SMC waves:  ■■■■■■■                           21% | wave 20 ETA:  4m
+    ## SMC waves:  ■■■■■■■                           21% | wave 21 ETA:  4m
 
-    ## SMC waves:  ■■■■■■■■                          22% | wave 21 ETA:  4m
+    ## SMC waves:  ■■■■■■■■                          22% | wave 22 ETA:  4m
 
-    ## SMC waves:  ■■■■■■■■                          23% | wave 22 ETA:  4m
+    ## SMC waves:  ■■■■■■■■                          23% | wave 23 ETA:  4m
 
-    ## Converged on wave: 23
+    ## SMC waves:  ■■■■■■■■                          24% | wave 24 ETA:  4m
+
+    ## SMC waves:  ■■■■■■■■                          25% | wave 25 ETA:  4m
+
+    ## SMC waves:  ■■■■■■■■■                         26% | wave 26 ETA:  4m
+
+    ## Converged on wave: 27
 
 ``` r
 summary(smc_fit)
 ```
 
-    ## ABC SMC fit: 23 waves - (converged)
+    ## ABC SMC fit: 27 waves - (converged)
     ## Parameter estimates:
     ## # A tibble: 8 × 4
     ## # Groups:   param [8]
     ##   param      mean_sd       median_95_CrI           ESS
     ##   <chr>      <chr>         <chr>                 <dbl>
-    ## 1 R0         1.789 ± 0.176 1.770 [1.475 — 2.164] 1919.
-    ## 2 mean_gt    3.594 ± 0.804 3.497 [1.958 — 6.459] 1919.
-    ## 3 mean_obs   5.320 ± 0.464 5.287 [4.275 — 6.953] 1919.
-    ## 4 mean_onset 5.188 ± 1.183 5.111 [2.687 — 8.860] 1919.
-    ## 5 r0         0.195 ± 0.014 0.194 [0.159 — 0.235] 1919.
-    ## 6 sd_gt      2.764 ± 1.124 2.742 [0.501 — 6.023] 1919.
-    ## 7 sd_obs     3.195 ± 0.489 3.145 [2.196 — 4.960] 1919.
-    ## 8 sd_onset   3.747 ± 0.944 3.629 [1.854 — 6.437] 1919.
+    ## 1 R0         1.921 ± 0.178 1.904 [1.587 — 2.289] 1989.
+    ## 2 mean_gt    4.648 ± 0.952 4.571 [2.709 — 7.368] 1989.
+    ## 3 mean_obs   5.188 ± 0.433 5.158 [4.216 — 6.619] 1989.
+    ## 4 mean_onset 5.711 ± 1.144 5.671 [3.058 — 8.874] 1989.
+    ## 5 r0         0.173 ± 0.012 0.172 [0.142 — 0.208] 1989.
+    ## 6 sd_gt      3.550 ± 1.442 3.578 [0.616 — 6.792] 1989.
+    ## 7 sd_obs     3.277 ± 0.461 3.236 [2.300 — 4.779] 1989.
+    ## 8 sd_onset   4.286 ± 1.004 4.196 [2.172 — 7.020] 1989.
 
 This is generally quite slow for the relative large number of waves and
 simulations it requires until convergence. It has good matching between
@@ -627,6 +566,8 @@ adaptive_fit = abc_adaptive(
 
     ## Adaptive waves:  ■                                  0% | wave 1 ETA:  6m
 
+    ## Adaptive waves:  ■                                  1% | wave 2 ETA:  6m
+
     ## Adaptive waves:  ■                                  2% | wave 4 ETA:  5m
 
     ## Adaptive waves:  ■■                                 2% | wave 6 ETA:  5m
@@ -635,50 +576,90 @@ adaptive_fit = abc_adaptive(
 
     ## Adaptive waves:  ■■                                 4% | wave 10 ETA:  5m
 
-    ## Adaptive waves:  ■■■                                5% | wave 12 ETA:  5m
+    ## Adaptive waves:  ■■■                                6% | wave 12 ETA:  5m
 
-    ## Adaptive waves:  ■■■                                6% | wave 14 ETA:  5m
+    ## Adaptive waves:  ■■■                                7% | wave 14 ETA:  5m
 
     ## Adaptive waves:  ■■■                                8% | wave 16 ETA:  5m
 
-    ## Adaptive waves:  ■■■                                8% | wave 17 ETA:  5m
+    ## Adaptive waves:  ■■■■                               9% | wave 17 ETA:  5m
 
-    ## Adaptive waves:  ■■■■                               9% | wave 19 ETA:  5m
+    ## Adaptive waves:  ■■■■                              10% | wave 19 ETA:  5m
 
-    ## Adaptive waves:  ■■■■                              11% | wave 21 ETA:  4m
+    ## Adaptive waves:  ■■■■                              11% | wave 20 ETA:  5m
 
-    ## Adaptive waves:  ■■■■                              12% | wave 22 ETA:  4m
+    ## Adaptive waves:  ■■■■■                             12% | wave 22 ETA:  4m
 
-    ## Adaptive waves:  ■■■■■                             12% | wave 23 ETA:  4m
+    ## Adaptive waves:  ■■■■■                             13% | wave 23 ETA:  4m
 
-    ## Adaptive waves:  ■■■■■                             14% | wave 25 ETA:  4m
+    ## Adaptive waves:  ■■■■■                             13% | wave 24 ETA:  4m
 
     ## Adaptive waves:  ■■■■■                             15% | wave 26 ETA:  4m
 
-    ## Adaptive waves:  ■■■■■■                            15% | wave 27 ETA:  4m
+    ## Adaptive waves:  ■■■■■■                            16% | wave 27 ETA:  4m
 
-    ## Adaptive waves:  ■■■■■■                            17% | wave 29 ETA:  4m
+    ## Adaptive waves:  ■■■■■■                            16% | wave 28 ETA:  4m
 
-    ## Converged on wave: 30
+    ## Adaptive waves:  ■■■■■■                            18% | wave 30 ETA:  4m
+
+    ## Adaptive waves:  ■■■■■■■                           19% | wave 31 ETA:  4m
+
+    ## Adaptive waves:  ■■■■■■■                           20% | wave 32 ETA:  4m
+
+    ## Adaptive waves:  ■■■■■■■                           21% | wave 33 ETA:  4m
+
+    ## Adaptive waves:  ■■■■■■■■                          22% | wave 34 ETA:  4m
+
+    ## Adaptive waves:  ■■■■■■■■                          23% | wave 35 ETA:  4m
+
+    ## Adaptive waves:  ■■■■■■■■                          24% | wave 36 ETA:  4m
+
+    ## Adaptive waves:  ■■■■■■■■                          25% | wave 37 ETA:  4m
+
+    ## Adaptive waves:  ■■■■■■■■■                         26% | wave 38 ETA:  4m
+
+    ## Adaptive waves:  ■■■■■■■■■                         27% | wave 39 ETA:  4m
+
+    ## Adaptive waves:  ■■■■■■■■■                         28% | wave 40 ETA:  4m
+
+    ## Adaptive waves:  ■■■■■■■■■■                        29% | wave 41 ETA:  4m
+
+    ## Adaptive waves:  ■■■■■■■■■■                        30% | wave 42 ETA:  4m
+
+    ## Adaptive waves:  ■■■■■■■■■■                        31% | wave 43 ETA:  3m
+
+    ## Adaptive waves:  ■■■■■■■■■■■                       32% | wave 44 ETA:  3m
+
+    ## Adaptive waves:  ■■■■■■■■■■■                       33% | wave 45 ETA:  3m
+
+    ## Adaptive waves:  ■■■■■■■■■■■                       34% | wave 46 ETA:  3m
+
+    ## Adaptive waves:  ■■■■■■■■■■■■                      35% | wave 47 ETA:  3m
+
+    ## Adaptive waves:  ■■■■■■■■■■■■                      37% | wave 48 ETA:  3m
+
+    ## Adaptive waves:  ■■■■■■■■■■■■                      38% | wave 49 ETA:  3m
+
+    ## Converged on wave: 50
 
 ``` r
 summary(adaptive_fit)
 ```
 
-    ## ABC adaptive fit: 30 waves - (converged)
+    ## ABC adaptive fit: 50 waves - (converged)
     ## Parameter estimates:
     ## # A tibble: 8 × 4
     ## # Groups:   param [8]
     ##   param      mean_sd       median_95_CrI             ESS
     ##   <chr>      <chr>         <chr>                   <dbl>
-    ## 1 R0         1.964 ± 0.500 1.857 [1.456 — 2.867]  11395.
-    ## 2 mean_gt    3.458 ± 1.029 3.120 [1.445 — 8.590]  11395.
-    ## 3 mean_obs   5.563 ± 1.135 5.415 [3.345 — 9.606]  11395.
-    ## 4 mean_onset 7.564 ± 1.992 7.377 [2.108 — 11.528] 11395.
-    ## 5 r0         0.220 ± 0.030 0.218 [0.121 — 0.338]  11395.
-    ## 6 sd_gt      2.170 ± 1.170 2.219 [0.201 — 5.801]  11395.
-    ## 7 sd_obs     3.350 ± 1.225 3.332 [1.017 — 6.595]  11395.
-    ## 8 sd_onset   3.847 ± 2.038 3.768 [0.292 — 7.637]  11395.
+    ## 1 R0         1.917 ± 0.360 1.845 [1.532 — 2.584]  20736.
+    ## 2 mean_gt    3.979 ± 0.922 3.671 [2.165 — 8.633]  20736.
+    ## 3 mean_obs   4.999 ± 0.998 4.636 [3.436 — 9.499]  20736.
+    ## 4 mean_onset 7.202 ± 2.293 7.220 [1.919 — 11.563] 20736.
+    ## 5 r0         0.186 ± 0.024 0.183 [0.115 — 0.273]  20736.
+    ## 6 sd_gt      2.522 ± 1.213 2.616 [0.272 — 6.074]  20736.
+    ## 7 sd_obs     2.913 ± 1.157 2.569 [1.289 — 6.570]  20736.
+    ## 8 sd_onset   3.600 ± 1.930 3.466 [0.275 — 7.540]  20736.
 
 The adaptive algorithm is quicker, less focussed on exploration and more
 on convergence. With the settings above it can identify the growth rate,
@@ -763,7 +744,7 @@ priors2 = priors(
   mean_gt ~ lnorm2(4, 3),
   sd_gt ~ lnorm2(3, 2),
   R0 ~ (1+r0*sd_gt^2/mean_gt) ^ (mean_gt^2 / sd_gt^2),
-  ~ is.finite(R0) & R0 > 0,
+  ~ is.finite(R0) & R0 > 0 & R0 < 12,
   ~ mean_onset > sd_onset,
   ~ mean_obs > sd_obs,
   ~ mean_gt > sd_gt
@@ -781,7 +762,7 @@ priors2
     ## * mean_gt: lnorm2(mean = 4, sd = 3)
     ## * sd_gt: lnorm2(mean = 3, sd = 2)
     ## Constraints:
-    ## * is.finite(R0) & R0 > 0
+    ## * is.finite(R0) & R0 > 0 & R0 < 12
     ## * mean_onset > sd_onset
     ## * mean_obs > sd_obs
     ## * mean_gt > sd_gt
@@ -809,7 +790,7 @@ adaptive_fit2 = abc_adaptive(
   # debug_errors = TRUE,
   parallel = TRUE,
   scoreweights = scoreweights2,
-  widen_by = 1.05
+  widen_by = 1.1
 )
 ```
 
@@ -817,34 +798,48 @@ adaptive_fit2 = abc_adaptive(
 
     ## Adaptive waves:  ■                                  0% | wave 1 ETA:  6m
 
-    ## Adaptive waves:  ■                                  1% | wave 2 ETA:  5m
-
     ## Adaptive waves:  ■                                  2% | wave 4 ETA:  5m
 
-    ## Adaptive waves:  ■■                                 2% | wave 6 ETA:  5m
+    ## Adaptive waves:  ■■                                 3% | wave 6 ETA:  5m
 
-    ## Converged on wave: 8
+    ## Adaptive waves:  ■■                                 3% | wave 8 ETA:  5m
 
-    ## Adaptive waves:  ■■                                 3% | wave 7 ETA:  6m
+    ## Adaptive waves:  ■■                                 5% | wave 10 ETA:  5m
+
+    ## Adaptive waves:  ■■■                                6% | wave 12 ETA:  5m
+
+    ## Adaptive waves:  ■■■                                6% | wave 13 ETA:  5m
+
+    ## Adaptive waves:  ■■■                                7% | wave 15 ETA:  5m
+
+    ## Adaptive waves:  ■■■■                               9% | wave 17 ETA:  5m
+
+    ## Adaptive waves:  ■■■■                               9% | wave 18 ETA:  5m
+
+    ## Adaptive waves:  ■■■■                              11% | wave 20 ETA:  4m
+
+    ## Adaptive waves:  ■■■■■                             12% | wave 21 ETA:  4m
+
+    ## Converged on wave: 22
 
 ``` r
 summary(adaptive_fit2)
 ```
 
-    ## ABC adaptive fit: 8 waves - (converged)
+    ## ABC adaptive fit: 22 waves - (converged)
     ## Parameter estimates:
     ## # A tibble: 8 × 4
     ## # Groups:   param [8]
-    ##   param      mean_sd       median_95_CrI            ESS
-    ##   <chr>      <chr>         <chr>                  <dbl>
-    ## 1 R0         1.783 ± 0.265 1.741 [1.416 — 2.336]  4242.
-    ## 2 mean_gt    3.266 ± 0.608 3.211 [1.747 — 5.575]  4242.
-    ## 3 mean_obs   4.777 ± 0.712 4.769 [3.453 — 6.480]  4242.
-    ## 4 mean_onset 7.083 ± 1.422 6.827 [4.613 — 10.615] 4242.
-    ## 5 r0         0.194 ± 0.029 0.192 [0.124 — 0.293]  4242.
-    ## 6 sd_gt      1.931 ± 0.721 1.915 [0.698 — 4.135]  4242.
-    ## 7 sd_obs     2.765 ± 0.734 2.748 [1.497 — 4.446]  4242.
-    ## 8 sd_onset   4.772 ± 0.819 4.778 [3.287 — 6.535]  4242.
+    ##   param      mean_sd       median_95_CrI             ESS
+    ##   <chr>      <chr>         <chr>                   <dbl>
+    ## 1 R0         1.861 ± 0.319 1.808 [1.477 — 2.441]  11113.
+    ## 2 mean_gt    3.815 ± 0.760 3.757 [2.086 — 6.598]  11113.
+    ## 3 mean_obs   4.846 ± 0.741 4.812 [3.510 — 6.501]  11113.
+    ## 4 mean_onset 7.051 ± 1.482 6.771 [4.592 — 10.711] 11113.
+    ## 5 r0         0.178 ± 0.029 0.174 [0.113 — 0.277]  11113.
+    ## 6 sd_gt      2.133 ± 0.904 2.059 [0.783 — 4.736]  11113.
+    ## 7 sd_obs     2.813 ± 0.785 2.792 [1.487 — 4.561]  11113.
+    ## 8 sd_onset   4.743 ± 0.863 4.697 [3.244 — 6.591]  11113.
 
 ``` r
 plot(adaptive_fit2,truth = sim_params, tail = 0.01)

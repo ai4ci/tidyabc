@@ -85,7 +85,7 @@ There must be some non zero weights, and all must be finite.</p></dd>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># unweighted:</span></span></span>
 <span class="r-in"><span><span class="fu">wsd</span><span class="op">(</span>x <span class="op">=</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1000</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.9832013</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1.037241</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># weighted:</span></span></span>
 <span class="r-in"><span><span class="fu">wsd</span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="op">-</span><span class="fl">2</span>,<span class="fl">2</span>,<span class="fl">0.1</span><span class="op">)</span>, w <span class="op">=</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="op">-</span><span class="fl">2</span>,<span class="fl">2</span>,<span class="fl">0.1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>

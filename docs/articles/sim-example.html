@@ -151,7 +151,7 @@ ABC:</p>
 <strong>Primary Case Onset Times</strong>:</li>
 </ol>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">ggplot</span><span class="op">(</span><span class="va">observed</span>, <span class="fu">aes</span><span class="op">(</span>x<span class="op">=</span><span class="va">onset_time</span><span class="op">)</span><span class="op">)</span><span class="op">+</span><span class="fu">geom_histogram</span><span class="op">(</span>binwidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">observed</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">onset_time</span><span class="op">)</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html" class="external-link">geom_histogram</a></span><span class="op">(</span>binwidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" width="288"></p>
 <p>This histogram shows the distribution of symptom onset times for all
 observed primary cases. The shape is influenced by the exponential
@@ -169,8 +169,8 @@ the delay to observation.</p>
 <span>  obs_delay <span class="op">=</span> <span class="va">obs_time</span> <span class="op">-</span> <span class="va">onset_time</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">ggplot</span><span class="op">(</span><span class="va">delay_distribution</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">obs_delay</span><span class="op">)</span><span class="op">)</span><span class="op">+</span><span class="fu">geom_histogram</span><span class="op">(</span>binwidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">+</span></span>
-<span>  <span class="fu">xlab</span><span class="op">(</span><span class="st">"symptom to observation"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">delay_distribution</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">obs_delay</span><span class="op">)</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html" class="external-link">geom_histogram</a></span><span class="op">(</span>binwidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">"symptom to observation"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" width="288"></p>
 <p>This shows the distribution of delays between symptom onset and when
 the case was observed. This reflects the <code>mean_obs</code> and
@@ -183,19 +183,19 @@ censoring.</p>
 </h2>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">serial_pairs</span> <span class="op">=</span> <span class="va">observed</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu">inner_join</span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">inner_join</a></span><span class="op">(</span></span>
 <span>    <span class="va">observed</span>,</span>
 <span>    by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span> <span class="op">=</span> <span class="st">"contact_id"</span><span class="op">)</span>,</span>
 <span>    suffix <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">".1"</span>, <span class="st">".2"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu">transmute</span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/transmute.html" class="external-link">transmute</a></span><span class="op">(</span></span>
 <span>    serial_interval <span class="op">=</span> <span class="va">onset_time.2</span> <span class="op">-</span> <span class="va">onset_time.1</span> <span class="co">#order known</span></span>
 <span>    <span class="co"># serial_interval = abs(onset_time.2 - onset_time.1) #order uncertain</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="fu">ggplot</span><span class="op">(</span><span class="va">serial_pairs</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">geom_histogram</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">serial_interval</span><span class="op">)</span>, binwidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">+</span></span>
-<span>  <span class="fu">xlab</span><span class="op">(</span><span class="st">"symptom serial interval (given observed)"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">serial_pairs</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html" class="external-link">geom_histogram</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">serial_interval</span><span class="op">)</span>, binwidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">"symptom serial interval (given observed)"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-4-1.png" class="r-plt" width="288"></p>
 <p>This is the most critical piece of data. The serial interval is the
 time between symptom onsets in observed transmission pairs. Because
@@ -551,15 +551,14 @@ rejection sampling.</li>
 <span>  scoreweights <span class="op">=</span> <span class="va">scoreweights1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## ABC-SMC</span></span></code></pre>
-<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■                               </span>   1% | wave 1 ETA:  6m</span></span></code></pre>
+<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■                               </span>   1% | wave 1 ETA:  5m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■                               </span>   2% | wave 2 ETA:  5m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■                              </span>   3% | wave 3 ETA:  5m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■                              </span>   3% | wave 4 ETA:  5m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■                              </span>   4% | wave 5 ETA:  5m</span></span></code></pre>
-<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■                             </span>   6% | wave 6 ETA:  5m</span></span></code></pre>
-<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■                             </span>   7% | wave 7 ETA:  5m</span></span></code></pre>
+<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■                             </span>   5% | wave 6 ETA:  5m</span></span></code></pre>
+<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■                             </span>   6% | wave 7 ETA:  5m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■                             </span>   7% | wave 8 ETA:  5m</span></span></code></pre>
-<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■                            </span>   8% | wave 9 ETA:  5m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■                            </span>   9% | wave 10 ETA:  5m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■                            </span>  10% | wave 11 ETA:  5m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■                            </span>  11% | wave 12 ETA:  4m</span></span></code></pre>
@@ -567,18 +566,18 @@ rejection sampling.</li>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■                           </span>  13% | wave 14 ETA:  4m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■                           </span>  14% | wave 15 ETA:  4m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■                          </span>  15% | wave 16 ETA:  4m</span></span></code></pre>
-<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■                          </span>  17% | wave 17 ETA:  4m</span></span></code></pre>
-<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■                          </span>  18% | wave 18 ETA:  4m</span></span></code></pre>
-<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■                         </span>  19% | wave 19 ETA:  4m</span></span></code></pre>
-<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■                         </span>  20% | wave 20 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■                          </span>  16% | wave 17 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■                          </span>  17% | wave 18 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■                         </span>  18% | wave 19 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■                         </span>  19% | wave 20 ETA:  4m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■                         </span>  21% | wave 21 ETA:  4m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■                        </span>  22% | wave 22 ETA:  4m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■                        </span>  23% | wave 23 ETA:  4m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■                        </span>  24% | wave 24 ETA:  4m</span></span></code></pre>
-<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■■                       </span>  25% | wave 25 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■                        </span>  25% | wave 25 ETA:  4m</span></span></code></pre>
 <pre><code><span><span class="co">## SMC waves:  <span style="color: #00BB00;">■■■■■■■■■                       </span>  26% | wave 26 ETA:  4m</span></span></code></pre>
 <pre><code><span><span class="co">## Converged on wave: 27</span></span></code></pre>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">smc_fit</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## ABC SMC fit: 27 waves - (converged)</span></span>
 <span><span class="co">## Parameter estimates:</span></span>
@@ -601,10 +600,10 @@ reproduction number and observation delays. It is uninformed about delay
 to onset (and this is inherent in the model and data), and the
 generation time is somewhat constrained and the mode aligns with the
 true value but the median is still somewhat high.</p>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">smc_fit</span>,truth <span class="op">=</span> <span class="va">sim_params</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" width="672"></p>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_evolution.html">plot_evolution</a></span><span class="op">(</span><span class="va">smc_fit</span>,truth <span class="op">=</span> <span class="va">sim_params</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-12-2.png" class="r-plt" width="672"></p>
 <ol start="3" style="list-style-type: decimal">
@@ -619,7 +618,7 @@ posteriors.</li>
 <li>We use <code>widen_by = 1.2</code> to provide a safety net against
 particle degeneracy.</li>
 </ul>
-<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">adaptive_fit</span> <span class="op">=</span> <span class="fu"><a href="../reference/abc_adaptive.html">abc_adaptive</a></span><span class="op">(</span></span>
 <span>  obsdata <span class="op">=</span> <span class="va">obsdata</span>,</span>
 <span>  priors_list <span class="op">=</span> <span class="va">priors</span>,</span>
@@ -634,36 +633,60 @@ particle degeneracy.</li>
 <span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## ABC-Adaptive</span></span></code></pre>
 <pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■                               </span>   0% | wave 1 ETA:  6m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■                               </span>   1% | wave 2 ETA:  6m</span></span></code></pre>
 <pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■                               </span>   2% | wave 4 ETA:  5m</span></span></code></pre>
 <pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   2% | wave 6 ETA:  5m</span></span></code></pre>
 <pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   3% | wave 8 ETA:  5m</span></span></code></pre>
 <pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   4% | wave 10 ETA:  5m</span></span></code></pre>
-<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■                             </span>   5% | wave 12 ETA:  5m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■                             </span>   6% | wave 12 ETA:  5m</span></span></code></pre>
 <pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■                             </span>   7% | wave 14 ETA:  5m</span></span></code></pre>
-<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■                             </span>   7% | wave 15 ETA:  5m</span></span></code></pre>
-<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■                            </span>   8% | wave 17 ETA:  5m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■                             </span>   8% | wave 16 ETA:  5m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■                            </span>   9% | wave 17 ETA:  5m</span></span></code></pre>
 <pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■                            </span>  10% | wave 19 ETA:  5m</span></span></code></pre>
-<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■                            </span>  10% | wave 20 ETA:  5m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■                            </span>  11% | wave 20 ETA:  5m</span></span></code></pre>
 <pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■                           </span>  12% | wave 22 ETA:  4m</span></span></code></pre>
-<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■                           </span>  12% | wave 23 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■                           </span>  13% | wave 23 ETA:  4m</span></span></code></pre>
 <pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■                           </span>  13% | wave 24 ETA:  4m</span></span></code></pre>
-<pre><code><span><span class="co">## Converged on wave: 25</span></span></code></pre>
-<div class="sourceCode" id="cb64"><pre class="downlit sourceCode r">
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■                           </span>  15% | wave 26 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■■                          </span>  16% | wave 27 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■■                          </span>  16% | wave 28 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■■                          </span>  18% | wave 30 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■■■                         </span>  19% | wave 31 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■■■                         </span>  20% | wave 32 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■■■                         </span>  21% | wave 33 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■                        </span>  22% | wave 34 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■                        </span>  23% | wave 35 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■                        </span>  24% | wave 36 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■                        </span>  25% | wave 37 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■■                       </span>  26% | wave 38 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■■                       </span>  27% | wave 39 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■■                       </span>  28% | wave 40 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■■■                      </span>  29% | wave 41 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■■■                      </span>  30% | wave 42 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■■■                      </span>  31% | wave 43 ETA:  3m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■■■■                     </span>  32% | wave 44 ETA:  3m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■■■■                     </span>  33% | wave 45 ETA:  3m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■■■■                     </span>  34% | wave 46 ETA:  3m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■■■■■                    </span>  35% | wave 47 ETA:  3m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■■■■■                    </span>  37% | wave 48 ETA:  3m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■■■■■                    </span>  38% | wave 49 ETA:  3m</span></span></code></pre>
+<pre><code><span><span class="co">## Converged on wave: 50</span></span></code></pre>
+<div class="sourceCode" id="cb87"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">adaptive_fit</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## ABC adaptive fit: 25 waves - (converged)</span></span>
+<pre><code><span><span class="co">## ABC adaptive fit: 50 waves - (converged)</span></span>
 <span><span class="co">## Parameter estimates:</span></span>
 <span><span class="co">## <span style="color: #949494;"># A tibble: 8 × 4</span></span></span>
 <span><span class="co">## <span style="color: #949494;"># Groups:   param [8]</span></span></span>
-<span><span class="co">##   param      mean_sd       median_95_CrI            ESS</span></span>
-<span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span> R0         1.972 ± 0.434 1.876 [1.522 — 2.806]  <span style="text-decoration: underline;">9</span>212.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span> mean_gt    4.022 ± 0.970 3.687 [2.082 — 8.852]  <span style="text-decoration: underline;">9</span>212.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">3</span> mean_obs   5.360 ± 1.107 5.002 [3.413 — 9.529]  <span style="text-decoration: underline;">9</span>212.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">4</span> mean_onset 7.550 ± 2.233 7.552 [1.896 — 11.642] <span style="text-decoration: underline;">9</span>212.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">5</span> r0         0.192 ± 0.028 0.188 [0.111 — 0.300]  <span style="text-decoration: underline;">9</span>212.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">6</span> sd_gt      2.533 ± 1.221 2.611 [0.227 — 6.198]  <span style="text-decoration: underline;">9</span>212.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">7</span> sd_obs     3.358 ± 1.262 3.085 [1.198 — 6.749]  <span style="text-decoration: underline;">9</span>212.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">8</span> sd_onset   3.720 ± 2.045 3.634 [0.241 — 7.617]  <span style="text-decoration: underline;">9</span>212.</span></span></code></pre>
+<span><span class="co">##   param      mean_sd       median_95_CrI             ESS</span></span>
+<span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> R0         1.917 ± 0.360 1.845 [1.532 — 2.584]  <span style="text-decoration: underline;">20</span>736.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span> mean_gt    3.979 ± 0.922 3.671 [2.165 — 8.633]  <span style="text-decoration: underline;">20</span>736.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span> mean_obs   4.999 ± 0.998 4.636 [3.436 — 9.499]  <span style="text-decoration: underline;">20</span>736.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">4</span> mean_onset 7.202 ± 2.293 7.220 [1.919 — 11.563] <span style="text-decoration: underline;">20</span>736.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">5</span> r0         0.186 ± 0.024 0.183 [0.115 — 0.273]  <span style="text-decoration: underline;">20</span>736.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">6</span> sd_gt      2.522 ± 1.213 2.616 [0.272 — 6.074]  <span style="text-decoration: underline;">20</span>736.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">7</span> sd_obs     2.913 ± 1.157 2.569 [1.289 — 6.570]  <span style="text-decoration: underline;">20</span>736.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">8</span> sd_onset   3.600 ± 1.930 3.466 [0.275 — 7.540]  <span style="text-decoration: underline;">20</span>736.</span></span></code></pre>
 <p>The adaptive algorithm is quicker, less focussed on exploration and
 more on convergence. With the settings above it can identify the growth
 rate, reproduction number, generation time mean, observation delay mean
@@ -672,18 +695,18 @@ distributions that are very peaked but with heavy tails, leading to wide
 95% credible intervals even when the central estimate seems very close.
 The model is not informative about the onset distribution and this
 affects its predictive ability for the generation time SD.</p>
-<div class="sourceCode" id="cb66"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb89"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">adaptive_fit</span>,truth <span class="op">=</span> <span class="va">sim_params</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-14-1.png" class="r-plt" width="672"></p>
 <p>The evolution plot shows how the posterior for each parameter evolved
 over the adaptive waves, demonstrating the algorithm’s convergence.</p>
-<div class="sourceCode" id="cb67"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb90"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_evolution.html">plot_evolution</a></span><span class="op">(</span><span class="va">adaptive_fit</span>,truth <span class="op">=</span> <span class="va">sim_params</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-15-1.png" class="r-plt" width="672"></p>
 <p>A correlation plot accounting for weighting reveals correlations
 between parameters in the final posterior (e.g., <code>r0</code> and
 <code>mean_gt</code> are often correlated).</p>
-<div class="sourceCode" id="cb68"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb91"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_correlations.html">plot_correlations</a></span><span class="op">(</span><span class="va">adaptive_fit</span>,truth <span class="op">=</span> <span class="va">sim_params</span><span class="op">)</span> <span class="op">&amp;</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span></span>
 <span>   axis.title.y <span class="op">=</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>angle<span class="op">=</span><span class="fl">45</span>,vjust<span class="op">=</span><span class="fl">0</span>, hjust<span class="op">=</span><span class="fl">1</span><span class="op">)</span>,</span>
 <span>   axis.title.x <span class="op">=</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>angle<span class="op">=</span><span class="fl">45</span>, hjust<span class="op">=</span><span class="fl">1</span><span class="op">)</span> <span class="co">#,vjust=1, hjust=0.5)</span></span>
@@ -696,7 +719,7 @@ key diagnostic for iterative methods, showing the decline in distance
 (<code>abs_distance</code>), increase in ESS, and stabilization of
 parameter estimates (<code>rel_mean_change</code>).</li>
 </ul>
-<div class="sourceCode" id="cb69"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb92"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_convergence.html">plot_convergence</a></span><span class="op">(</span><span class="va">adaptive_fit</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-17-1.png" class="r-plt" width="672"></p>
 <p>A powerful posterior predictive check. It generates new simulated
@@ -704,7 +727,7 @@ datasets from the posterior and overlays their summary statistics
 (histograms) on the observed data. If the model is adequate and the
 inference successful, the simulated data should closely match the
 observed data.</p>
-<div class="sourceCode" id="cb70"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb93"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_simulations.html">plot_simulations</a></span><span class="op">(</span><span class="va">obsdata</span>, <span class="va">adaptive_fit</span>, sim_fn <span class="op">=</span> <span class="va">sim1_fn</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-18-1.png" class="r-plt" width="672"></p>
 </div>
@@ -721,7 +744,7 @@ priors</strong> (<code>lnorm2</code>) that reflect our prior belief
 about their likely scale.</p>
 <p>Using the output of previous runs we also given more informed priors
 for the parameters under investigation.</p>
-<div class="sourceCode" id="cb71"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb94"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">priors2</span> <span class="op">=</span> <span class="fu"><a href="../reference/priors.html">priors</a></span><span class="op">(</span></span>
 <span>  <span class="va">r0</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/norm.html" class="external-link">norm</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">0.1</span><span class="op">)</span>,</span>
 <span>  <span class="va">mean_onset</span> <span class="op">~</span> <span class="fu">lnorm2</span><span class="op">(</span><span class="fl">7</span>, <span class="fl">2</span><span class="op">)</span>,</span>
@@ -760,7 +783,7 @@ of the data that are unknown, by modifying the
 <code>scoreweights</code>. We also let the algorithm converge hard as we
 are relatively sure where we are investigating and trying to twist it
 away from a relaxed state.</p>
-<div class="sourceCode" id="cb73"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb96"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">scoreweights2</span> <span class="op">=</span> <span class="va">scoreweights1</span> <span class="op">*</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>sim_onset <span class="op">=</span> <span class="fl">2</span>, sim_diff <span class="op">=</span> <span class="fl">0.5</span>, sim_si <span class="op">=</span> <span class="fl">2</span>, sim_mad_si <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span></span>
@@ -778,32 +801,40 @@ away from a relaxed state.</p>
 <span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## ABC-Adaptive</span></span></code></pre>
 <pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■                               </span>   0% | wave 1 ETA:  6m</span></span></code></pre>
-<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■                               </span>   1% | wave 2 ETA:  5m</span></span></code></pre>
-<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   2% | wave 5 ETA:  5m</span></span></code></pre>
-<pre><code><span><span class="co">## Converged on wave: 7</span></span></code></pre>
-<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   2% | wave 6 ETA:  6m</span></span></code></pre>
-<div class="sourceCode" id="cb80"><pre class="downlit sourceCode r">
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■                               </span>   2% | wave 4 ETA:  5m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   3% | wave 6 ETA:  5m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   3% | wave 8 ETA:  5m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   5% | wave 10 ETA:  5m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■                             </span>   6% | wave 12 ETA:  5m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■                             </span>   6% | wave 13 ETA:  5m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■                             </span>   7% | wave 15 ETA:  5m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■                            </span>   9% | wave 17 ETA:  5m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■                            </span>   9% | wave 18 ETA:  5m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■                            </span>  11% | wave 20 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## Adaptive waves:  <span style="color: #00BB00;">■■■■■                           </span>  12% | wave 21 ETA:  4m</span></span></code></pre>
+<pre><code><span><span class="co">## Converged on wave: 22</span></span></code></pre>
+<div class="sourceCode" id="cb111"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">adaptive_fit2</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## ABC adaptive fit: 7 waves - (converged)</span></span>
+<pre><code><span><span class="co">## ABC adaptive fit: 22 waves - (converged)</span></span>
 <span><span class="co">## Parameter estimates:</span></span>
 <span><span class="co">## <span style="color: #949494;"># A tibble: 8 × 4</span></span></span>
 <span><span class="co">## <span style="color: #949494;"># Groups:   param [8]</span></span></span>
-<span><span class="co">##   param      mean_sd       median_95_CrI            ESS</span></span>
-<span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span> R0         1.884 ± 0.333 1.827 [1.460 — 2.568]  <span style="text-decoration: underline;">3</span>463.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span> mean_gt    3.767 ± 0.730 3.705 [2.087 — 6.605]  <span style="text-decoration: underline;">3</span>463.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">3</span> mean_obs   4.854 ± 0.745 4.807 [3.470 — 6.619]  <span style="text-decoration: underline;">3</span>463.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">4</span> mean_onset 7.211 ± 1.627 6.934 [4.507 — 11.204] <span style="text-decoration: underline;">3</span>463.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">5</span> r0         0.182 ± 0.031 0.177 [0.112 — 0.286]  <span style="text-decoration: underline;">3</span>463.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">6</span> sd_gt      2.024 ± 0.883 1.947 [0.680 — 4.655]  <span style="text-decoration: underline;">3</span>463.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">7</span> sd_obs     2.761 ± 0.721 2.727 [1.503 — 4.525]  <span style="text-decoration: underline;">3</span>463.</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">8</span> sd_onset   4.725 ± 0.875 4.726 [3.146 — 6.556]  <span style="text-decoration: underline;">3</span>463.</span></span></code></pre>
-<div class="sourceCode" id="cb82"><pre class="downlit sourceCode r">
+<span><span class="co">##   param      mean_sd       median_95_CrI             ESS</span></span>
+<span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> R0         1.861 ± 0.319 1.808 [1.477 — 2.441]  <span style="text-decoration: underline;">11</span>113.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span> mean_gt    3.815 ± 0.760 3.757 [2.086 — 6.598]  <span style="text-decoration: underline;">11</span>113.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span> mean_obs   4.846 ± 0.741 4.812 [3.510 — 6.501]  <span style="text-decoration: underline;">11</span>113.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">4</span> mean_onset 7.051 ± 1.482 6.771 [4.592 — 10.711] <span style="text-decoration: underline;">11</span>113.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">5</span> r0         0.178 ± 0.029 0.174 [0.113 — 0.277]  <span style="text-decoration: underline;">11</span>113.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">6</span> sd_gt      2.133 ± 0.904 2.059 [0.783 — 4.736]  <span style="text-decoration: underline;">11</span>113.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">7</span> sd_obs     2.813 ± 0.785 2.792 [1.487 — 4.561]  <span style="text-decoration: underline;">11</span>113.</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">8</span> sd_onset   4.743 ± 0.863 4.697 [3.244 — 6.591]  <span style="text-decoration: underline;">11</span>113.</span></span></code></pre>
+<div class="sourceCode" id="cb113"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">adaptive_fit2</span>,truth <span class="op">=</span> <span class="va">sim_params</span>, tail <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-21-1.png" class="r-plt" width="672"></p>
 <p>And we can check that posterior resamples from the new fit are still
 consistent with the data.</p>
-<div class="sourceCode" id="cb83"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb114"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_simulations.html">plot_simulations</a></span><span class="op">(</span><span class="va">obsdata</span>, <span class="va">adaptive_fit2</span>, sim_fn <span class="op">=</span> <span class="va">sim1_fn</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sim-example_files/figure-html/unnamed-chunk-22-1.png" class="r-plt" width="672"></p>
 </div>

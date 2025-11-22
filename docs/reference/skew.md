@@ -26,12 +26,12 @@ the skew
 
 ``` r
 skew(stats::rnorm(1000))
-#> [1] -0.01801353
+#> [1] -0.04506162
 skew(stats::rbeta(1000, 1, 8)) # positively (left) skewed
-#> [1] 1.372506
+#> [1] 1.409663
 skew(stats::rbeta(1000, 8, 1)) # negatively (right) skewed
-#> [1] -1.725433
+#> [1] -1.518791
 
 skew(stats::rlnorm(1000))
-#> [1] 4.233679
+#> [1] 6.561585
 ```

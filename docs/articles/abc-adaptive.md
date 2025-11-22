@@ -149,20 +149,19 @@ adaptive_fit = abc_adaptive(
 #> Adaptive waves:  ■                                  1% | wave 5 ETA:  5m
 #> Adaptive waves:  ■■                                 2% | wave 9 ETA:  5m
 #> Adaptive waves:  ■■                                 3% | wave 13 ETA:  5m
-#> Adaptive waves:  ■■                                 4% | wave 16 ETA:  5m
-#> Converged on wave: 17
+#> Converged on wave: 14
 
 summary(adaptive_fit)
-#> ABC adaptive fit: 17 waves - (converged)
+#> ABC adaptive fit: 14 waves - (converged)
 #> Parameter estimates:
 #> # A tibble: 4 × 4
 #> # Groups:   param [4]
 #>   param      mean_sd       median_95_CrI           ESS
 #>   <chr>      <chr>         <chr>                 <dbl>
-#> 1 gamma_mean 5.963 ± 0.073 5.962 [5.760 — 6.174] 3014.
-#> 2 gamma_sd   1.952 ± 0.115 1.956 [1.642 — 2.290] 3014.
-#> 3 norm_mean  3.982 ± 0.172 3.980 [3.461 — 4.548] 3014.
-#> 4 norm_sd    2.074 ± 0.417 2.124 [0.628 — 3.034] 3014.
+#> 1 gamma_mean 5.985 ± 0.115 5.997 [5.654 — 6.246] 2248.
+#> 2 gamma_sd   2.004 ± 0.199 2.002 [1.502 — 2.484] 2248.
+#> 3 norm_mean  3.991 ± 0.290 3.986 [3.290 — 4.718] 2248.
+#> 4 norm_sd    1.911 ± 0.713 2.042 [0.231 — 3.371] 2248.
 ```
 
 - **`n_sims`, `acceptance_rate`, `scoreweights`**: These function

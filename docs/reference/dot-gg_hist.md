@@ -16,6 +16,8 @@ Simple one liner plots from vectors with defaults
 .gg_denshist(x, y, binwidth = 1)
 
 .gg_linebar(x, y, binwidth = 1)
+
+.gg_fun(fn, ..., xlim = NULL)
 ```
 
 ## Arguments
@@ -58,3 +60,5 @@ a ggplot
 - `.gg_denshist()`: Histogram with densities overlaid.
 
 - `.gg_linebar()`: Bar chart with lines overlaid
+
+- `.gg_fun()`: Function plot

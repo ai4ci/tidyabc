@@ -134,3 +134,19 @@ samples or as quantiles it should recover the tail
       tmp3$q(seq(0, 1, 0.2)),
       c(0, 1.63476839034733, 3, 5.05332769159444, 5.51891960240613, 7)
     )
+
+## Examples
+
+``` r
+# A random sample from a distribution:
+sample = rgamma2(1000, mean=5, sd=2)
+
+# suppose we only have quantiles
+p = seq(0.1,0.9, 0.1)
+quantiles = quantile(sample, p)
+
+# fit from quantiles:
+fit2 = empirical(x=quantiles,p=p, link="log")
+plot(fit2)+ggplot2::geom_function(fun= ~ dgamma2(.x, mean=5, sd=2))
+
+```

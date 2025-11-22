@@ -298,13 +298,8 @@ fit = abc_adaptive(
   allow_continue = FALSE
 )
 #> ABC-Adaptive
-#> Adaptive waves:  ■■■■■                             15% | wave 1 ETA: 10s
-#> Adaptive waves:  ■■■■■■■■■■                        29% | wave 2 ETA:  6s
-#> Adaptive waves:  ■■■■■■■■■■■■■                     42% | wave 3 ETA:  4s
-#> Adaptive waves:  ■■■■■■■■■■■■■■■■■                 54% | wave 4 ETA:  3s
-#> Adaptive waves:  ■■■■■■■■■■■■■■■■■■■■■             67% | wave 5 ETA:  2s
-#> Adaptive waves:  ■■■■■■■■■■■■■■■■■■■■■■■■■         80% | wave 6 ETA:  1s
-#> Adaptive waves:  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■     92% | wave 7 ETA:  0s
+#> Adaptive waves:  ■■■■■■■■                          24% | wave 2 ETA:  4s
+#> Adaptive waves:  ■■■■■■■■■■■■■■■■■■■■■■■■■         81% | wave 7 ETA:  1s
 #> Converged on wave: 8
 
 summary(fit)
@@ -314,7 +309,7 @@ summary(fit)
 #> # Groups:   param [3]
 #>   param mean_sd       median_95_CrI           ESS
 #>   <chr> <chr>         <chr>                 <dbl>
-#> 1 mean  4.985 ± 0.030 4.987 [4.888 — 5.062]  344.
-#> 2 sd1   1.964 ± 0.072 1.949 [1.758 — 2.263]  344.
-#> 3 sd2   1.010 ± 0.029 1.008 [0.923 — 1.107]  344.
+#> 1 mean  4.983 ± 0.033 4.986 [4.895 — 5.082]  354.
+#> 2 sd1   1.984 ± 0.059 1.972 [1.834 — 2.173]  354.
+#> 3 sd2   1.029 ± 0.046 1.033 [0.855 — 1.120]  354.
 ```

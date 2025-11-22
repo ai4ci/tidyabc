@@ -80,3 +80,33 @@ simulation as `obsdata`, `obsscores` is the result of comparing the
 `sim_fn` and `scorer_fn` are rewritten to make sure that all package
 names are fully qualified. The rewritten versions are refurned in the
 result list (as `sim_fn` and `scorer_fn` respectively)
+
+## Examples
+
+``` r
+test = test_simulation(
+  example_sim_fn,
+  example_scorer_fn,
+  # Model parameters to test with:
+  mean = 4, sd1 = 3, sd2 = 2,
+  obsdata = example_obsdata()
+)
+
+# the rewritten function:
+cat(test$sim_fn, sep="\n")
+#> function (mean, sd1, sd2) 
+#> {
+#>     return(list(A = stats::rnorm(1000, mean, sd1), B = tidyabc::rgamma2(1000, 
+#>         mean, sd2)))
+#> }
+
+# The scores resulting from this one simulation, when compared to the
+# reference `obsdata`.
+test$obsscores
+#> $A
+#> [1] 0.3700776
+#> 
+#> $B
+#> [1] 0.625452
+#> 
+```

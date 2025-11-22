@@ -88,3 +88,12 @@ a `dist_fn` or `dist_fn_list` holding the truncated distribution(s)
       format(g4),
       "trunc(gamma(shape = 2, rate = 1), 2.00 - Inf); Median (IQR) 2.97 [2.42 — 3.87]"
     )
+
+## Examples
+
+``` r
+shape2_gamma = as.dist_fns(pgamma, shape=2)
+g2 = truncate(shape2_gamma, 0.5, 4)
+plot(g2)+ggplot2::geom_function(fun = ~ dgamma(.x,shape=2), xlim = c(0,5))
+
+```

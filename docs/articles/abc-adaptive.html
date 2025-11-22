@@ -77,6 +77,11 @@
       <small class="dont-index">Source: <a href="https://github.com/ai4ci/tidyabc/blob/HEAD/vignettes/abc-adaptive.Rmd" class="external-link"><code>vignettes/abc-adaptive.Rmd</code></a></small>
       <div class="d-none name"><code>abc-adaptive.Rmd</code></div>
     </div>
+
+    
+    
+<!-- TODO: Update adaptive ABC vignette -->
+<!-- Issue URL: https://github.com/ai4ci/tidyabc/issues/16 -->
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
@@ -221,20 +226,19 @@ how new proposals are generated between waves.</p>
 <span><span class="co">#&gt; Adaptive waves:  <span style="color: #00BB00;">■                               </span>   1% | wave 5 ETA:  5m</span></span>
 <span><span class="co">#&gt; Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   2% | wave 9 ETA:  5m</span></span>
 <span><span class="co">#&gt; Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   3% | wave 13 ETA:  5m</span></span>
-<span><span class="co">#&gt; Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   4% | wave 16 ETA:  5m</span></span>
-<span><span class="co">#&gt; Converged on wave: 17</span></span>
+<span><span class="co">#&gt; Converged on wave: 14</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">adaptive_fit</span><span class="op">)</span></span>
-<span><span class="co">#&gt; ABC adaptive fit: 17 waves - (converged)</span></span>
+<span><span class="co">#&gt; ABC adaptive fit: 14 waves - (converged)</span></span>
 <span><span class="co">#&gt; Parameter estimates:</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 4</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Groups:   param [4]</span></span></span>
 <span><span class="co">#&gt;   param      mean_sd       median_95_CrI           ESS</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> gamma_mean 5.963 ± 0.073 5.962 [5.760 — 6.174] <span style="text-decoration: underline;">3</span>014.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> gamma_sd   1.952 ± 0.115 1.956 [1.642 — 2.290] <span style="text-decoration: underline;">3</span>014.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> norm_mean  3.982 ± 0.172 3.980 [3.461 — 4.548] <span style="text-decoration: underline;">3</span>014.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> norm_sd    2.074 ± 0.417 2.124 [0.628 — 3.034] <span style="text-decoration: underline;">3</span>014.</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> gamma_mean 5.985 ± 0.115 5.997 [5.654 — 6.246] <span style="text-decoration: underline;">2</span>248.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> gamma_sd   2.004 ± 0.199 2.002 [1.502 — 2.484] <span style="text-decoration: underline;">2</span>248.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> norm_mean  3.991 ± 0.290 3.986 [3.290 — 4.718] <span style="text-decoration: underline;">2</span>248.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> norm_sd    1.911 ± 0.713 2.042 [0.231 — 3.371] <span style="text-decoration: underline;">2</span>248.</span></span></code></pre></div>
 <ul>
 <li><p><strong><code>n_sims</code>, <code>acceptance_rate</code>,
 <code>scoreweights</code></strong>: These function similarly to

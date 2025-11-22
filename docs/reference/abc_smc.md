@@ -242,20 +242,19 @@ fit = abc_smc(
   allow_continue = FALSE
 )
 #> ABC-SMC
-#> SMC waves:  ■■■■■■■■■■                        29% | wave 2 ETA:  4s
-#> SMC waves:  ■■■■■■■■■■■■■■■                   47% | wave 3 ETA:  3s
-#> SMC waves:  ■■■■■■■■■■■■■■■■■■■■              62% | wave 4 ETA:  2s
-#> SMC waves:  ■■■■■■■■■■■■■■■■■■■■■■■■          77% | wave 5 ETA:  1s
-#> SMC waves:  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■      90% | wave 6 ETA:  0s
+#> SMC waves:  ■■■■■■■                           20% | wave 1 ETA:  4s
+#> SMC waves:  ■■■■■■■■■■■■■■■■■■                58% | wave 4 ETA:  2s
+#> Converged on wave: 7
+#> SMC waves:  ■■■■■■■■■■■■■■■■■■■■■■■■■■        82% | wave 6 ETA:  1s
 
 summary(fit)
-#> ABC SMC fit: 7 waves - (not yet converged)
+#> ABC SMC fit: 7 waves - (converged)
 #> Parameter estimates:
 #> # A tibble: 3 × 4
 #> # Groups:   param [3]
 #>   param mean_sd       median_95_CrI           ESS
 #>   <chr> <chr>         <chr>                 <dbl>
-#> 1 mean  4.977 ± 0.034 4.976 [4.893 — 5.060]  267.
-#> 2 sd1   1.980 ± 0.093 1.975 [1.754 — 2.248]  267.
-#> 3 sd2   0.992 ± 0.042 0.990 [0.888 — 1.102]  267.
+#> 1 mean  4.976 ± 0.039 4.978 [4.860 — 5.085]  252.
+#> 2 sd1   1.990 ± 0.084 1.990 [1.796 — 2.215]  252.
+#> 3 sd2   0.991 ± 0.043 0.989 [0.887 — 1.118]  252.
 ```

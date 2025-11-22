@@ -14,6 +14,8 @@
   : Calculate a Wasserstein distance
 - [`default_termination_fn()`](https://ai4ci.github.io/tidyabc/reference/default_termination_fn.md)
   : Set up default convergence criteria for SMC and adaptive ABC
+- [`fixed_wave_termination_fn()`](https://ai4ci.github.io/tidyabc/reference/fixed_wave_termination_fn.md)
+  : Run the SMC or adaptive algorithm for a set number of waves
 - [`plot_convergence()`](https://ai4ci.github.io/tidyabc/reference/plot_convergence.md)
   : Plot convergence metrics by wave for SMC and adaptive ABC
 - [`plot_correlations()`](https://ai4ci.github.io/tidyabc/reference/plot_correlations.md)
@@ -61,6 +63,8 @@
   : Generate a distribution from a truncation of another
 - [`wbw.nrd()`](https://ai4ci.github.io/tidyabc/reference/wbw.nrd.md) :
   Weighted bandwidth selector
+- [`widen()`](https://ai4ci.github.io/tidyabc/reference/widen.md) :
+  Increase the dispersion of a distribution
 - [`wmean()`](https://ai4ci.github.io/tidyabc/reference/wmean.md) :
   Weighted mean
 - [`wquantile()`](https://ai4ci.github.io/tidyabc/reference/wquantile.md)
@@ -288,7 +292,7 @@
 
 ## Others
 
-- [`fixed_wave_termination_fn()`](https://ai4ci.github.io/tidyabc/reference/fixed_wave_termination_fn.md)
-  : Run the SMC or adaptive algorithm for a set number of waves
-- [`widen()`](https://ai4ci.github.io/tidyabc/reference/widen.md) :
-  Increase the dispersion of a distribution
+- [`sim_outbreak`](https://ai4ci.github.io/tidyabc/reference/sim_outbreak.md)
+  :
+
+  The `sim_outbreak` dataset

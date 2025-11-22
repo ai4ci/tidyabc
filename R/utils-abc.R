@@ -545,9 +545,22 @@ NULL
     cor = diag(length(params))
   }
 
-  theta_new = sim_df %>%
-    dplyr::select(dplyr::starts_with("abc_mvn_")) %>%
-    as.matrix()
+  # We have to map back from real to proposal MVN space as particles will
+  # be a mix of particles from multiple waves.
+  theta_new = sapply(params, function(nm) {
+    prior = proposal_list[[nm]]
+    # This is the current set of proposals in proposal space:
+    theta_star = sim_df[[nm]]
+    # need to map this back to MVN space using prior copula
+    # rather than proposal
+    # convert target to uniform (prior$p) & map to MVN (qnorm):
+    stats::qnorm(prior$p(theta_star))
+  })
+
+  # In adaptive we cannot do this as meaning of MVN space changes over waves:
+  # theta_new = sim_df %>%
+  #   dplyr::select(dplyr::starts_with("abc_mvn_")) %>%
+  #   as.matrix()
 
   # In proposal MVN space:
   # This should be the same copula that was used to generate the proposals:

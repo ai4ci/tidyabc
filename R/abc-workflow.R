@@ -631,11 +631,15 @@ abc_adaptive = function(
       if (i > 1) {
         tmp_sim_df = dplyr::bind_rows(
           sim_df,
-          prev_sim_df %>% dplyr::select(dplyr::all_of(colnames(sim_df)))
+          prev_sim_df %>% dplyr::select(dplyr::any_of(colnames(sim_df)))
         )
       } else {
         tmp_sim_df = sim_df
       }
+      # Once we combine particles from different waves MVN representation is
+      # no longer consistent.
+      tmp_sim_df = tmp_sim_df %>%
+        dplyr::select(-dplyr::starts_with("abc_mvn_"))
 
       epsilon = stats::quantile(
         sim_df$abc_summary_distance,
@@ -1352,7 +1356,7 @@ posterior_fit_empirical = function(
 
   # Get particles in MVN space
   theta = posteriors_df %>%
-    dplyr::select(dplyr::starts_with("abc_mvn_")) %>%
+    dplyr::select(dplyr::all_of(priors_list@params)) %>%
     as.matrix()
   # weighted correlation:
   if (is.null(weights)) {

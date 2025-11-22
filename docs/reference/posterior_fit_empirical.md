@@ -111,9 +111,9 @@ proposals = posterior_fit_empirical(fit$posteriors, fit$priors)
 
 proposals
 #> Parameters: 
-#> * mean: posterior [4.98 ± 0.04]
-#> * sd1: posterior [2.00 ± 0.09]
-#> * sd2: posterior [1.00 ± 0.04]
+#> * mean: posterior [4.98 ± 0.03]
+#> * sd1: posterior [1.98 ± 0.08]
+#> * sd2: posterior [0.99 ± 0.04]
 #> Constraints:
 #> * mean > sd2
 ```
