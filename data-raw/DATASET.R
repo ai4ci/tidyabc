@@ -77,8 +77,12 @@ observed = delayed %>%
     contact_id = contact_id,
     onset_time = as.integer(floor(symptom_time)),
     obs_time = as.integer(floor(observation_time))
-  ) %>%
-  glimpse()
+  )
+
+for (att in c("ip_cache", "events")) {
+  attr(delayed, att) = NULL
+  attr(observed, att) = NULL
+}
 
 sim_outbreak = list(
   parameters = sim_params,
