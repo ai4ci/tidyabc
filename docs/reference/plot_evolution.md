@@ -6,7 +6,7 @@ ABC
 ## Usage
 
 ``` r
-plot_evolution(fit, truth = NULL, ...)
+plot_evolution(fit, truth = NULL, ..., what = c("posteriors", "proposals"))
 ```
 
 ## Arguments
@@ -45,6 +45,10 @@ plot_evolution(fit, truth = NULL, ...)
 
   :   by default some additional smoothing is used to cover up small
       discontinuities in the PDF.
+
+- what:
+
+  plot posterior densities or proposal distributions?
 
 ## Value
 

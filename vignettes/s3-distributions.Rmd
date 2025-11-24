@@ -1,8 +1,8 @@
 ---
-title: "Statistical distribution functions"
+title: "Statistical distributions in tidyabc"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Working with `dist_fns` Objects}
+  %\VignetteIndexEntry{Statistical distributions in tidyabc}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 bibliography: references.bib

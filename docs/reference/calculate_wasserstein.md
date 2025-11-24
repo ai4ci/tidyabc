@@ -160,9 +160,9 @@ obs2 = rexpgrowth(1000, 0.05, 40, 0)
 
 # obs is a different distribution to sim (larger growth)
 calculate_wasserstein(sim, obs)
-#> [1] 0.2792737
+#> [1] 0.249164
 
 # obs2 is from the same distribution as sim so the distance should be lower:
 calculate_wasserstein(sim, obs2)
-#> [1] 0.04722755
+#> [1] 0.06647013
 ```

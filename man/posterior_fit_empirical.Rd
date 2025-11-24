@@ -29,11 +29,10 @@ typically inferred from the data size. Small numbers tend to work better if
 we expect the distribution to be unimodal.}
 
 \item{bw}{for Adaptive ABC data distributions are smoothed before modelling
-the CDF. Over smoothing can reduce convergence rate, under-smoothing may result
-in noisy posterior estimates, and appearance of local modes.
-This is a proportion of the ESS and defaults to 0.1.}
+empirical CDF. Over smoothing can reduce convergence rate, under-smoothing
+may result in noisy posterior estimates, and appearance of local modes.}
 
-\item{widen_by}{change the dispersion of proposal distribution in ABC
+\item{widen_by}{change the dispersion of the empirical proposal distribution in ABC
 adaptive, preserving the median. This is akin to a nonlinear,
 heteroscedastic random walk in the quantile space, and can help address
 over-fitting or local modes in the ABC adaptive waves. \code{widen_by} is an odds

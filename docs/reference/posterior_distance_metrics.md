@@ -99,5 +99,5 @@ metrics = posterior_distance_metrics(fit$posteriors)
 # most appropriate relative weighting of each component:
 metrics$scoreweights
 #>         A         B 
-#> 0.5165365 0.4834635 
+#> 0.5567914 0.4432086 
 ```

@@ -7,10 +7,12 @@
 .calculate_weights_adaptive(
   sim_df,
   priors_list,
-  epsilon,
+  acceptance_rate,
   proposal_list,
   kernel,
-  use_proposal_correlation
+  use_proposal_correlation,
+  ess_limit,
+  max_recover
 )
 }
 \arguments{
@@ -21,11 +23,8 @@
 sided formulae as constraints and 2 sided formulae as derived values.
 A correlation matrix may also be present as an attribute \code{cor}.}
 
-\item{epsilon}{epsilon is a tolerance threshold that controls how closely
-simulated summaries must match the observed ones to be considered
-plausible. This is in the unit of \code{abc_summary_distance}. Initially the 0.5
-quantile of distances, in subsequent waves this might be decreased.
-It is the scale parameter of the kernel function. $K_h(|u|)$}
+\item{acceptance_rate}{What proportion of simulations to keep in ABC rejection
+or hard ABC parts of the algorithms.}
 
 \item{proposal_list}{a list of empirical probability distributions that map
 MVN space to proposal space, and are the "prior" for each adaptive wave.
@@ -42,6 +41,21 @@ which the probability of acceptance of a particle is zero. Use of
 \item{use_proposal_correlation}{When calculating the weight of a particle the
 proposal correlation structure is available, to help determine how unusual
 or otherwise a particle is.}
+
+\item{ess_limit}{a numeric vector of length 2 which for ABC adaptive, defines
+the limits which rate at which the algorithm will converge in terms of
+effective sample size. If for example the algorithm is converging too quickly
+and some high weight particles are dominating then the ESS will drop
+below the lower limit. In this case more particles will be accepted to try
+and offset this. On the other hand if the algorithm is converging too slowly
+low probability particles in proposal space are not filtered out quickly
+enough and this can lead to too much importance being given to unlikely
+proposals and wide bi-modal peaked posteriors.}
+
+\item{max_recover}{if the effective sample size of SMC or adaptive algorithms
+drops below 200, the algorithm will retry the wave with double the sample
+size to try and recover the shape of the distribution, up to a maximum of
+\code{max_recover} times.}
 }
 \value{
 the \code{sim_df} with an \code{abc_weight} column

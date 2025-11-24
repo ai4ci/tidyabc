@@ -583,13 +583,15 @@ parameters under investigation.
 ```{r}
 
 priors2 = priors(
-  r0 ~ norm(0.2, 0.1),
-  mean_onset ~ lnorm2(7, 2),
-  sd_onset ~ lnorm2(5, 1),
+  r0 ~ norm(0.18, 0.25),
+  mean_onset ~ lnorm2(7, 3),
+  sd_onset ~ lnorm2(5, 3),
   mean_obs ~ lnorm2(5, 1),
   sd_obs ~ lnorm2(3, 1),
-  mean_gt ~ lnorm2(4, 3),
-  sd_gt ~ lnorm2(3, 2),
+  # mean_gt ~ lnorm2(4, 3),
+  # sd_gt ~ lnorm2(3, 2),
+  mean_gt ~ unif(0, 12),
+  sd_gt ~ unif(0, 8),
   R0 ~ (1+r0*sd_gt^2/mean_gt) ^ (mean_gt^2 / sd_gt^2),
   ~ is.finite(R0) & R0 > 0 & R0 < 12,
   ~ mean_onset > sd_onset,
@@ -605,8 +607,7 @@ We run the Adaptive ABC again with these new priors and compare the results.
 This allows us to assess the robustness of our inferences to prior
 specification. We also want to focus the algorithm on the elements of the data
 that are unknown, by modifying the `scoreweights`. We also let the algorithm 
-converge hard as we are relatively sure where we are investigating and trying 
-to twist it away from a relaxed state.
+converge hard as we are relatively sure where we are investigating.
 
 ```{r}
 
@@ -623,7 +624,8 @@ adaptive_fit2 = abc_adaptive(
   # debug_errors = TRUE,
   parallel = TRUE,
   scoreweights = scoreweights2,
-  widen_by = 1.1
+  # widen_by = 1,
+  # distfit = "analytical"
 )
 
 summary(adaptive_fit2)
@@ -634,10 +636,14 @@ summary(adaptive_fit2)
 
 plot(adaptive_fit2,truth = sim_params, tail = 0.01)
 
+
+# plot_evolution(adaptive_fit2, truth = sim_params, what="proposals")
 ```
 
 And we can check that posterior resamples from the new fit are still consistent 
-with the data.
+with the data. Despite the informed priors the estimate of the SD of the 
+generation time is somewhat high, and it is not well informed by the data. This
+has mild knock on to the estimate of R0 which is slightly low.
 
 ```{r}
 

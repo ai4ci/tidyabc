@@ -566,10 +566,12 @@ abc_adaptive = function(
   allow_continue = interactive(),
   debug_errors = FALSE,
   kernel = "epanechnikov",
+  distfit = c("empirical", "analytical"),
   bw = 0.1,
   widen_by = 1.05,
   scoreweights = NULL,
-  use_proposal_correlation = TRUE
+  use_proposal_correlation = TRUE,
+  ess_limit = c(200, n_sims * acceptance_rate)
 ) {
   rlang::check_dots_empty()
   if (!is.null(seed)) {
@@ -578,6 +580,7 @@ abc_adaptive = function(
   }
 
   priors_list = as.abc_prior(priors_list)
+  distfit = match.arg(distfit)
 
   # browser()
   message("ABC-Adaptive")
@@ -636,42 +639,39 @@ abc_adaptive = function(
       } else {
         tmp_sim_df = sim_df
       }
+
       # Once we combine particles from different waves MVN representation is
-      # no longer consistent.
+      # no longer consistent so we drop it to prevent us accidentally using it.
       tmp_sim_df = tmp_sim_df %>%
         dplyr::select(-dplyr::starts_with("abc_mvn_"))
 
-      epsilon = stats::quantile(
-        sim_df$abc_summary_distance,
-        probs = acceptance_rate
-      )
-
-      tmp_sim_df = tmp_sim_df %>%
+      # ESS tuning for min and max value.
+      tmp = tmp_sim_df %>%
         .calculate_weights_adaptive(
           priors_list = priors_list,
-          epsilon = epsilon,
+          acceptance_rate = acceptance_rate,
           proposal_list = proposal_list,
           kernel = kernel,
-          use_proposal_correlation = use_proposal_correlation
+          use_proposal_correlation = use_proposal_correlation,
+          ess_limit,
+          max_recover
         )
 
-      tmp_sim_df = tmp_sim_df %>%
+      tmp_sim_df = tmp$sim_df %>%
         dplyr::filter(
           abc_weight > sqrt(.Machine$double.eps)
         )
+      ESS = tmp$ess
+      acceptance_rate = tmp$acceptance_rate
 
-      # ggplot(sim_df, aes(x = abc_weight, y = abc_summary_distance)) +
-      #   geom_point()
-
-      ESS = 1 / sum(tmp_sim_df$abc_weight^2)
       # Exit the retry loop if ESS is big enough
-      if (ESS > 200) {
+      if (ESS > ess_limit[1]) {
         sim_df = tmp_sim_df
         break
       }
 
-      # ESS is too small. we will try and recover by
-      # increasing epsilon
+      # ESS is too small despite in-wave adjustment.
+      # we will try and recover by increasing epsilon and re-simulating
       sim_df = prev_sim_df
       recover = recover + 1
       message("Effective sample size has reduced below 200.")
@@ -687,7 +687,7 @@ abc_adaptive = function(
           sim_df = prev_sim_df
         ))
       } else {
-        acceptance_rate = 1 - (1 - acceptance_rate) / 2
+        acceptance_rate = scale_probability(acceptance_rate, 1.5)
         message(
           "Attempting recovery with larger acceptance rate: ",
           sprintf("%1.3f%%", acceptance_rate * 100)
@@ -758,15 +758,22 @@ abc_adaptive = function(
       }
     }
 
-    proposal_list = posterior_fit_empirical(
-      sim_df,
-      priors_list = priors_list,
-      # priors_list = proposal_list,
-      # might think this could be proposal_list but either seems to work...
-      knots = knots,
-      bw = bw,
-      widen_by = widen_by
-    )
+    if (distfit == "empirical") {
+      proposal_list = posterior_fit_empirical(
+        sim_df,
+        priors_list = priors_list,
+        # priors_list = proposal_list,
+        # might think this could be proposal_list but either seems to work...
+        knots = knots,
+        bw = bw,
+        widen_by = widen_by
+      )
+    } else {
+      proposal_list = posterior_fit_analytical(
+        sim_df,
+        priors_list = proposal_list
+      )
+    }
 
     sim_df = .sample_constrained(
       proposal_list,
@@ -1348,7 +1355,7 @@ posterior_fit_empirical = function(
       bw = bw
     )
     if (!isFALSE(widen_by)) {
-      tmp2 = widen(tmp2, scale = widen_by, name = name)
+      tmp2 = widen(tmp2, scale = widen_by, name = nm)
     }
     return(tmp2)
   })
@@ -1371,47 +1378,96 @@ posterior_fit_empirical = function(
   return(proposal_list)
 }
 
-# # Fit truncated normal distribution to posterior samples for generating more waves
-# #
-# # This function will match mean and SD of untruncated distribution, and allows updating of the prior which will retain derived value
-# # definitions and constraint checks from the prior.
-# #
-# # @inheritParams tidyabc_common
-# #
-# # @returns a list of `dist_fns` approximating the distribution of the posterior
-# #   samples, plus constraints and derived values if they were supplied.
-# # @export
-# posterior_fit_tnorm = function(
-#   posteriors_df,
-#   priors_list = list(),
-#   knots = NULL
-# ) {
-#   weights = suppressWarnings(posteriors_df$abc_weights) #maybe null
-#
-#   nms = nms = priors_list@params
-#
-#   posteriors_df = posteriors_df %>%
-#     dplyr::select(dplyr::all_of(nms))
-#
-#   tmp = lapply(colnames(posteriors_df), function(nm) {
-#     col = posteriors_df[[nm]]
-#     fit = fitdistrplus::fitdist(col, "norm")
-#     dfn = as.dist_fns(fit)
-#     prior = priors_list[[nm]]
-#     if (!is.null(prior)) {
-#       low = prior$q(0)
-#       high = prior$q(1)
-#       if (!is.finite(low)) {
-#         low = NA
-#       }
-#       if (!is.finite(high)) {
-#         high = NA
-#       }
-#       dfn = truncate(dfn, low, high)
-#     }
-#     return(dfn)
-#   })
-#   names(tmp) = colnames(posteriors_df)
-#   priors_list = modifyList(priors_list, tmp)
-#   return(priors_list)
-# }
+#' Fit analytical distribution to posterior samples for generating more waves
+#'
+#' This function allows "updating" of the prior with a posterior
+#' distribution from the same family as the prior with updated parameters.
+#'
+#' This takes weighted posterior samples \eqn{\{(\theta^{(i)}, w^{(i)})\}}
+#' for each parameter \eqn{\theta_j} and fits an analytical distribution
+#' function \eqn{Q_j(\theta_j)} that approximates the posterior marginal for
+#' that parameter.
+#'
+#' The resulting empirical distribution \eqn{Q_j} is a `dist_fns` object that
+#' includes the support constraints from the original prior. The set of all fitted
+#' marginal distributions \eqn{\{Q_j\}} forms the new proposal list for the next
+#' wave.
+#'
+#' Additionally, the weighted covariance matrix \eqn{R} of the samples in the
+#' MVN space (defined by the prior copula) is calculated:
+#' \deqn{
+#'   R = \text{Cov}_{w}(\Phi^{-1}(P_1(\theta_1)), \dots, \Phi^{-1}(P_d(\theta_d)))
+#' }
+#' where \eqn{\Phi^{-1}} is the quantile function of the standard normal.
+#' This covariance matrix is stored as an attribute (`"cor"`) of the returned
+#' proposal list and is used to induce correlation structure when sampling
+#' new proposals from the empirical distributions in subsequent waves.
+#'
+#' @inheritParams tidyabc_common
+#'
+#' @returns an `abc_prior` S3 object approximating the distribution of the
+#'   posterior samples from the same family as the prior.
+#' @export
+#' @concept workflow
+#' @examples
+#'
+#' fit = example_smc_fit()
+#' proposals = posterior_fit_analytical(fit$posteriors, fit$priors)
+#'
+#' proposals
+#'
+posterior_fit_analytical = function(
+  posteriors_df,
+  priors_list
+) {
+  weights = suppressWarnings(posteriors_df$abc_weight) #maybe null
+
+  priors_list = as.abc_prior(priors_list)
+  nms = priors_list@params
+
+  # currently we are using the prior as a link function. This is OK but does
+  # mean the transformations will get nested after multiple waves. This
+  # enforces constraints on the priors at the cost of complexity. It's also
+  # possible that the empirical transformation will be unfavourable in prior
+  # space. There is a potential performance bottleneck here. A simpler approach
+  # to identify a standard link from the distribution support would be simpler.
+
+  tmp = lapply(nms, function(nm) {
+    col = posteriors_df[[nm]]
+    prior = priors_list[[nm]]
+
+    if (is.null(prior)) {
+      stop("Prior muyst be defined for posterior distribution fit")
+    }
+
+    tmp = suppressWarnings(fitdistrplus::fitdist(
+      data = col,
+      weights = as.integer(weights * 100 / max(weights)),
+      distr = prior@dist,
+      start = prior@params,
+      discrete = prior@discrete
+    ))
+
+    tmp2 = as.dist_fns(tmp)
+    # browser()
+
+    return(tmp2)
+  })
+  names(tmp) = nms
+
+  # Get particles in MVN space
+  theta = posteriors_df %>%
+    dplyr::select(dplyr::all_of(priors_list@params)) %>%
+    as.matrix()
+  # weighted correlation:
+  if (is.null(weights)) {
+    cov = stats::cov(theta)
+  } else {
+    cov = stats::cov.wt(theta, wt = weights, method = "ML")$cov
+  }
+
+  proposal_list = utils::modifyList(priors_list, tmp)
+  attr(proposal_list, "cor") = stats::cov2cor(cov)
+
+  return(proposal_list)
+}

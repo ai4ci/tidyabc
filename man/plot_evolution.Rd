@@ -4,7 +4,7 @@
 \alias{plot_evolution}
 \title{Plot the evolution of the density function by wave for SMC and adaptive ABC}
 \usage{
-plot_evolution(fit, truth = NULL, ...)
+plot_evolution(fit, truth = NULL, ..., what = c("posteriors", "proposals"))
 }
 \arguments{
 \item{fit}{A S3 \code{abc_fit} object as output by the \code{abc_XXX} functions}
@@ -21,6 +21,8 @@ plotted over the density sometimes this makes it hard to read}
 \item{\code{smooth}}{by default some additional smoothing is used to cover up small
 discontinuities in the PDF.}
 }}
+
+\item{what}{plot posterior densities or proposal distributions?}
 }
 \value{
 a plot of the density functions by wave

@@ -27,7 +27,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/abc-adaptive.html">ABC Adaptive</a></li>
     <li><a class="dropdown-item" href="../articles/abc-smc.html">ABC Sequential Monte-Carlo</a></li>
-    <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distribution functions</a></li>
+    <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distributions in tidyabc</a></li>
     <li><a class="dropdown-item" href="../articles/scorer-functions.html">Simulation, scoring and convergence functions</a></li>
     <li><a class="dropdown-item" href="../articles/sim-example.html">Early outbreak and Generation time</a></li>
   </ul></li>
@@ -173,13 +173,6 @@ typically inferred from the data size. Small numbers tend to work better if
 we expect the distribution to be unimodal.</p></dd>
 
 
-<dt id="arg-bw">bw<a class="anchor" aria-label="anchor" href="#arg-bw"></a></dt>
-<dd><p>for Adaptive ABC data distributions are smoothed before modelling
-the CDF. Over smoothing can reduce convergence rate, under-smoothing may result
-in noisy posterior estimates, and appearance of local modes.
-This is a proportion of the ESS and defaults to 0.1.</p></dd>
-
-
 <dt id="arg-max-time">max_time<a class="anchor" aria-label="anchor" href="#arg-max-time"></a></dt>
 <dd><p>the maximum time in seconds to spend in ABC waves before admitting
 defeat. This time may not be all used if the algorithm converges.</p></dd>
@@ -226,8 +219,19 @@ which the probability of acceptance of a particle is zero. Use of
 <code>gaussian</code> kernels can result in poor convergence.</p></dd>
 
 
+<dt id="arg-distfit">distfit<a class="anchor" aria-label="anchor" href="#arg-distfit"></a></dt>
+<dd><p>one of <code>"empirical"</code> or <code>"analytical"</code> determines what kind of
+distribution the ABC adaptive algorithm will fit for the posteriors.</p></dd>
+
+
+<dt id="arg-bw">bw<a class="anchor" aria-label="anchor" href="#arg-bw"></a></dt>
+<dd><p>for Adaptive ABC data distributions are smoothed before modelling
+empirical CDF. Over smoothing can reduce convergence rate, under-smoothing
+may result in noisy posterior estimates, and appearance of local modes.</p></dd>
+
+
 <dt id="arg-widen-by">widen_by<a class="anchor" aria-label="anchor" href="#arg-widen-by"></a></dt>
-<dd><p>change the dispersion of proposal distribution in ABC
+<dd><p>change the dispersion of the empirical proposal distribution in ABC
 adaptive, preserving the median. This is akin to a nonlinear,
 heteroscedastic random walk in the quantile space, and can help address
 over-fitting or local modes in the ABC adaptive waves. <code>widen_by</code> is an odds
@@ -243,6 +247,18 @@ additional variability in proposals.</p></dd>
 <dd><p>When calculating the weight of a particle the
 proposal correlation structure is available, to help determine how unusual
 or otherwise a particle is.</p></dd>
+
+
+<dt id="arg-ess-limit">ess_limit<a class="anchor" aria-label="anchor" href="#arg-ess-limit"></a></dt>
+<dd><p>a numeric vector of length 2 which for ABC adaptive, defines
+the limits which rate at which the algorithm will converge in terms of
+effective sample size. If for example the algorithm is converging too quickly
+and some high weight particles are dominating then the ESS will drop
+below the lower limit. In this case more particles will be accepted to try
+and offset this. On the other hand if the algorithm is converging too slowly
+low probability particles in proposal space are not filtered out quickly
+enough and this can lead to too much importance being given to unlikely
+proposals and wide bi-modal peaked posteriors.</p></dd>
 
 </dl></div>
 

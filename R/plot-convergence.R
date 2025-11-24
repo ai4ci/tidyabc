@@ -90,6 +90,7 @@ plot_convergence = function(fit) {
 #'
 #' @inheritParams tidyabc_common
 #' @inheritParams abc_fit
+#' @param what plot posterior densities or proposal distributions?
 #'
 #' @returns a plot of the density functions by wave
 #' @export
@@ -101,9 +102,32 @@ plot_convergence = function(fit) {
 #'   example_truth()
 #' )
 #'
-plot_evolution = function(fit, truth = NULL, ...) {
+plot_evolution = function(
+  fit,
+  truth = NULL,
+  ...,
+  what = c("posteriors", "proposals")
+) {
+  what = match.arg(what)
+
+  if (what == "proposals") {
+    tmp = lapply(fit$waves$proposal_distribution, function(prior) {
+      lapply(
+        names(prior),
+        function(nm) {
+          tmp2 = prior[[nm]]
+          tmp2$name = nm
+          return(tmp2)
+        }
+      )
+    })
+    toplot = as.dist_fns_list(tmp)
+  } else {
+    toplot = as.dist_fns_list(fit$summary$density)
+  }
+
   p1 = plot(
-    fit$summary$density,
+    toplot,
     plot_quantiles = FALSE,
     mapping = ggplot2::aes(fill = group, colour = group)
   ) +

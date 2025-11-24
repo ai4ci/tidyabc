@@ -27,7 +27,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/abc-adaptive.html">ABC Adaptive</a></li>
     <li><a class="dropdown-item" href="../articles/abc-smc.html">ABC Sequential Monte-Carlo</a></li>
-    <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distribution functions</a></li>
+    <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distributions in tidyabc</a></li>
     <li><a class="dropdown-item" href="../articles/scorer-functions.html">Simulation, scoring and convergence functions</a></li>
     <li><a class="dropdown-item" href="../articles/sim-example.html">Early outbreak and Generation time</a></li>
   </ul></li>
@@ -87,12 +87,12 @@ of <code>prob</code> or from a character vector in <code>factor</code>.</p>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu">rcategorical</span><span class="op">(</span><span class="fl">1000</span>,<span class="va">prob</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   one seven   two </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    99   709   192 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   104   694   202 </span>
 <span class="r-in"><span><span class="fu">rcategorical</span><span class="op">(</span><span class="fl">10</span>,<span class="va">prob</span>,factor<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] seven seven seven two   one   seven two   seven seven seven</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] seven seven two   two   two   two   seven seven seven seven</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Levels: one two seven</span>
 <span class="r-in"><span><span class="fu">rcategorical</span><span class="op">(</span><span class="fl">10</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">26</span><span class="op">)</span>,factor<span class="op">=</span><span class="va">letters</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] x g j h d z c x w d</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] t l d k a q z r e p</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Levels: a b c d e f g h i j k l m n o p q r s t u v w x y z</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

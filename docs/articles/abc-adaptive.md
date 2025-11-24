@@ -141,27 +141,31 @@ adaptive_fit = abc_adaptive(
   # Number of knots for fitting the empirical CDF (controls smoothness/complexity)
   bw = 0.1,                  
   # Bandwidth for the kernel used in empirical fitting (controls smoothness)
-  widen_by = 1               
+  widen_by = 1,
   # Factor to widen the proposal distribution if ESS is too low (default is 1, no widening)
+  distfit = "analytical"
 )
 #> ABC-Adaptive
-#> Adaptive waves:  ■                                  1% | wave 2 ETA:  5m
-#> Adaptive waves:  ■                                  1% | wave 5 ETA:  5m
-#> Adaptive waves:  ■■                                 2% | wave 9 ETA:  5m
-#> Adaptive waves:  ■■                                 3% | wave 13 ETA:  5m
-#> Converged on wave: 14
+#> Adaptive waves:  ■                                  0% | wave 1 ETA:  5m
+#> Adaptive waves:  ■                                  1% | wave 4 ETA:  5m
+#> Adaptive waves:  ■■                                 2% | wave 7 ETA:  5m
+#> Adaptive waves:  ■■                                 3% | wave 11 ETA:  5m
+#> Adaptive waves:  ■■                                 4% | wave 15 ETA:  5m
+#> Adaptive waves:  ■■■                                5% | wave 18 ETA:  5m
+#> Converged on wave: 22
+#> Adaptive waves:  ■■■                                6% | wave 21 ETA:  5m
 
 summary(adaptive_fit)
-#> ABC adaptive fit: 14 waves - (converged)
+#> ABC adaptive fit: 22 waves - (converged)
 #> Parameter estimates:
 #> # A tibble: 4 × 4
 #> # Groups:   param [4]
 #>   param      mean_sd       median_95_CrI           ESS
 #>   <chr>      <chr>         <chr>                 <dbl>
-#> 1 gamma_mean 5.985 ± 0.115 5.997 [5.654 — 6.246] 2248.
-#> 2 gamma_sd   2.004 ± 0.199 2.002 [1.502 — 2.484] 2248.
-#> 3 norm_mean  3.991 ± 0.290 3.986 [3.290 — 4.718] 2248.
-#> 4 norm_sd    1.911 ± 0.713 2.042 [0.231 — 3.371] 2248.
+#> 1 gamma_mean 5.970 ± 0.068 5.969 [5.805 — 6.175]  321.
+#> 2 gamma_sd   1.954 ± 0.113 1.955 [1.678 — 2.219]  321.
+#> 3 norm_mean  3.992 ± 0.170 3.991 [3.533 — 4.428]  321.
+#> 4 norm_sd    2.059 ± 0.377 2.091 [0.906 — 2.786]  321.
 ```
 
 - **`n_sims`, `acceptance_rate`, `scoreweights`**: These function

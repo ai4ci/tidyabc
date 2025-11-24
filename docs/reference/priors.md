@@ -63,6 +63,6 @@ if (interactive()) plot(p)
 p@constraints
 #> [[1]]
 #> ~mean > sd
-#> <environment: 0x6227a9f06fc8>
+#> <environment: 0x55e4aa6b75b8>
 #> 
 ```

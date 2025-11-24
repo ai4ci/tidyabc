@@ -1,7 +1,6 @@
 # Sampling: gamma distribution constrained to have mean \> sd
 
-Density, distribution function, quantile function and random generation
-for the Gamma distribution with parameters `shape` and `scale`.
+The following conversion describes the parameters mean and kappa
 
 ## Usage
 
@@ -39,6 +38,12 @@ functions.
 The numerical arguments other than `n` are recycled to the length of the
 result. Only the first elements of the logical arguments are used.
 
+## Details
+
+\$\$ \text{shape:} \alpha = \frac{1}{\kappa} \\ \text{rate:} \beta =
+\frac{1}{\mu \times \kappa} \\ \text{scale:} \sigma = \mu \times \kappa
+\\ \$\$
+
 ## See also
 
 [`stats::rgamma()`](https://rdrr.io/r/stats/GammaDist.html)
@@ -47,6 +52,6 @@ result. Only the first elements of the logical arguments are used.
 
 ``` r
 rcgamma(10, 2, 0.5)
-#>  [1] 3.7420057 0.6657767 3.1294827 1.7575714 1.6175879 1.6707686 1.0540124
-#>  [8] 0.8725960 2.9125852 0.5220007
+#>  [1] 0.9354315 1.0962009 1.2633089 0.3319770 1.8775657 0.2995612 2.5513190
+#>  [8] 2.8459573 0.8311767 1.5725012
 ```

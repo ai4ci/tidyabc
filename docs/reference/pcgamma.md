@@ -1,7 +1,6 @@
 # Cumulative probability: gamma distribution constrained to have mean \> sd
 
-Density, distribution function, quantile function and random generation
-for the Gamma distribution with parameters `shape` and `scale`.
+The following conversion describes the parameters mean and kappa
 
 ## Usage
 
@@ -47,6 +46,12 @@ functions.
 
 The numerical arguments other than `n` are recycled to the length of the
 result. Only the first elements of the logical arguments are used.
+
+## Details
+
+\$\$ \text{shape:} \alpha = \frac{1}{\kappa} \\ \text{rate:} \beta =
+\frac{1}{\mu \times \kappa} \\ \text{scale:} \sigma = \mu \times \kappa
+\\ \$\$
 
 ## See also
 

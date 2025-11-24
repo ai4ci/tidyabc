@@ -43,7 +43,7 @@ high acceptance rate, over multiple waves."><meta property="og:image" content="h
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/abc-adaptive.html">ABC Adaptive</a></li>
     <li><a class="dropdown-item" href="../articles/abc-smc.html">ABC Sequential Monte-Carlo</a></li>
-    <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distribution functions</a></li>
+    <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distributions in tidyabc</a></li>
     <li><a class="dropdown-item" href="../articles/scorer-functions.html">Simulation, scoring and convergence functions</a></li>
     <li><a class="dropdown-item" href="../articles/sim-example.html">Early outbreak and Generation time</a></li>
   </ul></li>
@@ -96,10 +96,12 @@ high acceptance rate, over multiple waves.</p>
 <span>  allow_continue <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  debug_errors <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  kernel <span class="op">=</span> <span class="st">"epanechnikov"</span>,</span>
+<span>  distfit <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"empirical"</span>, <span class="st">"analytical"</span><span class="op">)</span>,</span>
 <span>  bw <span class="op">=</span> <span class="fl">0.1</span>,</span>
 <span>  widen_by <span class="op">=</span> <span class="fl">1.05</span>,</span>
 <span>  scoreweights <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  use_proposal_correlation <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  use_proposal_correlation <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  ess_limit <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">200</span>, <span class="va">n_sims</span> <span class="op">*</span> <span class="va">acceptance_rate</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -225,15 +227,19 @@ which the probability of acceptance of a particle is zero. Use of
 <code>gaussian</code> kernels can result in poor convergence.</p></dd>
 
 
+<dt id="arg-distfit">distfit<a class="anchor" aria-label="anchor" href="#arg-distfit"></a></dt>
+<dd><p>one of <code>"empirical"</code> or <code>"analytical"</code> determines what kind of
+distribution the ABC adaptive algorithm will fit for the posteriors.</p></dd>
+
+
 <dt id="arg-bw">bw<a class="anchor" aria-label="anchor" href="#arg-bw"></a></dt>
 <dd><p>for Adaptive ABC data distributions are smoothed before modelling
-the CDF. Over smoothing can reduce convergence rate, under-smoothing may result
-in noisy posterior estimates, and appearance of local modes.
-This is a proportion of the ESS and defaults to 0.1.</p></dd>
+empirical CDF. Over smoothing can reduce convergence rate, under-smoothing
+may result in noisy posterior estimates, and appearance of local modes.</p></dd>
 
 
 <dt id="arg-widen-by">widen_by<a class="anchor" aria-label="anchor" href="#arg-widen-by"></a></dt>
-<dd><p>change the dispersion of proposal distribution in ABC
+<dd><p>change the dispersion of the empirical proposal distribution in ABC
 adaptive, preserving the median. This is akin to a nonlinear,
 heteroscedastic random walk in the quantile space, and can help address
 over-fitting or local modes in the ABC adaptive waves. <code>widen_by</code> is an odds
@@ -260,6 +266,18 @@ same relevance to the overall score.</p></dd>
 <dd><p>When calculating the weight of a particle the
 proposal correlation structure is available, to help determine how unusual
 or otherwise a particle is.</p></dd>
+
+
+<dt id="arg-ess-limit">ess_limit<a class="anchor" aria-label="anchor" href="#arg-ess-limit"></a></dt>
+<dd><p>a numeric vector of length 2 which for ABC adaptive, defines
+the limits which rate at which the algorithm will converge in terms of
+effective sample size. If for example the algorithm is converging too quickly
+and some high weight particles are dominating then the ESS will drop
+below the lower limit. In this case more particles will be accepted to try
+and offset this. On the other hand if the algorithm is converging too slowly
+low probability particles in proposal space are not filtered out quickly
+enough and this can lead to too much importance being given to unlikely
+proposals and wide bi-modal peaked posteriors.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -343,20 +361,26 @@ contraction are met.</p></li>
 <span class="r-in"><span>  allow_continue <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ABC-Adaptive</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■                        </span>  24% | wave 2 ETA:  4s</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■■■       </span>  81% | wave 7 ETA:  1s</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Converged on wave: 8</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■                        </span>  23% | wave 2 ETA:  5s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■■■■■                    </span>  36% | wave 3 ETA:  4s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Effective sample size has reduced below 200.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Attempting recovery with larger acceptance rate: 33.333%</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Effective sample size has reduced below 200.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Attempting recovery with larger acceptance rate: 33.333%</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Adaptive waves:  <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■■■■■■■   </span>  95% | wave 8 ETA:  0s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Effective sample size has reduced below 200.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Attempting recovery with larger acceptance rate: 33.333%</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ABC adaptive fit: 8 waves - (converged)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ABC adaptive fit: 9 waves - (not yet converged)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Parameter estimates:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 4</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Groups:   param [3]</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   param mean_sd       median_95_CrI           ESS</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mean  4.983 ± 0.033 4.986 [4.895 — 5.082]  354.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> sd1   1.984 ± 0.059 1.972 [1.834 — 2.173]  354.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> sd2   1.029 ± 0.046 1.033 [0.855 — 1.120]  354.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mean  4.971 ± 0.033 4.969 [4.893 — 5.059]  263.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> sd1   2.059 ± 0.076 2.057 [1.804 — 2.241]  263.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> sd2   1.004 ± 0.045 0.994 [0.904 — 1.113]  263.</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

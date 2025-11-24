@@ -69,10 +69,10 @@ obs2 = table(floor(rexpgrowth(1000, 0.05, 40, 0)))
 
 # obs is a different distribution to sim (larger growth)
 calculate_rmse(sim, obs)
-#> [1] 8.429116
+#> [1] 8.497058
 
 # obs2 is from the same distribution as sim so the RMSE should be lower:
 calculate_rmse(sim, obs2)
-#> [1] 6.276942
+#> [1] 7.625615
 
 ```

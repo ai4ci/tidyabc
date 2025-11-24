@@ -76,6 +76,9 @@ EP/Y028392/1](https://gtr.ukri.org/projects?ref=EP%2FY028392%2F1).
   : Spaghetti plot of resampled posterior fits
 - [`posterior_distance_metrics()`](https://ai4ci.github.io/tidyabc/reference/posterior_distance_metrics.md)
   : Generate a set of metrics from component scores
+- [`posterior_fit_analytical()`](https://ai4ci.github.io/tidyabc/reference/posterior_fit_analytical.md)
+  : Fit analytical distribution to posterior samples for generating more
+  waves
 - [`posterior_fit_empirical()`](https://ai4ci.github.io/tidyabc/reference/posterior_fit_empirical.md)
   : Fit empirical distribution to posterior samples for generating more
   waves
@@ -354,8 +357,8 @@ EP/Y028392/1](https://gtr.ukri.org/projects?ref=EP%2FY028392%2F1).
   Adaptive](https://ai4ci.github.io/tidyabc/articles/abc-adaptive.md):
 - [ABC Sequential
   Monte-Carlo](https://ai4ci.github.io/tidyabc/articles/abc-smc.md):
-- [Statistical distribution
-  functions](https://ai4ci.github.io/tidyabc/articles/s3-distributions.md):
+- [Statistical distributions in
+  tidyabc](https://ai4ci.github.io/tidyabc/articles/s3-distributions.md):
 - [Simulation, scoring and convergence
   functions](https://ai4ci.github.io/tidyabc/articles/scorer-functions.md):
 - [Early outbreak and Generation

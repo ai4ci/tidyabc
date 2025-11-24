@@ -33,10 +33,12 @@ abc_adaptive(
   allow_continue = interactive(),
   debug_errors = FALSE,
   kernel = "epanechnikov",
+  distfit = c("empirical", "analytical"),
   bw = 0.1,
   widen_by = 1.05,
   scoreweights = NULL,
-  use_proposal_correlation = TRUE
+  use_proposal_correlation = TRUE,
+  ess_limit = c(200, n_sims * acceptance_rate)
 )
 ```
 
@@ -160,25 +162,31 @@ abc_adaptive(
   outside of which the probability of acceptance of a particle is zero.
   Use of `gaussian` kernels can result in poor convergence.
 
+- distfit:
+
+  one of `"empirical"` or `"analytical"` determines what kind of
+  distribution the ABC adaptive algorithm will fit for the posteriors.
+
 - bw:
 
-  for Adaptive ABC data distributions are smoothed before modelling the
-  CDF. Over smoothing can reduce convergence rate, under-smoothing may
-  result in noisy posterior estimates, and appearance of local modes.
-  This is a proportion of the ESS and defaults to 0.1.
+  for Adaptive ABC data distributions are smoothed before modelling
+  empirical CDF. Over smoothing can reduce convergence rate,
+  under-smoothing may result in noisy posterior estimates, and
+  appearance of local modes.
 
 - widen_by:
 
-  change the dispersion of proposal distribution in ABC adaptive,
-  preserving the median. This is akin to a nonlinear, heteroscedastic
-  random walk in the quantile space, and can help address over-fitting
-  or local modes in the ABC adaptive waves. `widen_by` is an odds ratio
-  and describes how much further from the median any given part of the
-  distribution is after transformation. E.g. if the median of a
-  distribution is zero, and the `widen_by` is 2 then the 0.75 quantile
-  will move to the position of the 0.9 quantile. The distribution will
-  stay within the support of the prior. This is by default 1.05 which
-  allows for some additional variability in proposals.
+  change the dispersion of the empirical proposal distribution in ABC
+  adaptive, preserving the median. This is akin to a nonlinear,
+  heteroscedastic random walk in the quantile space, and can help
+  address over-fitting or local modes in the ABC adaptive waves.
+  `widen_by` is an odds ratio and describes how much further from the
+  median any given part of the distribution is after transformation.
+  E.g. if the median of a distribution is zero, and the `widen_by` is 2
+  then the 0.75 quantile will move to the position of the 0.9 quantile.
+  The distribution will stay within the support of the prior. This is by
+  default 1.05 which allows for some additional variability in
+  proposals.
 
 - scoreweights:
 
@@ -197,6 +205,19 @@ abc_adaptive(
   When calculating the weight of a particle the proposal correlation
   structure is available, to help determine how unusual or otherwise a
   particle is.
+
+- ess_limit:
+
+  a numeric vector of length 2 which for ABC adaptive, defines the
+  limits which rate at which the algorithm will converge in terms of
+  effective sample size. If for example the algorithm is converging too
+  quickly and some high weight particles are dominating then the ESS
+  will drop below the lower limit. In this case more particles will be
+  accepted to try and offset this. On the other hand if the algorithm is
+  converging too slowly low probability particles in proposal space are
+  not filtered out quickly enough and this can lead to too much
+  importance being given to unlikely proposals and wide bi-modal peaked
+  posteriors.
 
 ## Value
 
@@ -298,18 +319,24 @@ fit = abc_adaptive(
   allow_continue = FALSE
 )
 #> ABC-Adaptive
-#> Adaptive waves:  ■■■■■■■■                          24% | wave 2 ETA:  4s
-#> Adaptive waves:  ■■■■■■■■■■■■■■■■■■■■■■■■■         81% | wave 7 ETA:  1s
-#> Converged on wave: 8
+#> Adaptive waves:  ■■■■■■■■                          23% | wave 2 ETA:  5s
+#> Adaptive waves:  ■■■■■■■■■■■■                      36% | wave 3 ETA:  4s
+#> Effective sample size has reduced below 200.
+#> Attempting recovery with larger acceptance rate: 33.333%
+#> Effective sample size has reduced below 200.
+#> Attempting recovery with larger acceptance rate: 33.333%
+#> Adaptive waves:  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■     95% | wave 8 ETA:  0s
+#> Effective sample size has reduced below 200.
+#> Attempting recovery with larger acceptance rate: 33.333%
 
 summary(fit)
-#> ABC adaptive fit: 8 waves - (converged)
+#> ABC adaptive fit: 9 waves - (not yet converged)
 #> Parameter estimates:
 #> # A tibble: 3 × 4
 #> # Groups:   param [3]
 #>   param mean_sd       median_95_CrI           ESS
 #>   <chr> <chr>         <chr>                 <dbl>
-#> 1 mean  4.983 ± 0.033 4.986 [4.895 — 5.082]  354.
-#> 2 sd1   1.984 ± 0.059 1.972 [1.834 — 2.173]  354.
-#> 3 sd2   1.029 ± 0.046 1.033 [0.855 — 1.120]  354.
+#> 1 mean  4.971 ± 0.033 4.969 [4.893 — 5.059]  263.
+#> 2 sd1   2.059 ± 0.076 2.057 [1.804 — 2.241]  263.
+#> 3 sd2   1.004 ± 0.045 0.994 [0.904 — 1.113]  263.
 ```

@@ -47,5 +47,5 @@ result. Only the first elements of the logical arguments are used.
 
 ``` r
 rbeta2(3, c(0.1,0.5,0.9),0.1)
-#> [1] 0.1131447 0.5000031 0.9105786
+#> [1] 0.08898148 0.54455894 0.88718376
 ```

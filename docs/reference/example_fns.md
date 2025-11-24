@@ -96,22 +96,22 @@ example `abc_adaptive` output
 ``` r
 example_sim_fn(3,2,1) %>% lapply(head,10)
 #> $A
-#>  [1] 3.9187221 3.8085454 4.5898907 1.0419118 3.6491363 1.1034679 3.2735285
-#>  [8] 0.9694824 4.2431560 1.8132811
+#>  [1] 2.3869939 6.2155504 4.0387713 3.9976387 5.1475440 0.8287624 1.3667290
+#>  [8] 0.5171063 6.4018627 0.8649127
 #> 
 #> $B
-#>  [1] 3.747569 2.396480 2.231745 2.966214 2.772659 1.675842 3.028974 1.277203
-#>  [9] 1.203135 3.125411
+#>  [1] 2.681213 3.487453 4.559011 2.044231 2.607585 6.032914 3.245918 4.874561
+#>  [9] 3.193990 3.650157
 #> 
 example_scorer_fn(
   example_obsdata(),
   example_sim_fn(3,2,1)
 )
 #> $A
-#> [1] 0.9916786
+#> [1] 1.042563
 #> 
 #> $B
-#> [1] 2.04281
+#> [1] 1.966807
 #> 
 example_obs() %>% rapply(head,n=10, how="replace")
 #> $obsdata
@@ -178,9 +178,9 @@ example_rejection_fit()
 #> # Groups:   param [3]
 #>   param mean_sd       median_95_CrI           ESS
 #>   <chr> <chr>         <chr>                 <dbl>
-#> 1 mean  4.967 ± 0.180 4.943 [4.592 — 5.448]  76.3
-#> 2 sd1   2.348 ± 0.578 2.265 [1.377 — 3.850]  76.3
-#> 3 sd2   1.176 ± 0.316 1.094 [0.666 — 1.976]  76.3
+#> 1 mean  4.992 ± 0.172 5.004 [4.587 — 5.362]  73.1
+#> 2 sd1   2.236 ± 0.515 2.168 [1.367 — 3.804]  73.1
+#> 3 sd2   1.230 ± 0.289 1.192 [0.754 — 1.923]  73.1
 example_smc_fit()
 #> ABC SMC fit: 8 waves - (converged)
 #> Parameter estimates:
@@ -188,22 +188,23 @@ example_smc_fit()
 #> # Groups:   param [3]
 #>   param mean_sd       median_95_CrI           ESS
 #>   <chr> <chr>         <chr>                 <dbl>
-#> 1 mean  4.977 ± 0.034 4.977 [4.896 — 5.076]  249.
-#> 2 sd1   1.982 ± 0.077 1.987 [1.773 — 2.210]  249.
-#> 3 sd2   0.994 ± 0.038 0.992 [0.901 — 1.097]  249.
+#> 1 mean  4.973 ± 0.034 4.974 [4.892 — 5.041]  249.
+#> 2 sd1   1.995 ± 0.071 1.992 [1.802 — 2.225]  249.
+#> 3 sd2   0.989 ± 0.035 0.988 [0.900 — 1.080]  249.
 example_adaptive_fit()
 #> ABC-Adaptive
 #> Adaptive waves:  ■■■■■■■■                          24% | wave 2 ETA:  4s
-#> Adaptive waves:  ■■■■■■■■■■■■                      36% | wave 3 ETA:  3s
-#> Converged on wave: 8
-#> Adaptive waves:  ■■■■■■■■■■■■■■■■■■■■■■■■■■        84% | wave 7 ETA:  1s
-#> ABC adaptive fit: 8 waves - (converged)
+#> Adaptive waves:  ■■■■■■■■■■■■■■■■■■■■              62% | wave 5 ETA:  2s
+#> Effective sample size has reduced below 200.
+#> Attempting recovery with larger acceptance rate: 33.333%
+#> Adaptive waves:  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% | wave 8 ETA:  0s
+#> ABC adaptive fit: 8 waves - (not yet converged)
 #> Parameter estimates:
 #> # A tibble: 3 × 4
 #> # Groups:   param [3]
 #>   param mean_sd       median_95_CrI           ESS
 #>   <chr> <chr>         <chr>                 <dbl>
-#> 1 mean  4.974 ± 0.031 4.969 [4.888 — 5.074]  363.
-#> 2 sd1   2.065 ± 0.057 2.075 [1.779 — 2.214]  363.
-#> 3 sd2   1.009 ± 0.037 1.011 [0.892 — 1.118]  363.
+#> 1 mean  4.980 ± 0.036 4.973 [4.894 — 5.076]  263.
+#> 2 sd1   2.091 ± 0.064 2.094 [1.769 — 2.215]  263.
+#> 3 sd2   1.015 ± 0.034 1.012 [0.925 — 1.167]  263.
 ```

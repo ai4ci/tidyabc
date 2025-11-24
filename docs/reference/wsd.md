@@ -34,7 +34,7 @@ a standard deviation
 ``` r
 # unweighted:
 wsd(x = stats::rnorm(1000))
-#> [1] 1.037241
+#> [1] 0.9906674
 
 # weighted:
 wsd(x = seq(-2,2,0.1), w = stats::dnorm(seq(-2,2,0.1)))

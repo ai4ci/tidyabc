@@ -47,7 +47,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/abc-adaptive.html">ABC Adaptive</a></li>
     <li><a class="dropdown-item" href="../articles/abc-smc.html">ABC Sequential Monte-Carlo</a></li>
-    <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distribution functions</a></li>
+    <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distributions in tidyabc</a></li>
     <li><a class="dropdown-item" href="../articles/scorer-functions.html">Simulation, scoring and convergence functions</a></li>
     <li><a class="dropdown-item" href="../articles/sim-example.html">Early outbreak and Generation time</a></li>
   </ul>
@@ -81,7 +81,6 @@
     
     
 <!-- TODO: Update adaptive ABC vignette -->
-<!-- Issue URL: https://github.com/ai4ci/tidyabc/issues/31 -->
 <!-- Issue URL: https://github.com/ai4ci/tidyabc/issues/16 -->
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
@@ -219,27 +218,31 @@ how new proposals are generated between waves.</p>
 <span>  <span class="co"># Number of knots for fitting the empirical CDF (controls smoothness/complexity)</span></span>
 <span>  bw <span class="op">=</span> <span class="fl">0.1</span>,                  </span>
 <span>  <span class="co"># Bandwidth for the kernel used in empirical fitting (controls smoothness)</span></span>
-<span>  widen_by <span class="op">=</span> <span class="fl">1</span>               </span>
+<span>  widen_by <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  <span class="co"># Factor to widen the proposal distribution if ESS is too low (default is 1, no widening)</span></span>
+<span>  distfit <span class="op">=</span> <span class="st">"analytical"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; ABC-Adaptive</span></span>
-<span><span class="co">#&gt; Adaptive waves:  <span style="color: #00BB00;">■                               </span>   1% | wave 2 ETA:  5m</span></span>
-<span><span class="co">#&gt; Adaptive waves:  <span style="color: #00BB00;">■                               </span>   1% | wave 5 ETA:  5m</span></span>
-<span><span class="co">#&gt; Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   2% | wave 9 ETA:  5m</span></span>
-<span><span class="co">#&gt; Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   3% | wave 13 ETA:  5m</span></span>
-<span><span class="co">#&gt; Converged on wave: 14</span></span>
+<span><span class="co">#&gt; Adaptive waves:  <span style="color: #00BB00;">■                               </span>   0% | wave 1 ETA:  5m</span></span>
+<span><span class="co">#&gt; Adaptive waves:  <span style="color: #00BB00;">■                               </span>   1% | wave 4 ETA:  5m</span></span>
+<span><span class="co">#&gt; Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   2% | wave 7 ETA:  5m</span></span>
+<span><span class="co">#&gt; Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   3% | wave 11 ETA:  5m</span></span>
+<span><span class="co">#&gt; Adaptive waves:  <span style="color: #00BB00;">■■                              </span>   4% | wave 15 ETA:  5m</span></span>
+<span><span class="co">#&gt; Adaptive waves:  <span style="color: #00BB00;">■■■                             </span>   5% | wave 18 ETA:  5m</span></span>
+<span><span class="co">#&gt; Converged on wave: 22</span></span>
+<span><span class="co">#&gt; Adaptive waves:  <span style="color: #00BB00;">■■■                             </span>   6% | wave 21 ETA:  5m</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">adaptive_fit</span><span class="op">)</span></span>
-<span><span class="co">#&gt; ABC adaptive fit: 14 waves - (converged)</span></span>
+<span><span class="co">#&gt; ABC adaptive fit: 22 waves - (converged)</span></span>
 <span><span class="co">#&gt; Parameter estimates:</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 4</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Groups:   param [4]</span></span></span>
 <span><span class="co">#&gt;   param      mean_sd       median_95_CrI           ESS</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> gamma_mean 5.985 ± 0.115 5.997 [5.654 — 6.246] <span style="text-decoration: underline;">2</span>248.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> gamma_sd   2.004 ± 0.199 2.002 [1.502 — 2.484] <span style="text-decoration: underline;">2</span>248.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> norm_mean  3.991 ± 0.290 3.986 [3.290 — 4.718] <span style="text-decoration: underline;">2</span>248.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> norm_sd    1.911 ± 0.713 2.042 [0.231 — 3.371] <span style="text-decoration: underline;">2</span>248.</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> gamma_mean 5.970 ± 0.068 5.969 [5.805 — 6.175]  321.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> gamma_sd   1.954 ± 0.113 1.955 [1.678 — 2.219]  321.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> norm_mean  3.992 ± 0.170 3.991 [3.533 — 4.428]  321.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> norm_sd    2.059 ± 0.377 2.091 [0.906 — 2.786]  321.</span></span></code></pre></div>
 <ul>
 <li><p><strong><code>n_sims</code>, <code>acceptance_rate</code>,
 <code>scoreweights</code></strong>: These function similarly to

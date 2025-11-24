@@ -83,11 +83,6 @@ difference it must have been set up with the following:
 typically inferred from the data size. Small numbers tend to work better if
 we expect the distribution to be unimodal.}
 
-\item{bw}{for Adaptive ABC data distributions are smoothed before modelling
-the CDF. Over smoothing can reduce convergence rate, under-smoothing may result
-in noisy posterior estimates, and appearance of local modes.
-This is a proportion of the ESS and defaults to 0.1.}
-
 \item{max_time}{the maximum time in seconds to spend in ABC waves before admitting
 defeat. This time may not be all used if the algorithm converges.}
 
@@ -122,7 +117,14 @@ next round. All kernels except \code{gaussian} have a hard cut-off outside of
 which the probability of acceptance of a particle is zero. Use of
 \code{gaussian} kernels can result in poor convergence.}
 
-\item{widen_by}{change the dispersion of proposal distribution in ABC
+\item{distfit}{one of \code{"empirical"} or \code{"analytical"} determines what kind of
+distribution the ABC adaptive algorithm will fit for the posteriors.}
+
+\item{bw}{for Adaptive ABC data distributions are smoothed before modelling
+empirical CDF. Over smoothing can reduce convergence rate, under-smoothing
+may result in noisy posterior estimates, and appearance of local modes.}
+
+\item{widen_by}{change the dispersion of the empirical proposal distribution in ABC
 adaptive, preserving the median. This is akin to a nonlinear,
 heteroscedastic random walk in the quantile space, and can help address
 over-fitting or local modes in the ABC adaptive waves. \code{widen_by} is an odds
@@ -136,6 +138,16 @@ additional variability in proposals.}
 \item{use_proposal_correlation}{When calculating the weight of a particle the
 proposal correlation structure is available, to help determine how unusual
 or otherwise a particle is.}
+
+\item{ess_limit}{a numeric vector of length 2 which for ABC adaptive, defines
+the limits which rate at which the algorithm will converge in terms of
+effective sample size. If for example the algorithm is converging too quickly
+and some high weight particles are dominating then the ESS will drop
+below the lower limit. In this case more particles will be accepted to try
+and offset this. On the other hand if the algorithm is converging too slowly
+low probability particles in proposal space are not filtered out quickly
+enough and this can lead to too much importance being given to unlikely
+proposals and wide bi-modal peaked posteriors.}
 }
 \description{
 Common workflow options

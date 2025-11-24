@@ -27,6 +27,9 @@
   : Spaghetti plot of resampled posterior fits
 - [`posterior_distance_metrics()`](https://ai4ci.github.io/tidyabc/reference/posterior_distance_metrics.md)
   : Generate a set of metrics from component scores
+- [`posterior_fit_analytical()`](https://ai4ci.github.io/tidyabc/reference/posterior_fit_analytical.md)
+  : Fit analytical distribution to posterior samples for generating more
+  waves
 - [`posterior_fit_empirical()`](https://ai4ci.github.io/tidyabc/reference/posterior_fit_empirical.md)
   : Fit empirical distribution to posterior samples for generating more
   waves

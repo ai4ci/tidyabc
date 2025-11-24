@@ -159,29 +159,29 @@ metrics
 #> NULL
 #> 
 #> $means
-#>     data1     data2 
-#> 1.0217195 0.9855406 
+#>    data1    data2 
+#> 0.986466 1.036007 
 #> 
 #> $sds
 #>     data1     data2 
-#> 0.4177654 0.4434342 
+#> 0.4151995 0.4318773 
 #> 
 #> $mad
-#>     data1     data2 
-#> 1.0217195 0.9855406 
+#>    data1    data2 
+#> 0.986466 1.036007 
 #> 
 #> $rmsd
 #>    data1    data2 
-#> 1.103671 1.080523 
+#> 1.070122 1.122255 
 #> 
 #> $cov
-#>            data1      data2
-#> data1  0.1745279 -0.0303666
-#> data2 -0.0303666  0.1966339
+#>             data1       data2
+#> data1  0.17239064 -0.03804698
+#> data2 -0.03804698  0.18651799
 #> 
 #> $scoreweights
 #>     data1     data2 
-#> 0.4798046 0.5201954
+#> 0.5020462 0.4979538
 ```
 
 The
@@ -219,21 +219,21 @@ smc_fit = abc_smc(
 #> SMC waves:  ■■                                 2% | wave 7 ETA:  5m
 #> SMC waves:  ■■                                 3% | wave 11 ETA:  5m
 #> SMC waves:  ■■                                 4% | wave 14 ETA:  5m
-#> SMC waves:  ■■■                                5% | wave 18 ETA:  5m
-#> Converged on wave: 19
+#> Converged on wave: 17
+#> SMC waves:  ■■                                 5% | wave 16 ETA:  5m
 
 # Print a summary of the SMC results
 summary(smc_fit)
-#> ABC SMC fit: 19 waves - (converged)
+#> ABC SMC fit: 17 waves - (converged)
 #> Parameter estimates:
 #> # A tibble: 4 × 4
 #> # Groups:   param [4]
 #>   param      mean_sd       median_95_CrI           ESS
 #>   <chr>      <chr>         <chr>                 <dbl>
-#> 1 gamma_mean 5.964 ± 0.049 5.965 [5.822 — 6.094]  767.
-#> 2 gamma_sd   1.967 ± 0.080 1.966 [1.753 — 2.160]  767.
-#> 3 norm_mean  4.004 ± 0.132 4.006 [3.640 — 4.340]  767.
-#> 4 norm_sd    2.004 ± 0.289 2.008 [1.224 — 2.681]  767.
+#> 1 gamma_mean 5.966 ± 0.061 5.963 [5.819 — 6.130]  804.
+#> 2 gamma_sd   1.978 ± 0.087 1.977 [1.752 — 2.201]  804.
+#> 3 norm_mean  4.002 ± 0.133 4.006 [3.659 — 4.359]  804.
+#> 4 norm_sd    1.988 ± 0.304 2.002 [1.120 — 2.769]  804.
 ```
 
 - **`n_sims`**: The number of simulations performed in *each* wave.

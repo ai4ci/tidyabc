@@ -109,5 +109,5 @@ distribution, which is a special case of the negative binomial.
 
 ``` r
 rnbinom2(10, 5, sqrt(5))
-#>  [1] 8 3 5 1 4 3 9 9 8 8
+#>  [1]  5  4  4  8  5  6  8  8  7 11
 ```

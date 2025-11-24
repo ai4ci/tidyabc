@@ -31,7 +31,7 @@ proposal probability distribution."><meta property="og:image" content="https://a
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/abc-adaptive.html">ABC Adaptive</a></li>
     <li><a class="dropdown-item" href="../articles/abc-smc.html">ABC Sequential Monte-Carlo</a></li>
-    <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distribution functions</a></li>
+    <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distributions in tidyabc</a></li>
     <li><a class="dropdown-item" href="../articles/scorer-functions.html">Simulation, scoring and convergence functions</a></li>
     <li><a class="dropdown-item" href="../articles/sim-example.html">Early outbreak and Generation time</a></li>
   </ul></li>
@@ -62,10 +62,12 @@ proposal probability distribution.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">.calculate_weights_adaptive</span><span class="op">(</span></span>
 <span>  <span class="va">sim_df</span>,</span>
 <span>  <span class="va">priors_list</span>,</span>
-<span>  <span class="va">epsilon</span>,</span>
+<span>  <span class="va">acceptance_rate</span>,</span>
 <span>  <span class="va">proposal_list</span>,</span>
 <span>  <span class="va">kernel</span>,</span>
-<span>  <span class="va">use_proposal_correlation</span></span>
+<span>  <span class="va">use_proposal_correlation</span>,</span>
+<span>  <span class="va">ess_limit</span>,</span>
+<span>  <span class="va">max_recover</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -84,12 +86,9 @@ sided formulae as constraints and 2 sided formulae as derived values.
 A correlation matrix may also be present as an attribute <code>cor</code>.</p></dd>
 
 
-<dt id="arg-epsilon">epsilon<a class="anchor" aria-label="anchor" href="#arg-epsilon"></a></dt>
-<dd><p>epsilon is a tolerance threshold that controls how closely
-simulated summaries must match the observed ones to be considered
-plausible. This is in the unit of <code>abc_summary_distance</code>. Initially the 0.5
-quantile of distances, in subsequent waves this might be decreased.
-It is the scale parameter of the kernel function. $K_h(|u|)$</p></dd>
+<dt id="arg-acceptance-rate">acceptance_rate<a class="anchor" aria-label="anchor" href="#arg-acceptance-rate"></a></dt>
+<dd><p>What proportion of simulations to keep in ABC rejection
+or hard ABC parts of the algorithms.</p></dd>
 
 
 <dt id="arg-proposal-list">proposal_list<a class="anchor" aria-label="anchor" href="#arg-proposal-list"></a></dt>
@@ -112,6 +111,25 @@ which the probability of acceptance of a particle is zero. Use of
 <dd><p>When calculating the weight of a particle the
 proposal correlation structure is available, to help determine how unusual
 or otherwise a particle is.</p></dd>
+
+
+<dt id="arg-ess-limit">ess_limit<a class="anchor" aria-label="anchor" href="#arg-ess-limit"></a></dt>
+<dd><p>a numeric vector of length 2 which for ABC adaptive, defines
+the limits which rate at which the algorithm will converge in terms of
+effective sample size. If for example the algorithm is converging too quickly
+and some high weight particles are dominating then the ESS will drop
+below the lower limit. In this case more particles will be accepted to try
+and offset this. On the other hand if the algorithm is converging too slowly
+low probability particles in proposal space are not filtered out quickly
+enough and this can lead to too much importance being given to unlikely
+proposals and wide bi-modal peaked posteriors.</p></dd>
+
+
+<dt id="arg-max-recover">max_recover<a class="anchor" aria-label="anchor" href="#arg-max-recover"></a></dt>
+<dd><p>if the effective sample size of SMC or adaptive algorithms
+drops below 200, the algorithm will retry the wave with double the sample
+size to try and recover the shape of the distribution, up to a maximum of
+<code>max_recover</code> times.</p></dd>
 
 </dl></div>
     <div class="section level2">

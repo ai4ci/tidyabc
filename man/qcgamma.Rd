@@ -36,9 +36,14 @@ otherwise \code{P[X>x]}.}
   arguments are used.
 }
 \description{
-Density, distribution function, quantile function and random
-  generation for the Gamma distribution with parameters \code{shape} and
-  \code{scale}.
+The following conversion describes the parameters mean and kappa
+}
+\details{
+\deqn{
+\text{shape:} \alpha = \frac{1}{\kappa} \\
+\text{rate:} \beta = \frac{1}{\mu \times \kappa} \\
+\text{scale:} \sigma = \mu \times \kappa \\
+}
 }
 \examples{
 qcgamma(c(0.25,0.5,0.75), 2, 0.5)

@@ -168,6 +168,7 @@
 <url><loc>https://ai4ci.github.io/tidyabc/reference/pnbinom2.html</loc></url>
 <url><loc>https://ai4ci.github.io/tidyabc/reference/pnull.html</loc></url>
 <url><loc>https://ai4ci.github.io/tidyabc/reference/posterior_distance_metrics.html</loc></url>
+<url><loc>https://ai4ci.github.io/tidyabc/reference/posterior_fit_analytical.html</loc></url>
 <url><loc>https://ai4ci.github.io/tidyabc/reference/posterior_fit_empirical.html</loc></url>
 <url><loc>https://ai4ci.github.io/tidyabc/reference/posterior_resample.html</loc></url>
 <url><loc>https://ai4ci.github.io/tidyabc/reference/posterior_summarise.html</loc></url>
@@ -210,6 +211,7 @@
 <url><loc>https://ai4ci.github.io/tidyabc/reference/s3_link_fns.html</loc></url>
 <url><loc>https://ai4ci.github.io/tidyabc/reference/s3_link_fns_common.html</loc></url>
 <url><loc>https://ai4ci.github.io/tidyabc/reference/s3_link_fns_list.html</loc></url>
+<url><loc>https://ai4ci.github.io/tidyabc/reference/scale_probability.html</loc></url>
 <url><loc>https://ai4ci.github.io/tidyabc/reference/sigmoid_params.html</loc></url>
 <url><loc>https://ai4ci.github.io/tidyabc/reference/sim_outbreak.html</loc></url>
 <url><loc>https://ai4ci.github.io/tidyabc/reference/skew.html</loc></url>

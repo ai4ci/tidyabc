@@ -46,23 +46,24 @@ posterior_fit_empirical(
 
 - bw:
 
-  for Adaptive ABC data distributions are smoothed before modelling the
-  CDF. Over smoothing can reduce convergence rate, under-smoothing may
-  result in noisy posterior estimates, and appearance of local modes.
-  This is a proportion of the ESS and defaults to 0.1.
+  for Adaptive ABC data distributions are smoothed before modelling
+  empirical CDF. Over smoothing can reduce convergence rate,
+  under-smoothing may result in noisy posterior estimates, and
+  appearance of local modes.
 
 - widen_by:
 
-  change the dispersion of proposal distribution in ABC adaptive,
-  preserving the median. This is akin to a nonlinear, heteroscedastic
-  random walk in the quantile space, and can help address over-fitting
-  or local modes in the ABC adaptive waves. `widen_by` is an odds ratio
-  and describes how much further from the median any given part of the
-  distribution is after transformation. E.g. if the median of a
-  distribution is zero, and the `widen_by` is 2 then the 0.75 quantile
-  will move to the position of the 0.9 quantile. The distribution will
-  stay within the support of the prior. This is by default 1.05 which
-  allows for some additional variability in proposals.
+  change the dispersion of the empirical proposal distribution in ABC
+  adaptive, preserving the median. This is akin to a nonlinear,
+  heteroscedastic random walk in the quantile space, and can help
+  address over-fitting or local modes in the ABC adaptive waves.
+  `widen_by` is an odds ratio and describes how much further from the
+  median any given part of the distribution is after transformation.
+  E.g. if the median of a distribution is zero, and the `widen_by` is 2
+  then the 0.75 quantile will move to the position of the 0.9 quantile.
+  The distribution will stay within the support of the prior. This is by
+  default 1.05 which allows for some additional variability in
+  proposals.
 
 ## Value
 
@@ -111,8 +112,8 @@ proposals = posterior_fit_empirical(fit$posteriors, fit$priors)
 
 proposals
 #> Parameters: 
-#> * mean: posterior [4.98 ± 0.03]
-#> * sd1: posterior [1.98 ± 0.08]
+#> * mean: posterior [4.97 ± 0.03]
+#> * sd1: posterior [1.99 ± 0.07]
 #> * sd2: posterior [0.99 ± 0.04]
 #> Constraints:
 #> * mean > sd2

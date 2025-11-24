@@ -148,8 +148,9 @@ adaptive_fit = abc_adaptive(
   # Number of knots for fitting the empirical CDF (controls smoothness/complexity)
   bw = 0.1,                  
   # Bandwidth for the kernel used in empirical fitting (controls smoothness)
-  widen_by = 1               
+  widen_by = 1,
   # Factor to widen the proposal distribution if ESS is too low (default is 1, no widening)
+  distfit = "analytical"
 )
 
 summary(adaptive_fit)

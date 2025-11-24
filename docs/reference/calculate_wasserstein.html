@@ -29,7 +29,7 @@ Wasserstein distance."><meta property="og:image" content="https://ai4ci.github.i
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/abc-adaptive.html">ABC Adaptive</a></li>
     <li><a class="dropdown-item" href="../articles/abc-smc.html">ABC Sequential Monte-Carlo</a></li>
-    <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distribution functions</a></li>
+    <li><a class="dropdown-item" href="../articles/s3-distributions.html">Statistical distributions in tidyabc</a></li>
     <li><a class="dropdown-item" href="../articles/scorer-functions.html">Simulation, scoring and convergence functions</a></li>
     <li><a class="dropdown-item" href="../articles/sim-example.html">Early outbreak and Generation time</a></li>
   </ul></li>
@@ -204,11 +204,11 @@ times with random sampling, and the final distance is the average of the results
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># obs is a different distribution to sim (larger growth)</span></span></span>
 <span class="r-in"><span><span class="fu">calculate_wasserstein</span><span class="op">(</span><span class="va">sim</span>, <span class="va">obs</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.2792737</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.249164</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># obs2 is from the same distribution as sim so the distance should be lower:</span></span></span>
 <span class="r-in"><span><span class="fu">calculate_wasserstein</span><span class="op">(</span><span class="va">sim</span>, <span class="va">obs2</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.04722755</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.06647013</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

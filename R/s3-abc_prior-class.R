@@ -102,6 +102,7 @@ priors = function(...) {
     dist_nm = gsub("^[^:]+::[pqrd]", "", dist_nm)
     hyperparams = as.list(stat_expr[-1])
     dfn = as.dist_fns(dist_nm, params = hyperparams)
+    # dfn$name = param_nm
     return(dfn)
   })
   names(dists) = names[sfns]

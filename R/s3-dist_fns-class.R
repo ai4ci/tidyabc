@@ -93,7 +93,7 @@ new_dist_fns = function(
     structure(
       list(
         name = if (length(params) > 0) {
-          gsub("list", name, deparse(params))
+          gsub("^[^(]+", name, deparse(sapply(params, signif, 3)))
         } else {
           name
         },
@@ -232,7 +232,7 @@ new_dist_calls = function(
     structure(
       list(
         name = if (length(params) > 0) {
-          gsub("list", name, deparse(params))
+          gsub("^[^(]+", name, deparse(sapply(params, signif, 3)))
         } else {
           name
         },

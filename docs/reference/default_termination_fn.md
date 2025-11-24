@@ -47,9 +47,10 @@ check = default_termination_fn(0.05, 1.0)
 
 fit = example_smc_fit()
 #> ABC-SMC
-#> SMC waves:  ■■■■■■■■                          23% | wave 2 ETA:  4s
-#> SMC waves:  ■■■■■■■■■■■■■■■■■■■■■■■■■         82% | wave 7 ETA:  1s
+#> SMC waves:  ■■■■■■■■                          25% | wave 2 ETA:  4s
+#> SMC waves:  ■■■■■■■■■■■■■■■■■■■■■             65% | wave 5 ETA:  2s
 #> Converged on wave: 8
+#> SMC waves:  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■      90% | wave 7 ETA:  1s
 
 # This is performed as an integral part of the SMC and adaptive
 # fitting and is here only for example

@@ -104,9 +104,9 @@ cat(test$sim_fn, sep="\n")
 # reference `obsdata`.
 test$obsscores
 #> $A
-#> [1] 0.3700776
+#> [1] 0.3578723
 #> 
 #> $B
-#> [1] 0.625452
+#> [1] 0.5690237
 #> 
 ```

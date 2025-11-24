@@ -449,53 +449,55 @@ smc_fit = abc_smc(
 
     ## SMC waves:  ■                                  1% | wave 1 ETA:  5m
 
-    ## SMC waves:  ■                                  2% | wave 2 ETA:  5m
+    ## SMC waves:  ■■                                 2% | wave 2 ETA:  5m
 
     ## SMC waves:  ■■                                 3% | wave 3 ETA:  5m
 
-    ## SMC waves:  ■■                                 3% | wave 4 ETA:  5m
+    ## SMC waves:  ■■                                 4% | wave 4 ETA:  5m
 
-    ## SMC waves:  ■■                                 4% | wave 5 ETA:  5m
+    ## SMC waves:  ■■                                 5% | wave 5 ETA:  5m
 
-    ## SMC waves:  ■■■                                5% | wave 6 ETA:  5m
+    ## SMC waves:  ■■■                                6% | wave 6 ETA:  5m
 
-    ## SMC waves:  ■■■                                6% | wave 7 ETA:  5m
+    ## SMC waves:  ■■■                                7% | wave 7 ETA:  5m
 
-    ## SMC waves:  ■■■                                7% | wave 8 ETA:  5m
+    ## SMC waves:  ■■■                                8% | wave 8 ETA:  5m
 
-    ## SMC waves:  ■■■■                               9% | wave 10 ETA:  5m
+    ## SMC waves:  ■■■■                               9% | wave 9 ETA:  5m
 
-    ## SMC waves:  ■■■■                              10% | wave 11 ETA:  5m
+    ## SMC waves:  ■■■■                              10% | wave 10 ETA:  5m
 
-    ## SMC waves:  ■■■■                              11% | wave 12 ETA:  4m
+    ## SMC waves:  ■■■■                              11% | wave 11 ETA:  4m
 
-    ## SMC waves:  ■■■■■                             12% | wave 13 ETA:  4m
+    ## SMC waves:  ■■■■■                             13% | wave 12 ETA:  4m
 
-    ## SMC waves:  ■■■■■                             13% | wave 14 ETA:  4m
+    ## SMC waves:  ■■■■■                             14% | wave 13 ETA:  4m
 
-    ## SMC waves:  ■■■■■                             14% | wave 15 ETA:  4m
+    ## SMC waves:  ■■■■■                             15% | wave 14 ETA:  4m
 
-    ## SMC waves:  ■■■■■■                            15% | wave 16 ETA:  4m
+    ## SMC waves:  ■■■■■■                            16% | wave 15 ETA:  4m
 
-    ## SMC waves:  ■■■■■■                            16% | wave 17 ETA:  4m
+    ## SMC waves:  ■■■■■■                            17% | wave 16 ETA:  4m
 
-    ## SMC waves:  ■■■■■■                            17% | wave 18 ETA:  4m
+    ## SMC waves:  ■■■■■■                            18% | wave 17 ETA:  4m
 
-    ## SMC waves:  ■■■■■■■                           18% | wave 19 ETA:  4m
+    ## SMC waves:  ■■■■■■■                           19% | wave 18 ETA:  4m
 
-    ## SMC waves:  ■■■■■■■                           19% | wave 20 ETA:  4m
+    ## SMC waves:  ■■■■■■■                           20% | wave 19 ETA:  4m
 
-    ## SMC waves:  ■■■■■■■                           21% | wave 21 ETA:  4m
+    ## SMC waves:  ■■■■■■■                           21% | wave 20 ETA:  4m
 
-    ## SMC waves:  ■■■■■■■■                          22% | wave 22 ETA:  4m
+    ## SMC waves:  ■■■■■■■■                          22% | wave 21 ETA:  4m
 
-    ## SMC waves:  ■■■■■■■■                          23% | wave 23 ETA:  4m
+    ## SMC waves:  ■■■■■■■■                          24% | wave 22 ETA:  4m
 
-    ## SMC waves:  ■■■■■■■■                          24% | wave 24 ETA:  4m
+    ## SMC waves:  ■■■■■■■■                          25% | wave 23 ETA:  4m
 
-    ## SMC waves:  ■■■■■■■■                          25% | wave 25 ETA:  4m
+    ## SMC waves:  ■■■■■■■■■                         26% | wave 24 ETA:  4m
 
-    ## SMC waves:  ■■■■■■■■■                         26% | wave 26 ETA:  4m
+    ## SMC waves:  ■■■■■■■■■                         27% | wave 25 ETA:  4m
+
+    ## SMC waves:  ■■■■■■■■■                         28% | wave 26 ETA:  4m
 
     ## Converged on wave: 27
 
@@ -566,9 +568,7 @@ adaptive_fit = abc_adaptive(
 
     ## Adaptive waves:  ■                                  0% | wave 1 ETA:  6m
 
-    ## Adaptive waves:  ■                                  1% | wave 2 ETA:  6m
-
-    ## Adaptive waves:  ■                                  2% | wave 4 ETA:  5m
+    ## Adaptive waves:  ■                                  1% | wave 3 ETA:  5m
 
     ## Adaptive waves:  ■■                                 2% | wave 6 ETA:  5m
 
@@ -576,90 +576,54 @@ adaptive_fit = abc_adaptive(
 
     ## Adaptive waves:  ■■                                 4% | wave 10 ETA:  5m
 
-    ## Adaptive waves:  ■■■                                6% | wave 12 ETA:  5m
+    ## Adaptive waves:  ■■■                                5% | wave 12 ETA:  5m
 
-    ## Adaptive waves:  ■■■                                7% | wave 14 ETA:  5m
+    ## Adaptive waves:  ■■■                                6% | wave 14 ETA:  5m
 
-    ## Adaptive waves:  ■■■                                8% | wave 16 ETA:  5m
+    ## Adaptive waves:  ■■■                                7% | wave 16 ETA:  5m
 
-    ## Adaptive waves:  ■■■■                               9% | wave 17 ETA:  5m
+    ## Adaptive waves:  ■■■                                8% | wave 18 ETA:  5m
 
-    ## Adaptive waves:  ■■■■                              10% | wave 19 ETA:  5m
+    ## Adaptive waves:  ■■■■                               9% | wave 20 ETA:  5m
 
-    ## Adaptive waves:  ■■■■                              11% | wave 20 ETA:  5m
+    ## Adaptive waves:  ■■■■                              10% | wave 22 ETA:  5m
 
-    ## Adaptive waves:  ■■■■■                             12% | wave 22 ETA:  4m
+    ## Adaptive waves:  ■■■■                              11% | wave 24 ETA:  4m
 
-    ## Adaptive waves:  ■■■■■                             13% | wave 23 ETA:  4m
+    ## Adaptive waves:  ■■■■■                             12% | wave 26 ETA:  4m
 
-    ## Adaptive waves:  ■■■■■                             13% | wave 24 ETA:  4m
+    ## Adaptive waves:  ■■■■■                             14% | wave 28 ETA:  4m
 
-    ## Adaptive waves:  ■■■■■                             15% | wave 26 ETA:  4m
+    ## Adaptive waves:  ■■■■■                             14% | wave 29 ETA:  4m
 
-    ## Adaptive waves:  ■■■■■■                            16% | wave 27 ETA:  4m
+    ## Adaptive waves:  ■■■■■■                            15% | wave 31 ETA:  4m
 
-    ## Adaptive waves:  ■■■■■■                            16% | wave 28 ETA:  4m
+    ## Adaptive waves:  ■■■■■■                            17% | wave 33 ETA:  4m
 
-    ## Adaptive waves:  ■■■■■■                            18% | wave 30 ETA:  4m
+    ## Adaptive waves:  ■■■■■■                            17% | wave 34 ETA:  4m
 
-    ## Adaptive waves:  ■■■■■■■                           19% | wave 31 ETA:  4m
+    ## Converged on wave: 36
 
-    ## Adaptive waves:  ■■■■■■■                           20% | wave 32 ETA:  4m
-
-    ## Adaptive waves:  ■■■■■■■                           21% | wave 33 ETA:  4m
-
-    ## Adaptive waves:  ■■■■■■■■                          22% | wave 34 ETA:  4m
-
-    ## Adaptive waves:  ■■■■■■■■                          23% | wave 35 ETA:  4m
-
-    ## Adaptive waves:  ■■■■■■■■                          24% | wave 36 ETA:  4m
-
-    ## Adaptive waves:  ■■■■■■■■                          25% | wave 37 ETA:  4m
-
-    ## Adaptive waves:  ■■■■■■■■■                         26% | wave 38 ETA:  4m
-
-    ## Adaptive waves:  ■■■■■■■■■                         27% | wave 39 ETA:  4m
-
-    ## Adaptive waves:  ■■■■■■■■■                         28% | wave 40 ETA:  4m
-
-    ## Adaptive waves:  ■■■■■■■■■■                        29% | wave 41 ETA:  4m
-
-    ## Adaptive waves:  ■■■■■■■■■■                        30% | wave 42 ETA:  4m
-
-    ## Adaptive waves:  ■■■■■■■■■■                        31% | wave 43 ETA:  3m
-
-    ## Adaptive waves:  ■■■■■■■■■■■                       32% | wave 44 ETA:  3m
-
-    ## Adaptive waves:  ■■■■■■■■■■■                       33% | wave 45 ETA:  3m
-
-    ## Adaptive waves:  ■■■■■■■■■■■                       34% | wave 46 ETA:  3m
-
-    ## Adaptive waves:  ■■■■■■■■■■■■                      35% | wave 47 ETA:  3m
-
-    ## Adaptive waves:  ■■■■■■■■■■■■                      37% | wave 48 ETA:  3m
-
-    ## Adaptive waves:  ■■■■■■■■■■■■                      38% | wave 49 ETA:  3m
-
-    ## Converged on wave: 50
+    ## Adaptive waves:  ■■■■■■                            18% | wave 35 ETA:  4m
 
 ``` r
 summary(adaptive_fit)
 ```
 
-    ## ABC adaptive fit: 50 waves - (converged)
+    ## ABC adaptive fit: 36 waves - (converged)
     ## Parameter estimates:
     ## # A tibble: 8 × 4
     ## # Groups:   param [8]
-    ##   param      mean_sd       median_95_CrI             ESS
-    ##   <chr>      <chr>         <chr>                   <dbl>
-    ## 1 R0         1.917 ± 0.360 1.845 [1.532 — 2.584]  20736.
-    ## 2 mean_gt    3.979 ± 0.922 3.671 [2.165 — 8.633]  20736.
-    ## 3 mean_obs   4.999 ± 0.998 4.636 [3.436 — 9.499]  20736.
-    ## 4 mean_onset 7.202 ± 2.293 7.220 [1.919 — 11.563] 20736.
-    ## 5 r0         0.186 ± 0.024 0.183 [0.115 — 0.273]  20736.
-    ## 6 sd_gt      2.522 ± 1.213 2.616 [0.272 — 6.074]  20736.
-    ## 7 sd_obs     2.913 ± 1.157 2.569 [1.289 — 6.570]  20736.
-    ## 8 sd_onset   3.600 ± 1.930 3.466 [0.275 — 7.540]  20736.
+    ##   param      mean_sd       median_95_CrI            ESS
+    ##   <chr>      <chr>         <chr>                  <dbl>
+    ## 1 R0         1.878 ± 0.201 1.853 [1.637 — 2.242]   711.
+    ## 2 mean_gt    4.009 ± 0.723 3.784 [2.470 — 7.962]   711.
+    ## 3 mean_obs   4.987 ± 0.254 4.925 [4.377 — 6.492]   711.
+    ## 4 mean_onset 6.563 ± 1.044 6.276 [3.433 — 10.363]  711.
+    ## 5 r0         0.181 ± 0.011 0.182 [0.133 — 0.215]   711.
+    ## 6 sd_gt      2.630 ± 1.075 2.629 [0.436 — 5.929]   711.
+    ## 7 sd_obs     2.958 ± 0.331 2.937 [2.430 — 4.723]   711.
+    ## 8 sd_onset   4.812 ± 1.176 4.914 [2.146 — 7.439]   711.
 
 The adaptive algorithm is quicker, less focussed on exploration and more
 on convergence. With the settings above it can identify the growth rate,
@@ -736,13 +700,15 @@ the parameters under investigation.
 
 ``` r
 priors2 = priors(
-  r0 ~ norm(0.2, 0.1),
-  mean_onset ~ lnorm2(7, 2),
-  sd_onset ~ lnorm2(5, 1),
+  r0 ~ norm(0.18, 0.25),
+  mean_onset ~ lnorm2(7, 3),
+  sd_onset ~ lnorm2(5, 3),
   mean_obs ~ lnorm2(5, 1),
   sd_obs ~ lnorm2(3, 1),
-  mean_gt ~ lnorm2(4, 3),
-  sd_gt ~ lnorm2(3, 2),
+  # mean_gt ~ lnorm2(4, 3),
+  # sd_gt ~ lnorm2(3, 2),
+  mean_gt ~ unif(0, 12),
+  sd_gt ~ unif(0, 8),
   R0 ~ (1+r0*sd_gt^2/mean_gt) ^ (mean_gt^2 / sd_gt^2),
   ~ is.finite(R0) & R0 > 0 & R0 < 12,
   ~ mean_onset > sd_onset,
@@ -754,13 +720,13 @@ priors2
 ```
 
     ## Parameters: 
-    ## * r0: norm(mean = 0.2, sd = 0.1)
-    ## * mean_onset: lnorm2(mean = 7, sd = 2)
-    ## * sd_onset: lnorm2(mean = 5, sd = 1)
+    ## * r0: norm(mean = 0.18, sd = 0.25)
+    ## * mean_onset: lnorm2(mean = 7, sd = 3)
+    ## * sd_onset: lnorm2(mean = 5, sd = 3)
     ## * mean_obs: lnorm2(mean = 5, sd = 1)
     ## * sd_obs: lnorm2(mean = 3, sd = 1)
-    ## * mean_gt: lnorm2(mean = 4, sd = 3)
-    ## * sd_gt: lnorm2(mean = 3, sd = 2)
+    ## * mean_gt: unif(min = 0, max = 12)
+    ## * sd_gt: unif(min = 0, max = 8)
     ## Constraints:
     ## * is.finite(R0) & R0 > 0 & R0 < 12
     ## * mean_onset > sd_onset
@@ -774,7 +740,7 @@ results. This allows us to assess the robustness of our inferences to
 prior specification. We also want to focus the algorithm on the elements
 of the data that are unknown, by modifying the `scoreweights`. We also
 let the algorithm converge hard as we are relatively sure where we are
-investigating and trying to twist it away from a relaxed state.
+investigating.
 
 ``` r
 scoreweights2 = scoreweights1 *
@@ -790,7 +756,8 @@ adaptive_fit2 = abc_adaptive(
   # debug_errors = TRUE,
   parallel = TRUE,
   scoreweights = scoreweights2,
-  widen_by = 1.1
+  # widen_by = 1,
+  # distfit = "analytical"
 )
 ```
 
@@ -798,48 +765,46 @@ adaptive_fit2 = abc_adaptive(
 
     ## Adaptive waves:  ■                                  0% | wave 1 ETA:  6m
 
+    ## Adaptive waves:  ■                                  1% | wave 2 ETA:  5m
+
     ## Adaptive waves:  ■                                  2% | wave 4 ETA:  5m
 
     ## Adaptive waves:  ■■                                 3% | wave 6 ETA:  5m
 
-    ## Adaptive waves:  ■■                                 3% | wave 8 ETA:  5m
+    ## Adaptive waves:  ■■                                 4% | wave 9 ETA:  5m
 
-    ## Adaptive waves:  ■■                                 5% | wave 10 ETA:  5m
-
-    ## Adaptive waves:  ■■■                                6% | wave 12 ETA:  5m
+    ## Adaptive waves:  ■■                                 5% | wave 11 ETA:  5m
 
     ## Adaptive waves:  ■■■                                6% | wave 13 ETA:  5m
 
     ## Adaptive waves:  ■■■                                7% | wave 15 ETA:  5m
 
-    ## Adaptive waves:  ■■■■                               9% | wave 17 ETA:  5m
+    ## Adaptive waves:  ■■■                                8% | wave 17 ETA:  5m
 
-    ## Adaptive waves:  ■■■■                               9% | wave 18 ETA:  5m
+    ## Adaptive waves:  ■■■■                               9% | wave 19 ETA:  5m
 
-    ## Adaptive waves:  ■■■■                              11% | wave 20 ETA:  4m
+    ## Converged on wave: 21
 
-    ## Adaptive waves:  ■■■■■                             12% | wave 21 ETA:  4m
-
-    ## Converged on wave: 22
+    ## Adaptive waves:  ■■■■                               9% | wave 20 ETA:  5m
 
 ``` r
 summary(adaptive_fit2)
 ```
 
-    ## ABC adaptive fit: 22 waves - (converged)
+    ## ABC adaptive fit: 21 waves - (converged)
     ## Parameter estimates:
     ## # A tibble: 8 × 4
     ## # Groups:   param [8]
-    ##   param      mean_sd       median_95_CrI             ESS
-    ##   <chr>      <chr>         <chr>                   <dbl>
-    ## 1 R0         1.861 ± 0.319 1.808 [1.477 — 2.441]  11113.
-    ## 2 mean_gt    3.815 ± 0.760 3.757 [2.086 — 6.598]  11113.
-    ## 3 mean_obs   4.846 ± 0.741 4.812 [3.510 — 6.501]  11113.
-    ## 4 mean_onset 7.051 ± 1.482 6.771 [4.592 — 10.711] 11113.
-    ## 5 r0         0.178 ± 0.029 0.174 [0.113 — 0.277]  11113.
-    ## 6 sd_gt      2.133 ± 0.904 2.059 [0.783 — 4.736]  11113.
-    ## 7 sd_obs     2.813 ± 0.785 2.792 [1.487 — 4.561]  11113.
-    ## 8 sd_onset   4.743 ± 0.863 4.697 [3.244 — 6.591]  11113.
+    ##   param      mean_sd       median_95_CrI            ESS
+    ##   <chr>      <chr>         <chr>                  <dbl>
+    ## 1 R0         1.930 ± 0.183 1.920 [1.650 — 2.247]   781.
+    ## 2 mean_gt    4.283 ± 0.657 4.175 [2.420 — 7.685]   781.
+    ## 3 mean_obs   4.884 ± 0.454 4.830 [3.829 — 6.141]   781.
+    ## 4 mean_onset 6.570 ± 1.329 6.390 [3.746 — 10.630]  781.
+    ## 5 r0         0.181 ± 0.011 0.181 [0.134 — 0.223]   781.
+    ## 6 sd_gt      2.973 ± 0.981 3.086 [0.511 — 5.737]   781.
+    ## 7 sd_obs     2.808 ± 0.522 2.794 [1.811 — 4.224]   781.
+    ## 8 sd_onset   3.999 ± 1.053 3.967 [2.200 — 7.471]   781.
 
 ``` r
 plot(adaptive_fit2,truth = sim_params, tail = 0.01)
@@ -847,8 +812,15 @@ plot(adaptive_fit2,truth = sim_params, tail = 0.01)
 
 ![](sim-example_files/figure-html/unnamed-chunk-21-1.png)
 
+``` r
+# plot_evolution(adaptive_fit2, truth = sim_params, what="proposals")
+```
+
 And we can check that posterior resamples from the new fit are still
-consistent with the data.
+consistent with the data. Despite the informed priors the estimate of
+the SD of the generation time is somewhat high, and it is not well
+informed by the data. This has mild knock on to the estimate of R0 which
+is slightly low.
 
 ``` r
 plot_simulations(obsdata, adaptive_fit2, sim_fn = sim1_fn)

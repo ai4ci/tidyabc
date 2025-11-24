@@ -43,5 +43,5 @@ stats::cor(
   stats::qnorm(rwedge(1000, a=2)),
   stats::qnorm(rwedge(1000, a=-2))
 )
-#> [1] 0.007369707
+#> [1] -0.006662797
 ```

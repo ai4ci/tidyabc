@@ -17,6 +17,7 @@
 #' @param proposal_list a list of empirical probability distributions that map
 #'   MVN space to proposal space, and are the "prior" for each adaptive wave.
 #'   This is already used to generate the proposals and their mapping in `sim_df`
+#'
 #' @name common_internal
 #' @keywords internal
 NULL
@@ -515,10 +516,12 @@ NULL
 .calculate_weights_adaptive = function(
   sim_df,
   priors_list,
-  epsilon,
+  acceptance_rate,
   proposal_list,
   kernel,
-  use_proposal_correlation
+  use_proposal_correlation,
+  ess_limit,
+  max_recover
 ) {
   # N.B. this is not currently being used
   # as tends to produce worse results than a kernel distance only weight.
@@ -527,95 +530,131 @@ NULL
   params = params[params != ""]
 
   if (identical(priors_list, proposal_list)) {
-    return(.calculate_weights_wave_one(sim_df, epsilon, kernel))
+    # In the first wave the effect of priors and proposal distrbituion
+    # cancels out:
+    log_q = rep(0, nrow(sim_df))
+    log_prior = rep(0, nrow(sim_df))
+  } else {
+    # In the adaptive approach the MVN space for every wave is always centred at 0
+    # regardless of the wave, however correlation structure will change after each
+    # one. After each wave the mapping between MVN and proposal space (copula) is
+    # held in the proposal_list distribution functions It is these mappings from
+    # MVN -> proposal space that get updated at each round.
+
+    # From proposal mappings
+    cor = NULL
+    if (!is.null(proposal_list)) {
+      cor = attr(proposal_list, "cor")
+    }
+    if (is.null(cor) || !use_proposal_correlation) {
+      cor = diag(length(params))
+    }
+
+    # We have to map back from real to proposal MVN space as particles will
+    # be a mix of particles from multiple waves.
+    theta_new = sapply(params, function(nm) {
+      prior = proposal_list[[nm]]
+      # This is the current set of proposals in proposal space:
+      theta_star = sim_df[[nm]]
+      # need to map this back to MVN space using prior copula
+      # rather than proposal
+      # convert target to uniform (prior$p) & map to MVN (qnorm):
+      stats::qnorm(prior$p(theta_star))
+    })
+
+    # In adaptive we cannot do this as meaning of MVN space changes over waves:
+    # theta_new = sim_df %>%
+    #   dplyr::select(dplyr::starts_with("abc_mvn_")) %>%
+    #   as.matrix()
+
+    # In proposal MVN space:
+    # This should be the same copula that was used to generate the proposals:
+    # Correlation is accounted for unless switched off
+    log_q = mvtnorm::dmvnorm(theta_new, sigma = cor, log = TRUE)
+    # Constant terms:
+    log_q = log_q - max(log_q, na.rm = TRUE)
+
+    # The prior probability of this particle is defined in the MVN space using the
+    # prior mappings. Everything is independent in the prior so no correlation.
+
+    theta_prior = sapply(params, function(nm) {
+      prior = priors_list[[nm]]
+      # This is the current set of proposals in proposal space:
+      theta_star = sim_df[[nm]]
+      # need to map this back to MVN space using prior copula
+      # rather than proposal
+      # convert target to uniform (prior$p) & map to MVN (qnorm):
+      stats::qnorm(prior$p(theta_star))
+    })
+
+    # In prior MVN space:
+    log_prior = mvtnorm::dmvnorm(theta_prior, log = TRUE)
+    # Constant terms:
+    log_prior = log_prior - max(log_prior, na.rm = TRUE)
+    # Fix dmvnorn NaNs if not finite inputs:
+    # -Inf because log(P=0)
+    log_prior[!apply(is.finite(theta_prior), MARGIN = 1, all)] = -Inf
+
+    # P_prior(theta) / P_proposal(theta)
+    # term can dominate, and create proposals that are outside of the
+    # gradually decreasing kernel radius, leading to low ESS and
+    # lack of convergence. Its the log_q term that causes the issue here but
+    # adjustment would be non linear in normal space.
+    # The rationale here is we want to prioritise surprising results that are
+    # close to the result we want. This is rationale for the expit in the
+    # conversion
   }
-
-  # In the adaptive approach the MVN space for every wave is always centred at 0
-  # regardless of the wave, however correlation structure will change after each
-  # one. After each wave the mapping between MVN and proposal space (copula) is
-  # held in the proposal_list distribution functions It is these mappings from
-  # MVN -> proposal space that get updated at each round.
-
-  # From proposal mappings
-  cor = NULL
-  if (!is.null(proposal_list)) {
-    cor = attr(proposal_list, "cor")
-  }
-  if (is.null(cor) || !use_proposal_correlation) {
-    cor = diag(length(params))
-  }
-
-  # We have to map back from real to proposal MVN space as particles will
-  # be a mix of particles from multiple waves.
-  theta_new = sapply(params, function(nm) {
-    prior = proposal_list[[nm]]
-    # This is the current set of proposals in proposal space:
-    theta_star = sim_df[[nm]]
-    # need to map this back to MVN space using prior copula
-    # rather than proposal
-    # convert target to uniform (prior$p) & map to MVN (qnorm):
-    stats::qnorm(prior$p(theta_star))
-  })
-
-  # In adaptive we cannot do this as meaning of MVN space changes over waves:
-  # theta_new = sim_df %>%
-  #   dplyr::select(dplyr::starts_with("abc_mvn_")) %>%
-  #   as.matrix()
-
-  # In proposal MVN space:
-  # This should be the same copula that was used to generate the proposals:
-  # Correlation is accounted for unless switched off
-  log_q = mvtnorm::dmvnorm(theta_new, sigma = cor, log = TRUE)
-
-  # The prior probability of this particle is defined in the MVN space using the
-  # prior mappings. Everything is independent in the prior so no correlation.
-
-  theta_prior = sapply(params, function(nm) {
-    prior = priors_list[[nm]]
-    # This is the current set of proposals in proposal space:
-    theta_star = sim_df[[nm]]
-    # need to map this back to MVN space using prior copula
-    # rather than proposal
-    # convert target to uniform (prior$p) & map to MVN (qnorm):
-    stats::qnorm(prior$p(theta_star))
-  })
-
-  # In prior MVN space:
-  log_prior = mvtnorm::dmvnorm(theta_prior, log = TRUE)
-
-  # Fix dmvnorn NaNs if not finite inputs:
-  # -Inf because log(P=0)
-  log_prior[!apply(is.finite(theta_prior), MARGIN = 1, all)] = -Inf
 
   distances = sim_df$abc_summary_distance
-  log_abc_kernel = .log_kernel(distances, epsilon, kernel)
 
-  # Constant terms:
-  log_M = .log_kernel(0, epsilon = epsilon, kernel) +
-    max(log_prior) -
-    max(log_q)
+  ess = 0
+  recover = 0
+  tmp_sim_df = sim_df
 
-  # P_prior(theta) / P_proposal(theta)
-  # term can dominate, and create proposals that are outside of the
-  # gradually decreasing kernel radius, leading to low ESS and
-  # lack of convergence. Its the log_q term that causes the issue here but
-  # adjustment would be non linear in normal space.
-  # The rationale here is we want to prioritise surprising results that are
-  # close to the result we want. This is rationale for the expit in the
-  # conversion
-  log_weight = log_abc_kernel + log_prior - log_q - log_M
-
-  sim_df %>%
-    dplyr::mutate(
-      # convert log weight to importance
-      # log_weight = pmin(log_weight,0)
-      # abc_weight = exp(log_weight - max(log_weight))
-      # Convert log_weight to importance as probability:
-      abc_weight = .expit(log_weight)
-    ) %>%
-    dplyr::mutate(
-      abc_weight = abc_weight / sum(abc_weight)
+  while (recover < max_recover) {
+    recover = recover + 1
+    epsilon = stats::quantile(
+      distances,
+      probs = acceptance_rate
     )
+
+    # calculate a weight based on kernel:
+    log_abc_kernel = .log_kernel(distances, epsilon, kernel) -
+      .log_kernel(0, epsilon = epsilon, kernel)
+
+    log_weight = log_abc_kernel + log_prior - log_q
+
+    # convert log weight to importance
+    # log_weight = pmin(log_weight,0)
+    # abc_weight = exp(log_weight - max(log_weight))
+    # Convert log_weight to importance as probability:
+    # abc_weight = .expit(log_weight)
+    tmp_sim_df = sim_df %>%
+      dplyr::mutate(abc_weight = .expit(log_weight)) %>%
+      dplyr::filter(abc_weight > sqrt(.Machine$double.eps)) %>%
+      dplyr::mutate(abc_weight = abc_weight / sum(abc_weight))
+
+    ess = 1 / sum(tmp_sim_df$abc_weight^2)
+
+    # browser()
+
+    if (ess < ess_limit[1] && acceptance_rate < 0.99) {
+      # increase acceptance rate if ESS is low and acceptance not already at limit
+      acceptance_rate = scale_probability(acceptance_rate, 1.5)
+    } else if (ess > ess_limit[2] && acceptance_rate > 0.05) {
+      # decrease acceptance rate if ESS is high up to small 5% acceptance limit
+      # This would be 5 retries if it started at 50%
+      acceptance_rate = scale_probability(acceptance_rate, 1 / 1.5)
+    } else {
+      break
+    }
+  }
+
+  return(list(
+    acceptance_rate = acceptance_rate,
+    sim_df = tmp_sim_df,
+    ess = ess
+  ))
 }
 
 

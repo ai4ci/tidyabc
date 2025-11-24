@@ -1,4 +1,4 @@
-# Statistical distribution functions
+# Statistical distributions in tidyabc
 
 ``` r
 library(tidyabc)

@@ -105,3 +105,30 @@ NULL
     ifelse(n <= 0, 1, n_inf / sqrt(n^2 + n_inf^2)) * p_max
   )
 }
+
+
+#' Scale probabilities by odds ratios
+#'
+#' \deqn{
+#'   O = \frac{p}{1-p} \\
+#'   p = \frac{O}{1+O} \\
+#'   p_k = \frac{\frac{kp}{1-p}}{( 1 + \frac{kp}{1-p})} \\
+#'   p_k = \frac{kp}{1 - p + kp}
+#' }
+#'
+#' @param p A vector of probabilities
+#' @param odds_ratio a vector of odds ratios
+#'
+#' @returns an adjusted vector of probabilities
+#' @keywords internal
+#' @unit
+#' scale_probability(0.5, c(0.25,0.5,1,2,4))
+scale_probability = function(p, odds_ratio) {
+  # O = p/(1-p)
+  # (1-p)O = p; O-Op = p; p = O/(1+O)
+  # p_k = kp/(1-p) / ( 1 + kp/(1-p))
+  # p_k = kp/(1-p) / (( 1 - p + kp)/(1-p))
+  # p_k = kp / ( 1 - p + kp)
+  return(odds_ratio * p / (1 - p + odds_ratio * p))
+  # changep(c(0.25,0.5,1,2,4),0.5)
+}

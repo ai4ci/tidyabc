@@ -69,9 +69,9 @@ calc = wasserstein_calculator(sim)
 
 # obs is a different distribution to sim (larger growth)
 calc(obs)
-#> [1] 0.2760168
+#> [1] 0.3260278
 
 # obs2 is from the same distribution as sim so the RMSE should be lower:
 calc(obs2)
-#> [1] 0.1103527
+#> [1] 0.09023579
 ```

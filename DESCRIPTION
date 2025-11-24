@@ -55,7 +55,8 @@ Imports:
     signal,
     tibble,
     tidyr,
-    ragg
+    ragg,
+    fitdistrplus
 VignetteBuilder: knitr
 URL: https://ai4ci.github.io/tidyabc,
      https://github.com/ai4ci/tidyabc

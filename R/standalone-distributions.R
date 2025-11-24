@@ -832,6 +832,14 @@ pgamma2 = function(
 
 #' Sampling: gamma distribution constrained to have mean > sd
 #'
+#' The following conversion describes the parameters mean and kappa
+#'
+#' \deqn{
+#' \text{shape:} \alpha = \frac{1}{\kappa} \\
+#' \text{rate:} \beta = \frac{1}{\mu \times \kappa} \\
+#' \text{scale:} \sigma = \mu \times \kappa \\
+#' }
+#'
 #' @inherit stats::rgamma return description
 #' @seealso [stats::rgamma()]
 #' @inheritParams reparam-dist
@@ -849,6 +857,14 @@ rcgamma = function(n, mean, kappa = 1 / mean) {
 }
 
 #' Quantile: gamma distribution constrained to have mean > sd
+#'
+#' The following conversion describes the parameters mean and kappa
+#'
+#' \deqn{
+#' \text{shape:} \alpha = \frac{1}{\kappa} \\
+#' \text{rate:} \beta = \frac{1}{\mu \times \kappa} \\
+#' \text{scale:} \sigma = \mu \times \kappa \\
+#' }
 #'
 #' @inherit stats::rgamma return description
 #' @seealso [stats::qgamma()]
@@ -880,6 +896,14 @@ qcgamma = function(
 
 #' Density: gamma distribution constrained to have mean > sd
 #'
+#' The following conversion describes the parameters mean and kappa
+#'
+#' \deqn{
+#' \text{shape: } \alpha = \frac{1}{\kappa} \\
+#' \text{rate: } \beta = \frac{1}{\mu \times \kappa} \\
+#' \text{scale: } \sigma = \mu \times \kappa \\
+#' }
+#'
 #' @inherit stats::rgamma return description
 #' @seealso [stats::dgamma()]
 #' @inheritParams reparam-dist
@@ -897,6 +921,14 @@ dcgamma = function(x, mean, kappa = 1 / mean, log = FALSE) {
 }
 
 #' Cumulative probability: gamma distribution constrained to have mean > sd
+#'
+#' The following conversion describes the parameters mean and kappa
+#'
+#' \deqn{
+#' \text{shape:} \alpha = \frac{1}{\kappa} \\
+#' \text{rate:} \beta = \frac{1}{\mu \times \kappa} \\
+#' \text{scale:} \sigma = \mu \times \kappa \\
+#' }
 #'
 #' @inherit stats::rgamma return description
 #' @seealso [stats::pgamma()]
