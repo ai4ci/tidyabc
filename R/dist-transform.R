@@ -43,22 +43,30 @@
 #' testthat::expect_equal(t$p(qs),plnorm(qs))
 #' testthat::expect_equal(t$d(qs),dlnorm(qs))
 #'
-#' t2 = transform("log","norm", 0.4, 0.1)
+#'
+#' t2 = transform("log","norm", 0.4 0.1)
 #' testthat::expect_equal(t2$q(ps),qlnorm(ps,0.4,0.1))
 #'
 #' @examples
 #'
-#' n = as.dist_fns("norm",mean=0.5, sd=0.1)
+#' n = c(
+#'   as.dist_fns("norm",mean=0.5, sd=0.1),
+#'   as.dist_fns("norm",mean=0.2, sd=0.1),
+#'   as.dist_fns("norm",mean=0.1, sd=0.1)
+#'   )
+#'
 #' t = transform("log",n)
 #'
-#' plot(t)+ggplot2::geom_function(fun=~ dlnorm(.x, 0.5, 0.1), linetype="dashed")
+#' plot(t[[1]])+ggplot2::geom_function(fun=~ dlnorm(.x, 0.5, 0.1), linetype="dashed")
 #'
 transform = function(link, dist, ..., name = NULL) {
-  if (!is.dist_fns_list(dist)) {
-    if (!is.dist_fns(dist)) {
-      dist = as.dist_fns(dist, ...)
-    }
+  if (!is.dist_fns(dist) && !is.dist_fns_list(dist)) {
+    dist = as.dist_fns(dist, ...)
     dist = as.dist_fns_list(dist)
+  }
+
+  if (is.dist_fns_list(dist)) {
+    return(map_dist_fns(dist, ~ transform(link, .x, name)))
   }
 
   link = as.link_fns(link)
@@ -67,49 +75,47 @@ transform = function(link, dist, ..., name = NULL) {
     name = link$name
   }
 
-  pfn = carrier::crate(
-    function(q) {
-      q2 = link$trans(q)
-      p2 = dist$p(q2)
-      return(p2)
-    },
+  qfn = NULL
+
+  out = .super_crate(
     dist = dist,
-    link = link
+    link = link,
+
+    .fns = list(
+      pfn = function(q) {
+        q2 = link$trans(q)
+        p2 = dist$p(q2)
+        return(p2)
+      },
+      qfn = function(p) {
+        q2 = dist$q(p)
+        q = link$inv(q2)
+        return(q)
+      },
+      rfn = function(n) {
+        qfn(stats::runif(n))
+      },
+      dfn = function(x) {
+        tmp1 = dist$d(link$trans(x))
+        tmp2 = link$ddxtrans(x)
+        ifelse(
+          (tmp1 == 0 & !is.finite(tmp2) | !is.finite(tmp1) & tmp2 == 0),
+          0,
+          tmp1 * tmp2
+        )
+      }
+    )
   )
-  qfn = carrier::crate(
-    function(p) {
-      q2 = dist$q(p)
-      q = link$inv(q2)
-      return(q)
-    },
-    dist = dist,
-    link = link
-  )
-  rfn = function(n) {
-    qfn(stats::runif(n))
-  }
-  dfn = carrier::crate(
-    function(x) {
-      tmp1 = dist$d(link$trans(x))
-      tmp2 = link$ddxtrans(x)
-      ifelse(
-        (tmp1 == 0 & !is.finite(tmp2) | !is.finite(tmp1) & tmp2 == 0),
-        0,
-        tmp1 * tmp2
-      )
-    },
-    dist = dist,
-    link = link
-  )
+
   name = sprintf("%s(%s)", name, dist$name)
 
   return(
     new_dist_fns(
       name = name,
-      pfn = pfn,
-      qfn = qfn,
-      rfn = rfn,
-      dfn = dfn
+      pfn = out$pfn,
+      qfn = out$qfn,
+      rfn = out$rfn,
+      dfn = out$dfn
     )
   )
 }

@@ -1,6 +1,6 @@
 Package: tidyabc
 Title: Approximate Bayesian Computing with Tidy Data
-Version: 0.0.1
+Version: 0.0.1.9000
 Authors@R: 
     person(given = "Robert",
            family = "Challen",
